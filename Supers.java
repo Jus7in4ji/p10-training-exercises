@@ -7,16 +7,16 @@ public class Supers{
     }
     class Thiss extends Supers{
         Thiss(){
-            this("Hello ");
+            this("Hello "); //passed to other constructor
         }
         Thiss(String str1){
-            super(str1, "World");
+            super(str1, "World"); // passed to second constructor of parent class
         }
     }
 
     public static void main(String args[]){
         Supers s = new Supers();
-        Supers.Thiss t = s.new Thiss();
+        Supers.Thiss t = s.new Thiss();// calls second constructor of Supers indirectly 
 
     }
 }
