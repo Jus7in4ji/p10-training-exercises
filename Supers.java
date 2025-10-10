@@ -5,7 +5,7 @@ public class Supers{
     Supers(String str1 , String str2){
         System.out.println(str1 +str2);
     }
-    class Thiss extends Supers{
+    class Thiss extends Supers{// subclass which is also an inner class 
         Thiss(){
             this("Hello "); //passed to other constructor
         }
@@ -14,7 +14,7 @@ public class Supers{
         }
     }
 
-    public static void main(String args[]){
+    public static void main(String[] args){
         Supers s = new Supers();
         Supers.Thiss t = s.new Thiss();// calls second constructor of Supers indirectly 
 
