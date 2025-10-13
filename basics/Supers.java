@@ -1,3 +1,4 @@
+package basics;
 public class Supers{
     Supers(){
         System.out.println("regular outer object initialization");

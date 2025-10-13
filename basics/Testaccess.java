@@ -1,3 +1,4 @@
+package basics;
 import pack2.Accessmods;
 class Accesschild extends Accessmods{
     public Accesschild() {

@@ -1,3 +1,4 @@
+package basics;
 class Outerclass{
     int x = 20;
     class Innerclass{

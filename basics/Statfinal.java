@@ -1,3 +1,4 @@
+package basics;
 public class Statfinal{
     static int common = 35;
     int unique = 25;

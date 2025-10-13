@@ -1,3 +1,4 @@
+package basics;
 import static pack3.Group1.divide; //must use import staic to import static methods from packages
 import static pack3.Group2.divide;
 

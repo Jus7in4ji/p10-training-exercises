@@ -1,3 +1,4 @@
+package basics;
 public class Encaps{
     public static void main(String args[]){
         Main encaps = new Main();

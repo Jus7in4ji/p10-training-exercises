@@ -1,3 +1,4 @@
+package basics;
 public class Construct {
     static int count = 0;
 

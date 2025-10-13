@@ -1,3 +1,4 @@
+package collections;
 
 import java.util.Scanner;
 //a program that counts the number of differenet types of files in a database 
@@ -13,7 +14,7 @@ public class filetypes {
         map.filetypes.put("Others", 0); // setting initial types 
         int x =0;
         while(x!=5){  
-            System.out.println(" 1. Insert new file\n 2. Remove a file \n3. Filetypes present\n 4. See all file types and count \n 5.exit\n Enter: ");
+            System.out.println(" 1. Insert new file\n 2. Remove a file \n 3. Filetypes present\n 4. See all file types and count \n 5.exit\n Enter: ");
             x = Integer.parseInt(sc.nextLine());
             switch (x) {
                 case 1:

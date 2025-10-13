@@ -1,3 +1,4 @@
+package basics;
 import java.util.Scanner;
 
 import pack2.Dvision;
