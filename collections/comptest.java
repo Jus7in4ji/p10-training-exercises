@@ -12,7 +12,6 @@ class files{
         this.name = s;
         this.fnumbers = m;
     }
-    
 }
  class compintdesc implements Comparator<files>{
     public int compare(files m1, files m2){
@@ -37,7 +36,7 @@ public class comptest{
             x-=1;
         }
         sm.sort((a,b)-> a.fnumbers-b.fnumbers); //lamba expression in place of comparator class
-        System.out.println("Student orderd on fnumbers in ascending order : ");
+        System.out.println("Files orderd on numbers present in ascending order : ");
         for (files stm: sm){
             System.out.println("FileType: "+stm.name+"\t, Nos present:  "+stm.fnumbers);
         }

@@ -17,7 +17,6 @@ class marksmap{
             Map.Entry<String,Integer> mp = i.next();
             System.out.println("Name = "+mp.getKey()+" Percentage = "+mp.getValue()+"%");
         }
-        System.out.println(stmarks);
     }
 
     void displaywfilter(){
