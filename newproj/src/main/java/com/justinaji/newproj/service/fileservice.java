@@ -12,45 +12,79 @@ public class fileservice {
         new filedets(2,"page0","pdf"),
         new filedets(3,"workerlist","docx")));
 
-    public List<filedets> getfiledets(){ return files; }
-
-    public filedets filebyid(int id) {
-        for (filedets f : files){
-            if (f.getId() == id) { return f; }
+    public String getfiledets(){
+        try{
+            String details="Documents present: \n"; 
+            if (userservice.loggedin){
+                for (filedets f : files){
+                    details+= " ("+f.getId()+") "+ f.getName() +"."+f.getType()+",\n ";
+                } 
+                return details;}
+            else throw new NoUserFound(); 
         }
-        return null; // or throw an exception if not found
+        catch(Exception e){ return e.getMessage(); }
     }
 
-    public void addfile(filedets file){ files.add(file); }
-
-    public void rename(int id, String name) {
-        for (filedets f : files){
-            if (f.getId() == id) {
-                System.out.print("Name changed from "+f.name+" to "+name);
-                f.name = name;
+    public String filebyid(int id) {
+        try{
+            for (filedets f : files){
+                if (f.getId() == id && userservice.loggedin) { 
+                    return "Document details- id: "+f.getId()+", Name: "+f.getName()+", Document type: "+f.getType(); 
+                }
             }
+            throw new NoUserFound();
         }
+        catch(Exception e){ return e.getMessage();}
+    }
+
+    public boolean addfile(filedets file){ 
+        if( userservice.loggedin){
+            files.add(file);
+            return true;
+        } 
+        return false;
+    }
+
+    public String rename(int id, String name) {
+        try{
+            String oldname = "";
+            for (filedets f : files){
+                if (f.getId() == id && userservice.loggedin) {
+                    oldname = f.name;
+                    f.name = name;
+                    return"Name changed from "+oldname+" to "+name;
+                }
+            }
+            throw new NoUserFound();
+        }
+        catch(Exception e){ return e.getMessage();}
     }
 
     public String delete(int id) {//delete by id 
-        for (filedets f : files){
-            if (f.getId() == id) {
-                String s = "Removed file '"+f.name+"' from the list ";
-                files.remove(f);
-                return s; 
+        try{
+            for (filedets f : files){
+                if (f.getId() == id) {
+                    String s = "Removed file '"+f.name+"' from the list ";
+                    files.remove(f);
+                    return s; 
+                }
             }
+            throw new NoUserFound();
         }
-        return "file of the given id not found";
+        catch(Exception e){ return e.getMessage();}
     }
 
     public String delete(String name) { //delete by name
-        for (filedets f : files){
-            if (f.getName().equals(name)) {
-                String s = "Removed file '"+f.name+"' from the list ";
-                files.remove(f);
-                return s; 
+        try{
+            for (filedets f : files){
+                if (f.getName().equals(name)) {
+                    String s = "Removed file '"+f.name+"' from the list ";
+                    files.remove(f);
+                    return s; 
+                }
             }
+           throw new NoUserFound();
         }
-        return "file of the given name not found";
+        catch(Exception e){ return e.getMessage();}
     }
 }
