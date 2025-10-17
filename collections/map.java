@@ -10,7 +10,7 @@ containsKey()	Checks if the map contains the key
  */
 public class map {
     public static HashMap<String , Integer> filetypes = new HashMap<>();
-    public static void insert(String s){
+    public static void mapinto(String s){
         s = s.toUpperCase();
         if ((s.equals("PNG"))||(s.equals("JPG"))||s.equals("JPEG")) {s = "IMAGE";}
         switch(s){
@@ -22,13 +22,16 @@ public class map {
             default->filetypes.put("Others",filetypes.getOrDefault("Others",0)+1); //if new type , put in others 
         }
     }
-    public static void rem(String s){// decreases count if atleast one file of type is present
-        s = s.toUpperCase();
-        if ((filetypes.containsKey(s))&&(filetypes.get(s)>0)){
-            filetypes.put(s,filetypes.get(s)-1);
-        }
-        else{
-            System.out.println("No files of this type present");
+    public static void mapinto(String s,String type){// decreases count if atleast one file of type is present
+        if (type.equals("del")){
+            s = s.toUpperCase();
+            if ((filetypes.containsKey(s))&&(filetypes.get(s)>1)){
+                filetypes.put(s,filetypes.get(s)-1);
+            }
+            else{
+                filetypes.remove(s);
+                System.out.println("Removed this file ");
+            }
         }
     }
     public static String getfiltype(String filename) {
