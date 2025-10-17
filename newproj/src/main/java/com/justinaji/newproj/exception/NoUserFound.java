@@ -1,4 +1,4 @@
-package com.justinaji.newproj.service;
+package com.justinaji.newproj.exception;
 
 public class NoUserFound extends RuntimeException {
     public NoUserFound(){

@@ -3,8 +3,12 @@ package com.justinaji.newproj.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.springframework.stereotype.Service;
+
+import com.justinaji.newproj.exception.NoUserFound;
 import com.justinaji.newproj.model.filedets;
+
 @Service
 public class fileservice {
     List<filedets> files =  new ArrayList<>(Arrays.asList( //initialize sample data 
@@ -13,55 +17,60 @@ public class fileservice {
         new filedets(3,"workerlist","docx")));
 
     public String getfiledets(){
-        try{
-            String details="Documents present: \n"; 
-            if (userservice.loggedin){
-                for (filedets f : files){
-                    details+= " ("+f.getId()+") "+ f.getName() +"."+f.getType()+",\n ";
-                } 
-                return details;}
-            else throw new NoUserFound(); 
-        }
-        catch(Exception e){ return e.getMessage(); }
+        String details="Documents present: "; 
+        if (userservice.loggedin){
+            for (filedets f : files){
+                details+= "\n ("+f.getId()+") "+ f.getName() +"."+f.getType();
+            } 
+            return details;}
+        else throw new NoUserFound(); 
     }
 
     public String filebyid(int id) {
-        try{
+        if(userservice.loggedin){
             for (filedets f : files){
-                if (f.getId() == id && userservice.loggedin) { 
-                    return "Document details- id: "+f.getId()+", Name: "+f.getName()+", Document type: "+f.getType(); 
+                if (f.getId() == id) { 
+                    return "Document details- \n id: "+f.getId()+"\n Name: "+f.getName()+"\n Document type: "+f.getType(); 
                 }
             }
-            throw new NoUserFound();
+            return "No document found with given id";
         }
-        catch(Exception e){ return e.getMessage();}
+        throw new NoUserFound();
     }
 
     public boolean addfile(filedets file){ 
         if( userservice.loggedin){
+            if(file.getName()== null || file.getType() == null){
+                return false;
+            }
+            int newid=0;
+            for(filedets f: files){
+                if(newid <=f.id) newid = f.id+1;
+            }
+            file.id = newid;
             files.add(file);
             return true;
         } 
         return false;
     }
 
-    public String rename(int id, String name) {
-        try{
+    public String updatefile(int id, String name) {
+        if(userservice.loggedin){
             String oldname = "";
             for (filedets f : files){
-                if (f.getId() == id && userservice.loggedin) {
+                if (f.getId() == id) {
                     oldname = f.name;
                     f.name = name;
                     return"Name changed from "+oldname+" to "+name;
                 }
             }
-            throw new NoUserFound();
+            return "File not found";
         }
-        catch(Exception e){ return e.getMessage();}
+        throw new NoUserFound();
     }
 
     public String delete(int id) {//delete by id 
-        try{
+        if(userservice.loggedin){
             for (filedets f : files){
                 if (f.getId() == id) {
                     String s = "Removed file '"+f.name+"' from the list ";
@@ -69,13 +78,13 @@ public class fileservice {
                     return s; 
                 }
             }
-            throw new NoUserFound();
+            return "No file of given id found";
         }
-        catch(Exception e){ return e.getMessage();}
+        throw new NoUserFound();
     }
 
     public String delete(String name) { //delete by name
-        try{
+        if(userservice.loggedin){
             for (filedets f : files){
                 if (f.getName().equals(name)) {
                     String s = "Removed file '"+f.name+"' from the list ";
@@ -83,8 +92,8 @@ public class fileservice {
                     return s; 
                 }
             }
-           throw new NoUserFound();
+            return "No file of given id found";
         }
-        catch(Exception e){ return e.getMessage();}
+        throw new NoUserFound();
     }
 }
