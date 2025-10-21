@@ -1,35 +1,37 @@
 package com.justinaji.newproj.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.justinaji.newproj.dto.AdminDTO;
 import com.justinaji.newproj.dto.UserDTO;
 import com.justinaji.newproj.exception.NoUserFound;
 import com.justinaji.newproj.model.users;
+import com.justinaji.newproj.repo.repouser;
 
 @Service
 public class userservice {
-    List<users> userslist = new ArrayList<>(Arrays.asList( //initialize sample data 
-        new users(1,"u1@domain.com","ADMIN","pass1", true),
-        new users(2,"u2@domain.com","Justin","asdf"),
-        new users(3,"u3@domain.com","Fabin","wasd")));
+
+    @Autowired
+    private repouser urepo;
 
     public static boolean loggedin = false;
     public static boolean isadmin = false;
 
+    // ====== Get Users ======
     public List<?> getuserdets() {
-        if (!loggedin) {
-            throw new NoUserFound();
-        }
+        if (!loggedin) throw new NoUserFound();
+
+        List<users> userslist = urepo.findAll(); // fetch all users from DB
 
         if (isadmin) {
             List<AdminDTO> adminDTOList = new ArrayList<>();
             for (users u : userslist) {
-                AdminDTO dto = new AdminDTO( u.getId(), u.getName(), u.getEmail(), u.isAdmin() );
+                AdminDTO dto = new AdminDTO(u.getId(), u.getName(), u.getEmail(), u.isAdmin());
                 adminDTOList.add(dto);
             }
             return adminDTOList;
@@ -41,33 +43,41 @@ public class userservice {
             }
             return userDTOList;
         }
-    } 
+    }
 
-    public String validateuser(String email , String pass){
-        for (users u : userslist){
-            if(u.getEmail().equals(email) && u.getPassword().equals(pass)){
+    // ====== Validate Login ======
+    public String validateuser(String email, String pass) {
+        List<users> userslist = urepo.findAll(); // fetch all users from DB
+
+        for (users u : userslist) {
+            if (u.getEmail().equals(email) && u.getPassword().equals(pass)) {
                 loggedin = true;
-                if(u.isAdmin()) isadmin = true;
-                return "user '"+email+"' has succesfully logged in " ;
+                if (u.isAdmin()) isadmin = true;
+                return "user '" + email + "' has successfully logged in";
             }
         }
         return null;
     }
 
-    public String userRegister( users user){
-        if (!loggedin){
-            if (user.getEmail() == null || user.getEmail().isEmpty() ||
+    // ====== Register User ======
+    public String userRegister(users user) {
+        if (loggedin) return "you must log out to register a new user";
+
+        if (user.getEmail() == null || user.getEmail().isEmpty() ||
             user.getPassword() == null || user.getPassword().isEmpty()) {
-                return "Email and password both must be filled";
-            } 
-            int newid =0;
-            for (users u : userslist){
-                if(newid <=u.id) newid = u.id+1;
-            }
-            user.id = newid;
-            userslist.add(user);
-            loggedin = true;
-            return "New user '"+user.email +"' registered successfully";}
-        return "you must Log out to register a new user"; 
+            return "Email and password both must be filled";
+        }
+
+        if (user.isAdmin() == false) user.setAdmin(false); // Default admin to false if not specified
+        String randomId;
+        do {
+            randomId = CommonMethods.getAlphaNumericString();
+        } while (urepo.existsById(randomId)); // ensure uniqueness
+        user.setId(randomId);
+        urepo.saveAndFlush(user);
+        loggedin = true;
+        if (user.isAdmin()) isadmin = true;
+
+        return "New user '" + user.getEmail() + "' registered successfully";
     }
 }

@@ -1,5 +1,9 @@
 package com.justinaji.newproj.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,15 +11,18 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
 public class users {
-    public int id;
-    public String email;
-    public String name;
-    public String password;
-    public boolean admin;
+    @Id
+    private String id;
 
-    public users(int id, String email, String name, String password) {
-        this.id = id;
+    private String email;
+    private String name;
+    private String password;
+    private boolean admin = false; // ✅ ensures DB and default consistency
+
+    // Custom constructor for normal users
+    public users(String email, String name, String password) {
         this.email = email;
         this.name = name;
         this.password = password;

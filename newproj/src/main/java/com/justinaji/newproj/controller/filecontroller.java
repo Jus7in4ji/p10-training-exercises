@@ -27,7 +27,7 @@ public class filecontroller {
         return fservice.getfiledets();
     }
     @GetMapping("/{id}")
-    public String getfilebyid(@PathVariable int id ){
+    public String getfilebyid(@PathVariable String id ){
         return fservice.filebyid(id);
     }
 
@@ -38,19 +38,19 @@ public class filecontroller {
     }
 
     @PutMapping("/{id}/{name}")
-    public String rennamedoc(@PathVariable int id, @PathVariable String name) {
+    public String rennamedoc(@PathVariable String id, @PathVariable String name) {
         return fservice.updatefile(id, name);
     }
     
     @DeleteMapping("/id/{id}")
-    public String delbyid(@PathVariable int id) {
+    public String delbyid(@PathVariable String id) {
         return fservice.delete(id);
     }
 
-    @DeleteMapping("/name/{name}")
+    /*@DeleteMapping("/name/{name}")
     public String delbyname(@PathVariable String name) {
         return fservice.delete(name);
-    }
+    }*/
     
 }
 

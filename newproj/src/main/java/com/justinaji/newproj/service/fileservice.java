@@ -1,99 +1,121 @@
 package com.justinaji.newproj.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.justinaji.newproj.exception.NoUserFound;
 import com.justinaji.newproj.model.filedets;
+import com.justinaji.newproj.repo.repofile;
 
 @Service
 public class fileservice {
-    List<filedets> files =  new ArrayList<>(Arrays.asList( //initialize sample data 
-        new filedets(1,"sample1","pdf"),
-        new filedets(2,"page0","pdf"),
-        new filedets(3,"workerlist","docx")));
 
-    public String getfiledets(){
-        String details="Documents present: "; 
-        if (userservice.loggedin){
-            for (filedets f : files){
-                details+= "\n ("+f.getId()+") "+ f.getName() +"."+f.getType();
-            } 
-            return details;}
-        else throw new NoUserFound(); 
+    @Autowired
+    repofile frepo;
+
+    // ====== Get All Files ======
+    public String getfiledets() {
+        if (userservice.loggedin) {
+            List<filedets> files = frepo.findAll();
+            if (files.isEmpty()) {
+                return "No documents present in the database.";
+            }
+
+            StringBuilder details = new StringBuilder("Documents present:");
+            for (filedets f : files) {
+                details.append("\n (")
+                       .append(f.getId())
+                       .append(") ")
+                       .append(f.getName())
+                       .append(".")
+                       .append(f.getType());
+            }
+            return details.toString();
+        } else {
+            throw new NoUserFound();
+        }
     }
 
-    public String filebyid(int id) {
-        if(userservice.loggedin){
-            for (filedets f : files){
-                if (f.getId() == id) { 
-                    return "Document details- \n id: "+f.getId()+"\n Name: "+f.getName()+"\n Document type: "+f.getType(); 
-                }
+    // ====== Get File by ID ======
+    public String filebyid(String id) {
+        if (userservice.loggedin) {
+            Optional<filedets> file = frepo.findById(id);
+            if (file.isPresent()) {
+                filedets f = file.get();
+                return "Document details:\n"
+                     + "id: " + f.getId() + "\n"
+                     + "Name: " + f.getName() + "\n"
+                     + "Document type: " + f.getType();
             }
-            return "No document found with given id";
+            return "No document found with given id.";
         }
         throw new NoUserFound();
     }
 
-    public boolean addfile(filedets file){ 
-        if( userservice.loggedin){
-            if(file.getName()== null || file.getType() == null){
+    // ====== Add New File ======
+    public boolean addfile(filedets file) {
+        if (userservice.loggedin) {
+            if (file.getName() == null || file.getType() == null) {
                 return false;
             }
-            int newid=0;
-            for(filedets f: files){
-                if(newid <=f.id) newid = f.id+1;
-            }
-            file.id = newid;
-            files.add(file);
+            String randomId;
+            do {
+                randomId = CommonMethods.getAlphaNumericString();
+            } while (frepo.existsById(randomId)); // ensure uniqueness
+
+            file.setId(randomId);
+            frepo.save(file);
             return true;
-        } 
+        }
         return false;
     }
 
-    public String updatefile(int id, String name) {
-        if(userservice.loggedin){
-            String oldname = "";
-            for (filedets f : files){
-                if (f.getId() == id) {
-                    oldname = f.name;
-                    f.name = name;
-                    return"Name changed from "+oldname+" to "+name;
-                }
+    // ====== Update File Name by ID ======
+    public String updatefile(String id, String name) {
+        if (userservice.loggedin) {
+            Optional<filedets> optionalFile = frepo.findById(id);
+            if (optionalFile.isPresent()) {
+                filedets f = optionalFile.get();
+                String oldName = f.getName();
+                f.setName(name);
+                frepo.save(f); // update in DB
+                return "Name changed from " + oldName + " to " + name;
             }
-            return "File not found";
+            return "File not found.";
         }
         throw new NoUserFound();
     }
 
-    public String delete(int id) {//delete by id 
-        if(userservice.loggedin){
-            for (filedets f : files){
-                if (f.getId() == id) {
-                    String s = "Removed file '"+f.name+"' from the list ";
-                    files.remove(f);
-                    return s; 
-                }
+    // ====== Delete File by ID ======
+    public String delete(String id) {
+        if (userservice.loggedin) {
+            Optional<filedets> optionalFile = frepo.findById(id);
+            if (optionalFile.isPresent()) {
+                filedets f = optionalFile.get();
+                frepo.deleteById(id);
+                frepo.flush();
+                return "Removed file '" + f.getName() + "' from the list.";
             }
-            return "No file of given id found";
+            return "No file of given id found.";
         }
         throw new NoUserFound();
     }
 
-    public String delete(String name) { //delete by name
-        if(userservice.loggedin){
-            for (filedets f : files){
-                if (f.getName().equals(name)) {
-                    String s = "Removed file '"+f.name+"' from the list ";
-                    files.remove(f);
-                    return s; 
+   /*  // ====== Delete File by Name ======
+    public String delete(String name) {
+        if (userservice.loggedin) {
+            List<filedets> files = frepo.findAll();
+            for (filedets f : files) {
+                if (f.getName().equalsIgnoreCase(name)) {
+                    frepo.delete(f);
+                    return "Removed file '" + f.getName() + "' from the list.";
                 }
             }
-            return "No file of given id found";
+            return "No file with given name found.";
         }
         throw new NoUserFound();
-    }
+    }*/
 }
