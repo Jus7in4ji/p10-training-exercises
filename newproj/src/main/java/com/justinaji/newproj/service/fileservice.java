@@ -1,61 +1,65 @@
 package com.justinaji.newproj.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.justinaji.newproj.dto.FileAdminDTO;
+import com.justinaji.newproj.dto.FileDTO;
 import com.justinaji.newproj.exception.NoUserFound;
 import com.justinaji.newproj.model.filedets;
+import com.justinaji.newproj.model.users;
 import com.justinaji.newproj.repo.repofile;
+import com.justinaji.newproj.repo.repouser;
 
 @Service
 public class fileservice {
 
-    @Autowired
-    repofile frepo;
+    private final repofile frepo;
+    private final repouser urepo;
 
-    // ====== Get All Files ======
-    public String getfiledets() {
-        if (userservice.loggedin) {
-            List<filedets> files = frepo.findAll();
-            if (files.isEmpty()) {
-                return "No documents present in the database.";
-            }
+    public fileservice(repofile frepo, repouser urepo) {
+        this.frepo = frepo;
+        this.urepo = urepo;
+    }
 
-            StringBuilder details = new StringBuilder("Documents present:");
+    public List<?> getfiledets() {
+    if (!userservice.loggedin) throw new NoUserFound();
+
+    List<filedets> files = frepo.findAll();
+        if (!userservice.isadmin) {
+            List<FileDTO> result = new ArrayList<>();
             for (filedets f : files) {
-                details.append("\n (")
-                       .append(f.getId())
-                       .append(") ")
-                       .append(f.getName())
-                       .append(".")
-                       .append(f.getType());
+                if(f.getUploader().getId().equals(userservice.current_user)) result.add(new FileDTO(f.getId(), f.getName(), f.getType()));
             }
-            return details.toString();
+            return result;
         } else {
-            throw new NoUserFound();
+            List<FileAdminDTO> result = new ArrayList<>();
+            for (filedets f : files) {
+                result.add(new FileAdminDTO( f.getId(), f.getName(), f.getType(), f.getUploader().getId(), f.getUploader().getName() ));
+            }
+            return result;
         }
     }
 
-    // ====== Get File by ID ======
     public String filebyid(String id) {
         if (userservice.loggedin) {
             Optional<filedets> file = frepo.findById(id);
             if (file.isPresent()) {
                 filedets f = file.get();
-                return "Document details:\n"
-                     + "id: " + f.getId() + "\n"
-                     + "Name: " + f.getName() + "\n"
-                     + "Document type: " + f.getType();
+                if (!userservice.isadmin && !f.getUploader().getId().equals(userservice.current_user)) {
+                    return "Access denied";
+                }
+                return "Document details:\n" + "id: " + f.getId() + "\n" + "Name: " + f.getName() + "\n" + "Document type: " + f.getType();
             }
             return "No document found with given id.";
         }
         throw new NoUserFound();
     }
 
-    // ====== Add New File ======
     public boolean addfile(filedets file) {
         if (userservice.loggedin) {
             if (file.getName() == null || file.getType() == null) {
@@ -65,20 +69,24 @@ public class fileservice {
             do {
                 randomId = CommonMethods.getAlphaNumericString();
             } while (frepo.existsById(randomId)); // ensure uniqueness
-
             file.setId(randomId);
+
+            users currentUser = urepo.findById(userservice.current_user).orElse(null);
+            file.setUploader(currentUser);
             frepo.save(file);
             return true;
         }
-        return false;
+        throw new NoUserFound();
     }
 
-    // ====== Update File Name by ID ======
     public String updatefile(String id, String name) {
         if (userservice.loggedin) {
             Optional<filedets> optionalFile = frepo.findById(id);
             if (optionalFile.isPresent()) {
                 filedets f = optionalFile.get();
+                if (!userservice.isadmin && !f.getUploader().getId().equals(userservice.current_user)) {
+                    return "Access denied: You can only rename your own files.";
+                }
                 String oldName = f.getName();
                 f.setName(name);
                 frepo.save(f); // update in DB
@@ -89,12 +97,14 @@ public class fileservice {
         throw new NoUserFound();
     }
 
-    // ====== Delete File by ID ======
     public String delete(String id) {
         if (userservice.loggedin) {
             Optional<filedets> optionalFile = frepo.findById(id);
             if (optionalFile.isPresent()) {
                 filedets f = optionalFile.get();
+                if (!userservice.isadmin && !f.getUploader().getId().equals(userservice.current_user)) {
+                    return "Access denied: You can only delete your own files.";
+                }
                 frepo.deleteById(id);
                 frepo.flush();
                 return "Removed file '" + f.getName() + "' from the list.";

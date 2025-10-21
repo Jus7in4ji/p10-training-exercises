@@ -1,6 +1,7 @@
 package com.justinaji.newproj.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +24,7 @@ public class filecontroller {
     }
 
     @GetMapping("")
-    public String fdeets(){
+    public List<?> fdeets(){
         return fservice.getfiledets();
     }
     @GetMapping("/{id}")

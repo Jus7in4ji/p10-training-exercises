@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.justinaji.newproj.dto.AdminDTO;
@@ -16,11 +15,14 @@ import com.justinaji.newproj.repo.repouser;
 @Service
 public class userservice {
 
-    @Autowired
-    private repouser urepo;
+    private final repouser urepo;
+    public userservice( repouser urepo) {
+        this.urepo = urepo;
+    }
 
     public static boolean loggedin = false;
     public static boolean isadmin = false;
+    public static String current_user ="";
 
     // ====== Get Users ======
     public List<?> getuserdets() {
@@ -53,6 +55,7 @@ public class userservice {
             if (u.getEmail().equals(email) && u.getPassword().equals(pass)) {
                 loggedin = true;
                 if (u.isAdmin()) isadmin = true;
+                current_user = u.getId();
                 return "user '" + email + "' has successfully logged in";
             }
         }
@@ -77,6 +80,7 @@ public class userservice {
         urepo.saveAndFlush(user);
         loggedin = true;
         if (user.isAdmin()) isadmin = true;
+        current_user = user.getId();
 
         return "New user '" + user.getEmail() + "' registered successfully";
     }
