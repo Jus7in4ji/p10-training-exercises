@@ -47,11 +47,6 @@ public class filecontroller {
     public String delbyid(@PathVariable String id) {
         return fservice.delete(id);
     }
-
-    /*@DeleteMapping("/name/{name}")
-    public String delbyname(@PathVariable String name) {
-        return fservice.delete(name);
-    }*/
     
 }
 

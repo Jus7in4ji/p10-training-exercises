@@ -1,10 +1,8 @@
 package com.justinaji.newproj.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.justinaji.newproj.dto.FileAdminDTO;
@@ -27,35 +25,43 @@ public class fileservice {
     }
 
     public List<?> getfiledets() {
-    if (!userservice.loggedin) throw new NoUserFound();
+        if (!userservice.loggedin) throw new NoUserFound();
 
-    List<filedets> files = frepo.findAll();
+        List<filedets> files = frepo.findAll();
+
+        // ✅ For non-admin users: Only show their files (filtered via stream)
         if (!userservice.isadmin) {
-            List<FileDTO> result = new ArrayList<>();
-            for (filedets f : files) {
-                if(f.getUploader().getId().equals(userservice.current_user)) result.add(new FileDTO(f.getId(), f.getName(), f.getType()));
-            }
-            return result;
-        } else {
-            List<FileAdminDTO> result = new ArrayList<>();
-            for (filedets f : files) {
-                result.add(new FileAdminDTO( f.getId(), f.getName(), f.getType(), f.getUploader().getId(), f.getUploader().getName() ));
-            }
-            return result;
+            return files.stream()
+                    .filter(f -> f.getUploader().getId().equals(userservice.current_user))
+                    .map(f -> new FileDTO(f.getId(), f.getName(), f.getType()))
+                    .collect(Collectors.toList());
         }
+
+        // ✅ For admin: Return files with uploader details
+        return files.stream()
+                .map(f -> new FileAdminDTO(
+                        f.getId(),
+                        f.getName(),
+                        f.getType(),
+                        f.getUploader().getId(),
+                        f.getUploader().getName()
+                ))
+                .collect(Collectors.toList());
     }
 
     public String filebyid(String id) {
         if (userservice.loggedin) {
-            Optional<filedets> file = frepo.findById(id);
-            if (file.isPresent()) {
-                filedets f = file.get();
-                if (!userservice.isadmin && !f.getUploader().getId().equals(userservice.current_user)) {
-                    return "Access denied";
-                }
-                return "Document details:\n" + "id: " + f.getId() + "\n" + "Name: " + f.getName() + "\n" + "Document type: " + f.getType();
-            }
-            return "No document found with given id.";
+            return frepo.findById(id)
+                    .map(f -> {
+                        if (!userservice.isadmin && !f.getUploader().getId().equals(userservice.current_user)) {
+                            return "Access denied";
+                        }
+                        return "Document details:\n"
+                                + "id: " + f.getId() + "\n"
+                                + "Name: " + f.getName() + "\n"
+                                + "Document type: " + f.getType();
+                    })
+                    .orElse("No document found with given id.");
         }
         throw new NoUserFound();
     }
@@ -81,51 +87,34 @@ public class fileservice {
 
     public String updatefile(String id, String name) {
         if (userservice.loggedin) {
-            Optional<filedets> optionalFile = frepo.findById(id);
-            if (optionalFile.isPresent()) {
-                filedets f = optionalFile.get();
-                if (!userservice.isadmin && !f.getUploader().getId().equals(userservice.current_user)) {
-                    return "Access denied: You can only rename your own files.";
-                }
-                String oldName = f.getName();
-                f.setName(name);
-                frepo.save(f); // update in DB
-                return "Name changed from " + oldName + " to " + name;
-            }
-            return "File not found.";
+            return frepo.findById(id)
+                    .map(f -> {
+                        if (!userservice.isadmin && !f.getUploader().getId().equals(userservice.current_user)) {
+                            return "Access denied: You can only rename your own files.";
+                        }
+                        String oldName = f.getName();
+                        f.setName(name);
+                        frepo.save(f);
+                        return "Name changed from " + oldName + " to " + name;
+                    })
+                    .orElse("File not found.");
         }
         throw new NoUserFound();
     }
 
     public String delete(String id) {
         if (userservice.loggedin) {
-            Optional<filedets> optionalFile = frepo.findById(id);
-            if (optionalFile.isPresent()) {
-                filedets f = optionalFile.get();
-                if (!userservice.isadmin && !f.getUploader().getId().equals(userservice.current_user)) {
-                    return "Access denied: You can only delete your own files.";
-                }
-                frepo.deleteById(id);
-                frepo.flush();
-                return "Removed file '" + f.getName() + "' from the list.";
-            }
-            return "No file of given id found.";
+            return frepo.findById(id)
+                    .map(f -> {
+                        if (!userservice.isadmin && !f.getUploader().getId().equals(userservice.current_user)) {
+                            return "Access denied: You can only delete your own files.";
+                        }
+                        frepo.deleteById(id);
+                        frepo.flush();
+                        return "Removed file '" + f.getName() + "' from the list.";
+                    })
+                    .orElse("No file of given id found.");
         }
         throw new NoUserFound();
     }
-
-   /*  // ====== Delete File by Name ======
-    public String delete(String name) {
-        if (userservice.loggedin) {
-            List<filedets> files = frepo.findAll();
-            for (filedets f : files) {
-                if (f.getName().equalsIgnoreCase(name)) {
-                    frepo.delete(f);
-                    return "Removed file '" + f.getName() + "' from the list.";
-                }
-            }
-            return "No file with given name found.";
-        }
-        throw new NoUserFound();
-    }*/
 }
