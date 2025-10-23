@@ -19,8 +19,7 @@ public class userservice {
         this.urepo = urepo;
     }
 
-    public static boolean loggedin = false;
-    public static boolean isadmin = false;
+    public static boolean loggedin = false ,isadmin = false;
     public static String current_user = "";
 
     public List<?> getuserdets() {
@@ -43,8 +42,7 @@ public class userservice {
                 .findFirst()
                 .map(u -> {
                     loggedin = true;
-                    if (u.isAdmin()) isadmin = true;
-                    else isadmin = false;
+                    isadmin = u.isAdmin()? true: false ;
                     current_user = u.getId();
                     return "user '" + email + "' has successfully logged in";
                 })
@@ -57,6 +55,8 @@ public class userservice {
             user.getPassword() == null || user.getPassword().isEmpty()) {
             return "Email and password both must be filled";
         }
+        if (urepo.existsByEmail(user.getEmail())) return "User already Exists";
+        
         if (!user.isAdmin()) user.setAdmin(false);
 
         String randomId;
@@ -70,5 +70,10 @@ public class userservice {
         current_user = user.getId();
 
         return "New user '" + user.getEmail() + "' registered successfully";
+    }
+
+    public void logoutuser(){
+        loggedin = isadmin = false;
+        current_user = "";
     }
 }

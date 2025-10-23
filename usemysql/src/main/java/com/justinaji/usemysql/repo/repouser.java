@@ -7,5 +7,5 @@ import com.justinaji.usemysql.model.users;
 
 @Repository
 public interface repouser extends JpaRepository<users, String>{
-
+    boolean existsByEmail(String email);
 }

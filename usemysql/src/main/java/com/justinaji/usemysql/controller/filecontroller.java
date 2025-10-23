@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 
 import com.justinaji.usemysql.model.filedets;
@@ -43,8 +44,8 @@ public class filecontroller {
         return fservice.updatefile(id, name);
     }
     
-    @DeleteMapping("/id/{id}")
-    public String delbyid(@PathVariable String id) {
+    @DeleteMapping("")
+    public String delbyid(@RequestParam(required= true) String id) {
         return fservice.delete(id);
     }
     

@@ -39,7 +39,7 @@ public class usercontroller {
     }
     @GetMapping("/logout")
     public String logout() {
-        userservice.loggedin = userservice.isadmin = false;
+        userservice.logoutuser();
         return "logged out";
     }
     

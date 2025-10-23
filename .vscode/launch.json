@@ -4,7 +4,20 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
+        {
+            "type": "java",
+            "name": "breakpointdbugtest",
+            "request": "launch",
+            "mainClass": "breakpointdbugtest",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "UsemysqlApplication",
+            "request": "launch",
+            "mainClass": "com.justinaji.usemysql.UsemysqlApplication",
+            "projectName": "usemysql"
+        },
         {
             "type": "java",
             "name": "Current File",
