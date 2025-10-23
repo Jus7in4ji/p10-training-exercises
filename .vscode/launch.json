@@ -1,0 +1,232 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "DepinjApplication",
+            "request": "launch",
+            "mainClass": "com.justinaji.depinj.DepinjApplication",
+            "projectName": "depinj"
+        },
+        {
+            "type": "java",
+            "name": "FirstcrudApplication",
+            "request": "launch",
+            "mainClass": "com.justinaji.firstcrud.FirstcrudApplication",
+            "projectName": "firstcrud"
+        },
+        {
+            "type": "java",
+            "name": "NewprojApplication",
+            "request": "launch",
+            "mainClass": "com.justinaji.newproj.NewprojApplication",
+            "projectName": "newproj"
+        },
+        {
+            "type": "java",
+            "name": "Basics",
+            "request": "launch",
+            "mainClass": "Basics",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "Construct",
+            "request": "launch",
+            "mainClass": "Construct",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "ConstructorOverLoading",
+            "request": "launch",
+            "mainClass": "ConstructorOverLoading",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "Encaps",
+            "request": "launch",
+            "mainClass": "Encaps",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "Main",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "OutIn",
+            "request": "launch",
+            "mainClass": "OutIn",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "Second",
+            "request": "launch",
+            "mainClass": "Second",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "Statfinal",
+            "request": "launch",
+            "mainClass": "Statfinal",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "Supers",
+            "request": "launch",
+            "mainClass": "Supers",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "Supers2",
+            "request": "launch",
+            "mainClass": "Supers2",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "Testaccess",
+            "request": "launch",
+            "mainClass": "Testaccess",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "ALsearch",
+            "request": "launch",
+            "mainClass": "collections.ALsearch",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "LLinsert",
+            "request": "launch",
+            "mainClass": "collections.LLinsert",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "allmaps",
+            "request": "launch",
+            "mainClass": "collections.allmaps",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "allsets",
+            "request": "launch",
+            "mainClass": "collections.allsets",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "comptest",
+            "request": "launch",
+            "mainClass": "collections.comptest",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "filetypes",
+            "request": "launch",
+            "mainClass": "collections.filetypes",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "fnamesearch",
+            "request": "launch",
+            "mainClass": "collections.fnamesearch",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "navmap",
+            "request": "launch",
+            "mainClass": "collections.navmap",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "priorityq",
+            "request": "launch",
+            "mainClass": "collections.priorityq",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "setops",
+            "request": "launch",
+            "mainClass": "collections.setops",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "studentmarks",
+            "request": "launch",
+            "mainClass": "collections.studentmarks",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "DepinjApplication(1)",
+            "request": "launch",
+            "mainClass": "depinj.src.main.java.com.justinaji.depinj.DepinjApplication",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "NewprojApplication(1)",
+            "request": "launch",
+            "mainClass": "newproj.src.main.java.com.justinaji.newproj.NewprojApplication",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "packexceptions",
+            "request": "launch",
+            "mainClass": "packexceptions",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "custexcept",
+            "request": "launch",
+            "mainClass": "xceptions.custexcept",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "floatdiv",
+            "request": "launch",
+            "mainClass": "xceptions.floatdiv",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "nesttry",
+            "request": "launch",
+            "mainClass": "xceptions.nesttry",
+            "projectName": "p10-training-exercises_fee05145"
+        }
+    ]
+}

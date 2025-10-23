@@ -1,15 +1,15 @@
-package com.justinaji.newproj.service;
+package com.justinaji.usemysql.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.justinaji.newproj.dto.AdminDTO;
-import com.justinaji.newproj.dto.UserDTO;
-import com.justinaji.newproj.exception.NoUserFound;
-import com.justinaji.newproj.model.users;
-import com.justinaji.newproj.repo.repouser;
+import com.justinaji.usemysql.dto.AdminDTO;
+import com.justinaji.usemysql.dto.UserDTO;
+import com.justinaji.usemysql.exception.NoUserFound;
+import com.justinaji.usemysql.model.users;
+import com.justinaji.usemysql.repo.repouser;
 
 @Service
 public class userservice {
