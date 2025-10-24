@@ -15,12 +15,12 @@ import lombok.NoArgsConstructor;
 public class filedets {
 
     @Id
-    private String id;      // private, accessed via getter/setter
+    private String id;
     private String name;
     private String type;
 
     @ManyToOne
     @JoinColumn(name = "userid")
-    private users uploader;
+    private users uploader; //owner of relation 
 }
 

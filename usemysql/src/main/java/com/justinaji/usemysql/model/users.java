@@ -1,7 +1,10 @@
 package com.justinaji.usemysql.model;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,13 +20,8 @@ public class users {
     private String email;
     private String name;
     private String password;
-    private boolean admin = false; 
+    private boolean admin = false;
 
-    // Custom constructor for normal users
-    public users(String email, String name, String password) {
-        this.email = email;
-        this.name = name;
-        this.password = password;
-        this.admin = false;
-    }
+    @OneToMany(mappedBy = "uploader")
+    private List<filedets> userfiles; 
 }
