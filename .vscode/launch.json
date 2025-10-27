@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Java8DateTimeDemo",
+            "request": "launch",
+            "mainClass": "Java8DateTimeDemo",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
             "name": "breakpointdbugtest",
             "request": "launch",
             "mainClass": "breakpointdbugtest",
