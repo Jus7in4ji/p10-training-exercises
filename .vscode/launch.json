@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "JprojApplication",
+            "request": "launch",
+            "mainClass": "com.justinaji.jproj.JprojApplication",
+            "projectName": "jproj"
+        },
+        {
+            "type": "java",
             "name": "Java8DateTimeDemo",
             "request": "launch",
             "mainClass": "Java8DateTimeDemo",
