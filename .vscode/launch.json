@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "encrypttest",
+            "request": "launch",
+            "mainClass": "com.justinaji.jproj.encrypttest",
+            "projectName": "jproj"
+        },
+        {
+            "type": "java",
             "name": "JprojApplication",
             "request": "launch",
             "mainClass": "com.justinaji.jproj.JprojApplication",
