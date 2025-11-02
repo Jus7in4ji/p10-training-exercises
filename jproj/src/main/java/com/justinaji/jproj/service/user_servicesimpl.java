@@ -26,7 +26,6 @@ public class user_servicesimpl implements user_services {
         if (urepo.existsByEmail(user.getEmail())) return "User already Exists";
         
         String randomId;
-        
         do {
             randomId = CommonMethods.getAlphaNumericString();
         } while (urepo.existsById(randomId));
