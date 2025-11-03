@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -18,6 +19,11 @@ public class GlobalExceptionHandler{
     @ExceptionHandler(invaliduser.class)
     public ResponseEntity<String> handleinvaliduser(invaliduser ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<String> handlebadcredentials(BadCredentialsException ex){ 
+        return new ResponseEntity<>("User credentials are incorrect", HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(Exception.class)

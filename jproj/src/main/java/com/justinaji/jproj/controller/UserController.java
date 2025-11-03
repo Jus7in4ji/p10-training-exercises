@@ -24,5 +24,11 @@ public class UserController {
         return userservice.RegisterUser(user);
     }
     
+    @PostMapping("/login")
+    public String login(@RequestBody users user) {
+        
+        return ("Logged in . JWT token: "+userservice.login(user));
+    }
+    
 }
 

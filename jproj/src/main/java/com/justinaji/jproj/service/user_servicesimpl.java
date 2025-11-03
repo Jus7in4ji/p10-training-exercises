@@ -1,10 +1,15 @@
 package com.justinaji.jproj.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.justinaji.jproj.exception.invaliduser;
 import com.justinaji.jproj.model.CurrentUser;
 import com.justinaji.jproj.model.users;
 import com.justinaji.jproj.repository.UserRepo;
@@ -16,6 +21,13 @@ public class user_servicesimpl implements user_services {
     public user_servicesimpl(UserRepo urepo) {
         this.urepo = urepo; 
     }
+
+    @Autowired
+    AuthenticationManager authManager;
+
+    @Autowired
+    JWTService jwtservice;
+
     private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
 
@@ -24,8 +36,8 @@ CurrentUser user = (CurrentUser) auth.getPrincipal();
 String uid = user.getUser().getU_id();*/  //to fetch userid 
 
 
-    public static boolean loggedin = false ;
-    public static String current_user = "";
+//public static boolean loggedin = false ;
+//public static String current_user = "";
 
     @Override
     public String RegisterUser(users user) {
@@ -43,12 +55,18 @@ String uid = user.getUser().getU_id();*/  //to fetch userid
         
         user.setU_id(randomId);
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        //user.setPassword(CommonMethods.encryptpassword(user.getPassword()));
-        loggedin = true;
-        current_user = randomId;
 
         urepo.save(user);
         return "New user '" + user.getEmail() + "' registered successfully";
+    }
+
+
+    @Override
+    public String login(users user) {
+        Authentication authentication = 
+            authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(),user.getPassword()));
+        
+            return jwtservice.gentoken(user.getEmail());
     }
 
 
