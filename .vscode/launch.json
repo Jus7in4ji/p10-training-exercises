@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "UsemysqlApplication",
+            "request": "launch",
+            "mainClass": "Springboot.usemysql.src.main.java.com.justinaji.usemysql.UsemysqlApplication",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
             "name": "encrypttest",
             "request": "launch",
             "mainClass": "com.justinaji.jproj.encrypttest",
