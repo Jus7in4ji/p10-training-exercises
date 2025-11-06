@@ -21,6 +21,11 @@ public class GlobalExceptionHandler{
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(formatmismatch.class)
+    public ResponseEntity<String> handleformatmismatch(formatmismatch ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handlebadcredentials(BadCredentialsException ex){ 
         return new ResponseEntity<>("User credentials are incorrect", HttpStatus.UNAUTHORIZED);

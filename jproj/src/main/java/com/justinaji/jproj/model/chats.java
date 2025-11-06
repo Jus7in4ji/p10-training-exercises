@@ -19,6 +19,7 @@ public class chats {
     
     @ManyToOne
     @JoinColumn(name = "created_by")
-    private users createdBy;    
+    private users createdBy;   
+    
+    private boolean isgroup = false;
 }
- 
