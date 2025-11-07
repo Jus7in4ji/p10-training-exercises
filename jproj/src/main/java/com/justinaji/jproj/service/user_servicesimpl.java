@@ -58,7 +58,8 @@ String uid = user.getUser().getU_id();*/  //to fetch userid
             user.getPassword() == null || user.getPassword().isEmpty()) {
             return "Email and password both must be filled";
         }
-        if (urepo.existsByEmail(user.getEmail())|| urepo.existsByName(user.getName())) return "User already Exists";
+        if (urepo.existsByEmail(user.getEmail())) return "User with the given email id already Exists";
+        if (urepo.existsByName(user.getName())) return "Username is already taken . Please enter a different name";
 
         String randomId;
         do { randomId = CommonMethods.getAlphaNumericString(); } 
@@ -98,9 +99,9 @@ String uid = user.getUser().getU_id();*/  //to fetch userid
     @Override
     public String login(users user) {
         Authentication authentication = 
-            authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(),user.getPassword()));
+            authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getName(),user.getPassword()));
         
-            return jwtservice.gentoken(user.getEmail());
+            return jwtservice.gentoken(user.getName());
     }
 
 }

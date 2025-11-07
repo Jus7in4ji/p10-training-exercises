@@ -8,7 +8,7 @@ import com.justinaji.jproj.service.user_servicesimpl;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.justinaji.jproj.model.addmember;
+import com.justinaji.jproj.dto.addmember;
 import com.justinaji.jproj.model.chats;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

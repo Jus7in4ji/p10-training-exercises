@@ -10,4 +10,5 @@ public interface UserRepo extends JpaRepository<users, String>{
     boolean existsByEmail(String email); //checks if gievn email id is already assigned to a user
     boolean existsByName(String name);
     users findByEmail(String email);
+    users findByName(String uname);
 }

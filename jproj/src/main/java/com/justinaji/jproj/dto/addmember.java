@@ -1,4 +1,4 @@
-package com.justinaji.jproj.model;
+package com.justinaji.jproj.dto;
 
 import java.util.List;
 
@@ -14,3 +14,4 @@ public class addmember {
         return this.members;
     }
 }
+

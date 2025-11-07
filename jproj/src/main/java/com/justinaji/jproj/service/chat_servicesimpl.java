@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.justinaji.jproj.exception.formatmismatch;
 import com.justinaji.jproj.model.CurrentUser;
-import com.justinaji.jproj.model.addmember;
-import com.justinaji.jproj.model.chatmember;
+import com.justinaji.jproj.dto.addmember;
+import com.justinaji.jproj.dto.chatmember;
 import com.justinaji.jproj.model.chats;
 import com.justinaji.jproj.model.members;
 import com.justinaji.jproj.model.users;
@@ -34,19 +34,16 @@ public class chat_servicesimpl implements chat_services {
     @Override
     @Transactional
     public chats CreateChat(addmember newGroup) {
+
         if (newGroup.getName() == null || newGroup.getName().isEmpty()) throw new formatmismatch();
         List<chatmember> groupmembers = newGroup.getmembers();
         if(groupmembers.size()<=1)throw new formatmismatch();
 
-
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         CurrentUser user = (CurrentUser) auth.getPrincipal();
-        String uid = user.getUser().getU_id();  //to fetch userid 
-        chatmember current_user = new chatmember(uid, true);
-        users creator = urepo.findById(uid)
-                .orElseThrow(() -> new RuntimeException("User id not found: "));
+        users creator = user.getUser();
 
-        groupmembers.add(current_user);
+        groupmembers.add(new chatmember(creator.getName(), true));
         
         String chatId;
         do { chatId = CommonMethods.getAlphaNumericString(); } 
@@ -62,10 +59,9 @@ public class chat_servicesimpl implements chat_services {
         groupmembers
         .forEach(newmember -> {
 
-            users memberUser = urepo.findById(newmember.getid())
-                .orElseThrow(() -> new RuntimeException("User id not found: " + newmember.getid()));
-
+            users memberUser = urepo.findByName(newmember.getname());
             members m = new members();
+            
             m.setChat(chat);
             m.setMember(memberUser);
             m.setAdmin(newmember.getisadmin());
@@ -83,19 +79,26 @@ public class chat_servicesimpl implements chat_services {
         users u = urepo.findById(uid).orElseThrow(() -> new RuntimeException("User id not found: "));
         List<members> membershipList = memberRepo.findByMember(u);
 
-        if (membershipList.isEmpty()) {
-            return "You have no chats yet.";
-        }
+        if (membershipList.isEmpty()) return "You have no chats yet.";
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Available chats:\n");
+        sb.append("Available chats:");
 
         membershipList.forEach(m -> {
             chats c = m.getChat();
 
-            if (c.isIsgroup()) sb.append("- Group: ").append(c.getName()).append(" (ID: ").append(c.getC_id()).append(")\n"); 
-            else sb.append("- Personal chat (ID: ").append(c.getC_id()).append(")\n");
-            
+            if (c.isIsgroup()) sb.append("\n- Groupchat: ( ").append(c.getName()).append(" )"); 
+            else {
+                List<members> twoUsers = memberRepo.findByChat(c);
+                users other = twoUsers.stream()
+                        .map(memb -> memb.getMember())
+                        .filter(member -> !member.getU_id().equals(uid))
+                        .findFirst()
+                        .orElse(null); 
+
+                if (other != null) sb.append("\n- Chat with: ").append(other.getName()).append("");
+                else sb.append("\n- Personal chat (unknown user)");
+            }   
         });
 
         return sb.toString();

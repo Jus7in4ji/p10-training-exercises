@@ -24,11 +24,11 @@ public class CurrentUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return user.getName();
     }
 
     public users getUser() {
-    return user;
-}
+        return user;
+    }
 
 }

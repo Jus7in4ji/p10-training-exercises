@@ -24,26 +24,33 @@ public class JWTService {
 
     private String secretKEY = "";
     
-    public JWTService(){
+    public JWTService() {
         try {
+            // Generate HMAC SHA-256 key
             KeyGenerator keygen = KeyGenerator.getInstance("HmacSHA256");
             SecretKey sk = keygen.generateKey();
+
+            // Save Base64 encoded key
             secretKEY = Base64.getEncoder().encodeToString(sk.getEncoded());
+
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-    } 
-    
-    public String gentoken(String mailid){
+    }
+
+    public String gentoken(String mailid) {
 
         Map<String, Object> claims = new HashMap<>();
+
+        // 30 minutes expiration (example) — FIXED your wrong calculation
+        long now = System.currentTimeMillis();
+        long expiry = now + (30 * 60 * 1000); // 30 minutes in milliseconds
+
         return Jwts.builder()
-            .claims()
-            .add(claims)
-            .subject(mailid)
-            .issuedAt(new Date(System.currentTimeMillis()))
-            .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 30))
-            .and()
+            .setClaims(claims)
+            .setSubject(mailid)
+            .setIssuedAt(new Date(now))
+            .setExpiration(new Date(expiry))
             .signWith(getkey())
             .compact();
     }
@@ -51,7 +58,6 @@ public class JWTService {
     private SecretKey getkey() {
         
         byte[] keybytes = Decoders.BASE64.decode(secretKEY);
-        System.out.println(secretKEY);
         return Keys.hmacShaKeyFor(keybytes);
     }
 
