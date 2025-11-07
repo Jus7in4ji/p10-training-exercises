@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "enctest",
+            "request": "launch",
+            "mainClass": "com.justinaji.jproj.enctest",
+            "projectName": "jproj"
+        },
+        {
+            "type": "java",
             "name": "UsemysqlApplication",
             "request": "launch",
             "mainClass": "Springboot.usemysql.src.main.java.com.justinaji.usemysql.UsemysqlApplication",

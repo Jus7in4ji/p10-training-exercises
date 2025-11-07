@@ -6,11 +6,11 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.justinaji.jproj.exception.formatmismatch;
 import com.justinaji.jproj.dto.addmember;
 import com.justinaji.jproj.dto.chatdetails;
 import com.justinaji.jproj.dto.chatmember;
 import com.justinaji.jproj.exception.Username_taken;
+import com.justinaji.jproj.exception.formatmismatch;
 import com.justinaji.jproj.model.chats;
 import com.justinaji.jproj.model.members;
 import com.justinaji.jproj.model.users;
@@ -39,14 +39,15 @@ public class chat_servicesimpl implements chat_services {
         List<chatmember> groupmembers = newGroup.getmembers();
 
         if (newGroup.getName() == null || newGroup.getName().isEmpty()|| groupmembers.size()<=1) throw new formatmismatch();
-        if (chatRepo.existsByName(newGroup.getName())) throw new Username_taken();
+        if (chatRepo.existsByName(newGroup.getName())|| urepo.existsByName(newGroup.getName())) throw new Username_taken();
 
         String chatId;
         do { chatId = CommonMethods.getAlphaNumericString(); } //generate unique chat id
         while (chatRepo.existsById(chatId));
 
         users creator = CommonMethods.getCurrentUser();//get logged in user
-        chats chat = new chats(chatId, newGroup.getName(),creator,true); //new 1-1 chat 
+
+        chats chat = new chats(chatId, newGroup.getName(),creator,true,""); //new group chat 
         chatRepo.save(chat);
         
         groupmembers.add(new chatmember(creator.getName(), true)); //add current user to memberslist
@@ -105,7 +106,7 @@ public class chat_servicesimpl implements chat_services {
         members targetMember = chatMembers
             .stream().filter(m -> m.getMember().getName().equals(name))
             .findFirst().orElse(null);
-        if (targetMember != null) return "user is already a member";
+        if (targetMember != null) return "Given User is already a member";
 
         memberRepo.save(new members(chatRepo.findByName(chat),urepo.findByName(name),isadmin));
         return name+ " has been added into "+ chat ;
@@ -121,7 +122,7 @@ public class chat_servicesimpl implements chat_services {
             .stream().filter(m -> m.getMember().getName().equals(name))
             .findFirst().orElse(null);
         if (targetMember == null) return "The specified user is not a member of this chat.";
-        if(targetMember.isAdmin()) return "The user is an admin ";
+        if(targetMember.isAdmin()) return "Unable to remove: The given user is also an admin ";
 
         memberRepo.delete(targetMember);
 
@@ -149,8 +150,7 @@ public class chat_servicesimpl implements chat_services {
 
     @Override
     public String LeaveGroup(String chat){
-        if (!chatRepo.existsByName(chat)) return "there exists no group of given name";
-
+        if (!chatRepo.existsByName(chat)) return "There exists no group of name '"+chat+"'.";
         String uid = CommonMethods.getCurrentUser().getU_id();
         List<members> chatMembers = memberRepo.findByChat(chatRepo.findByName(chat));
         
@@ -168,7 +168,7 @@ public class chat_servicesimpl implements chat_services {
     
     String Userauthority(String chat, List<members> chatMembers){
 
-        if (!chatRepo.existsByName(chat)) return "there exists no group of given name";
+        if (!chatRepo.existsByName(chat)) return "There exists no group of name '"+chat+"'.";
 
         String uid = CommonMethods.getCurrentUser().getU_id();
         
@@ -181,5 +181,25 @@ public class chat_servicesimpl implements chat_services {
         if (loggedInMember == null) return "You are not a member of this chat.";
         if (!loggedInMember.isAdmin()) return "You do not have Admin privileges in this chat.";
         return "ok";
+    }
+
+    @Override
+    public String getMembers(String chat) {
+        
+        if (!chatRepo.existsByName(chat)) return "There exists no group of name '"+chat+"'.";
+        List<members> listofMembers = memberRepo.findByChat(chatRepo.findByName(chat));
+        if(listofMembers.size()<1) return "No members";
+
+        boolean present = listofMembers.stream().anyMatch(m -> m.getMember().equals(CommonMethods.getCurrentUser()));
+        if (!present) return "You are not a member of this chat ";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Chat ").append(chat);
+        listofMembers.forEach(member->{
+            sb.append("\n- ").append(member.getMember().getName());
+            if(member.isAdmin()) sb.append(" (Admin)");
+        });
+
+        return sb.toString();
     }
 }

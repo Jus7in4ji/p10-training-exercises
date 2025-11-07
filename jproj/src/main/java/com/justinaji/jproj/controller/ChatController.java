@@ -10,9 +10,7 @@ import com.justinaji.jproj.service.chat_servicesimpl;
 import com.justinaji.jproj.dto.addmember;
 import com.justinaji.jproj.dto.chatdetails;
 import com.justinaji.jproj.dto.UserEditRequest;
-
-
-
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -27,27 +25,33 @@ public class ChatController {
         return chatservice.CreateChat(newGroup); 
     }
     
-    @GetMapping("/Chats")
+    @GetMapping("/chats")
     public String getchats() {
         return chatservice.getChats();
     }
     
-    @PostMapping("/Addmember")
+    @GetMapping("/members")
+    public String getMethodName(@RequestParam String chat) {
+        return chatservice.getMembers(chat);
+    }
+    
+
+    @PostMapping("/addmember")
     public String Addmemembertochat(@RequestBody UserEditRequest request) {
         return chatservice.AddMember(request.getChatname(), request.getUsername(), request.isAdmin());
     }
     
-    @PutMapping("/Removemember")
+    @PutMapping("/removemember")
     public String Removefromchat(@RequestBody UserEditRequest request) {
         return chatservice.RemoveMember(request.getChatname(), request.getUsername());
     }
 
-    @PutMapping("/Leave")
+    @PutMapping("/leave")
     public String Leavechat(@RequestBody UserEditRequest request) {
         return chatservice.LeaveGroup(request.getChatname());
     }
 
-    @PutMapping("/MakeAdmin")
+    @PutMapping("/makeradmin")
     public String putMethodName(@RequestBody UserEditRequest request) {
         return chatservice.Makeadmin(request.getChatname(), request.getUsername());
     }

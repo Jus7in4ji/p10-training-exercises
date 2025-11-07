@@ -1,12 +1,9 @@
 package com.justinaji.jproj.controller;
 
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 
-import com.justinaji.jproj.exception.invaliduser;
 import com.justinaji.jproj.model.users;
 import com.justinaji.jproj.service.user_servicesimpl;
 
@@ -27,7 +24,7 @@ public class UserController {
     @PostMapping("/login")
     public String login(@RequestBody users user) {
         
-        return ("Logged in . JWT token: "+userservice.login(user));
+        return ("Logged in . \nJWT token: "+userservice.login(user));
     }
     
 }

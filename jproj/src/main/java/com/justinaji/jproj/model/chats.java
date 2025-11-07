@@ -1,5 +1,6 @@
 package com.justinaji.jproj.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
@@ -22,4 +23,7 @@ public class chats {
     private users createdBy;   
     
     private boolean isgroup = false;
+
+    @Column(columnDefinition = "TEXT")
+    private String chat_key ="";
 }

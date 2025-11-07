@@ -48,7 +48,7 @@ public class user_servicesimpl implements user_services {
             return "Email and password both must be filled";
         }
         if (urepo.existsByEmail(user.getEmail())) return "User with the given email id already Exists";
-        if (urepo.existsByName(user.getName())) throw new Username_taken();
+        if (chatRepo.existsByName(user.getName())|| urepo.existsByName(user.getName())) throw new Username_taken();
 
         String randomId;
         do { randomId = CommonMethods.getAlphaNumericString(); } 

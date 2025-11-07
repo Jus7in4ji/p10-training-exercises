@@ -9,6 +9,8 @@ public interface  chat_services {
 
     String getChats();
 
+    String getMembers(String chat);
+
     String AddMember(String chat, String name, boolean isadmin);
 
     String RemoveMember(String chat, String name);
