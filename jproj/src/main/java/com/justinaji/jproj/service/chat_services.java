@@ -1,12 +1,19 @@
 package com.justinaji.jproj.service;
 
 import com.justinaji.jproj.dto.addmember;
-import com.justinaji.jproj.model.chats;
+import com.justinaji.jproj.dto.chatdetails;
 
 public interface  chat_services {
 
-    chats CreateChat( addmember newGroup);
+    chatdetails CreateChat( addmember newGroup);
 
     String getChats();
 
+    String AddMember(String chat, String name, boolean isadmin);
+
+    String RemoveMember(String chat, String name);
+
+    String Makeadmin(String chat, String name);
+
+    String LeaveGroup(String chat);
 }

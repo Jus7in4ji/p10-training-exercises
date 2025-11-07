@@ -5,13 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.justinaji.jproj.model.CurrentUser;
+import com.justinaji.jproj.exception.Username_taken;
 import com.justinaji.jproj.model.chats;
 import com.justinaji.jproj.model.members;
 import com.justinaji.jproj.model.users;
@@ -41,15 +39,6 @@ public class user_servicesimpl implements user_services {
 
     private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
-
-/*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-CurrentUser user = (CurrentUser) auth.getPrincipal();
-String uid = user.getUser().getU_id();*/  //to fetch userid 
-
-
-//public static boolean loggedin = false ;
-//public static String current_user = "";
-
     @Override
     @Transactional
     public String RegisterUser(users user) {
@@ -59,7 +48,7 @@ String uid = user.getUser().getU_id();*/  //to fetch userid
             return "Email and password both must be filled";
         }
         if (urepo.existsByEmail(user.getEmail())) return "User with the given email id already Exists";
-        if (urepo.existsByName(user.getName())) return "Username is already taken . Please enter a different name";
+        if (urepo.existsByName(user.getName())) throw new Username_taken();
 
         String randomId;
         do { randomId = CommonMethods.getAlphaNumericString(); } 

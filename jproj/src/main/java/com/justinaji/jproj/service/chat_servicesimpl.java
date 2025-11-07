@@ -1,15 +1,16 @@
 package com.justinaji.jproj.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.justinaji.jproj.exception.formatmismatch;
-import com.justinaji.jproj.model.CurrentUser;
 import com.justinaji.jproj.dto.addmember;
+import com.justinaji.jproj.dto.chatdetails;
 import com.justinaji.jproj.dto.chatmember;
+import com.justinaji.jproj.exception.Username_taken;
 import com.justinaji.jproj.model.chats;
 import com.justinaji.jproj.model.members;
 import com.justinaji.jproj.model.users;
@@ -33,52 +34,41 @@ public class chat_servicesimpl implements chat_services {
 
     @Override
     @Transactional
-    public chats CreateChat(addmember newGroup) {
-
-        if (newGroup.getName() == null || newGroup.getName().isEmpty()) throw new formatmismatch();
+    public chatdetails CreateChat(addmember newGroup) {
+        Set<String> membernames = new HashSet<>();
         List<chatmember> groupmembers = newGroup.getmembers();
-        if(groupmembers.size()<=1)throw new formatmismatch();
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        CurrentUser user = (CurrentUser) auth.getPrincipal();
-        users creator = user.getUser();
+        if (newGroup.getName() == null || newGroup.getName().isEmpty()|| groupmembers.size()<=1) throw new formatmismatch();
+        if (chatRepo.existsByName(newGroup.getName())) throw new Username_taken();
 
-        groupmembers.add(new chatmember(creator.getName(), true));
-        
         String chatId;
-        do { chatId = CommonMethods.getAlphaNumericString(); } 
+        do { chatId = CommonMethods.getAlphaNumericString(); } //generate unique chat id
         while (chatRepo.existsById(chatId));
 
-        chats chat = new chats(); //new 1-1 chat 
-        chat.setName(newGroup.getName());
-        chat.setC_id(chatId);
-        chat.setIsgroup(true);
-        chat.setCreatedBy(creator);
+        users creator = CommonMethods.getCurrentUser();//get logged in user
+        chats chat = new chats(chatId, newGroup.getName(),creator,true); //new 1-1 chat 
         chatRepo.save(chat);
-
+        
+        groupmembers.add(new chatmember(creator.getName(), true)); //add current user to memberslist
         groupmembers
         .forEach(newmember -> {
 
+            membernames.add(newmember.getname());
             users memberUser = urepo.findByName(newmember.getname());
-            members m = new members();
             
-            m.setChat(chat);
-            m.setMember(memberUser);
-            m.setAdmin(newmember.getisadmin());
+            members m = new members(chat,memberUser,newmember.getisadmin());
             memberRepo.save(m);
         });
-
-    return chat; 
+        
+        return new chatdetails(newGroup.getName(), creator.getName(), membernames.size(), membernames); 
     }
 
     @Override
     public String getChats() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        CurrentUser user = (CurrentUser) auth.getPrincipal();
-        String uid = user.getUser().getU_id();  //to fetch userid 
+        String uid = CommonMethods.getCurrentUser().getU_id();  //to fetch userid 
         users u = urepo.findById(uid).orElseThrow(() -> new RuntimeException("User id not found: "));
-        List<members> membershipList = memberRepo.findByMember(u);
-
+        
+        List<members> membershipList = memberRepo.findByMember(u); //find chats the user is part of 
         if (membershipList.isEmpty()) return "You have no chats yet.";
 
         StringBuilder sb = new StringBuilder();
@@ -104,4 +94,92 @@ public class chat_servicesimpl implements chat_services {
         return sb.toString();
     }
 
+    // Admin level commands 
+    @Override
+    public String AddMember(String chat, String name, boolean isadmin) {
+        
+        List<members> chatMembers = memberRepo.findByChat(chatRepo.findByName(chat));
+        String message = Userauthority(chat, chatMembers);
+        if (!message.equals("ok")) return message;
+
+        members targetMember = chatMembers
+            .stream().filter(m -> m.getMember().getName().equals(name))
+            .findFirst().orElse(null);
+        if (targetMember != null) return "user is already a member";
+
+        memberRepo.save(new members(chatRepo.findByName(chat),urepo.findByName(name),isadmin));
+        return name+ " has been added into "+ chat ;
+    }
+
+    @Override
+    public String RemoveMember(String chat, String name) {
+        List<members> chatMembers = memberRepo.findByChat(chatRepo.findByName(chat));
+        String message = Userauthority(chat, chatMembers);
+        if (!message.equals("ok")) return message;
+
+        members targetMember = chatMembers // Find if target user inside this chat
+            .stream().filter(m -> m.getMember().getName().equals(name))
+            .findFirst().orElse(null);
+        if (targetMember == null) return "The specified user is not a member of this chat.";
+        if(targetMember.isAdmin()) return "The user is an admin ";
+
+        memberRepo.delete(targetMember);
+
+
+        return name+ " has been removed from "+ chat ;
+    }
+
+    @Override
+    public String Makeadmin(String chat, String name) {
+        List<members> chatMembers = memberRepo.findByChat(chatRepo.findByName(chat));
+        String message = Userauthority(chat, chatMembers);
+        if (!message.equals("ok")) return message;
+
+        members targetMember = chatMembers // Find if target user inside this chat
+            .stream().filter(m -> m.getMember().getName().equals(name))
+            .findFirst().orElse(null);
+        if (targetMember == null) return "The specified user is not a member of this chat.";
+
+
+        targetMember.setAdmin(true); // Promote user to admin
+        memberRepo.save(targetMember);
+
+        return name + " is now an admin of " + chat;
+    }
+
+    @Override
+    public String LeaveGroup(String chat){
+        if (!chatRepo.existsByName(chat)) return "there exists no group of given name";
+
+        String uid = CommonMethods.getCurrentUser().getU_id();
+        List<members> chatMembers = memberRepo.findByChat(chatRepo.findByName(chat));
+        
+        members loggedInMember = chatMembers //Check if current_user is part of this chat
+                .stream().filter(m -> m.getMember().getU_id().equals(uid))
+                .findFirst().orElse(null);
+                
+        if (loggedInMember == null) return "You are not a member of this chat.";
+
+        memberRepo.delete(loggedInMember);
+        return "You are no longer a member of "+chat;
+    }
+
+
+    
+    String Userauthority(String chat, List<members> chatMembers){
+
+        if (!chatRepo.existsByName(chat)) return "there exists no group of given name";
+
+        String uid = CommonMethods.getCurrentUser().getU_id();
+        
+        members loggedInMember = chatMembers //Check if current user is part of this chat
+                .stream()
+                .filter(m -> m.getMember().getU_id().equals(uid))
+                .findFirst()
+                .orElse(null);
+                
+        if (loggedInMember == null) return "You are not a member of this chat.";
+        if (!loggedInMember.isAdmin()) return "You do not have Admin privileges in this chat.";
+        return "ok";
+    }
 }

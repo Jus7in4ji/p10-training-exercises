@@ -1,5 +1,11 @@
 package com.justinaji.jproj.service;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.justinaji.jproj.model.CurrentUser;
+import com.justinaji.jproj.model.users;
+
 public class CommonMethods {
    
     static String getAlphaNumericString(){ // used to create custom id strings for tables
@@ -13,4 +19,9 @@ public class CommonMethods {
         return sb.toString(); 
     } 
 
+    static users getCurrentUser(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CurrentUser user = (CurrentUser) auth.getPrincipal();
+        return user.getUser();
+    }
 }

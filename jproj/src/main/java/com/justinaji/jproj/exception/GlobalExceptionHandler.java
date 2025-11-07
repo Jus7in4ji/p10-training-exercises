@@ -31,6 +31,11 @@ public class GlobalExceptionHandler{
         return new ResponseEntity<>("User credentials are incorrect", HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(Username_taken.class)
+    public ResponseEntity<String> handleusedname(Username_taken ex){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleOtherExceptions(Exception ex) {
         return new ResponseEntity<>("An unexpected error occurred: " + ex.getMessage(),

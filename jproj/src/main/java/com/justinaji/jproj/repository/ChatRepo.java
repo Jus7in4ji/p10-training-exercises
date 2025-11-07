@@ -7,4 +7,6 @@ import com.justinaji.jproj.model.chats;
 
 @Repository
 public interface ChatRepo extends JpaRepository<chats, String> {
+    boolean existsByName(String name);
+    chats findByName(String chat);
 }
