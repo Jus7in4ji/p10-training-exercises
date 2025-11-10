@@ -11,7 +11,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.justinaji.jproj.model.CurrentUser;
 import com.justinaji.jproj.service.JWTService;
 import com.justinaji.jproj.service.MyUserDetailService;
 

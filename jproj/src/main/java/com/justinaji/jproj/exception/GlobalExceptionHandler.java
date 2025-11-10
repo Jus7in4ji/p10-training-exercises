@@ -36,6 +36,16 @@ public class GlobalExceptionHandler{
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(No_messages.class)
+    public ResponseEntity<String>  handleNoMessages(No_messages ex ){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(nochatFound.class)
+    public ResponseEntity<String>  HandleInvalidChatName(nochatFound ex ){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleOtherExceptions(Exception ex) {
         return new ResponseEntity<>("An unexpected error occurred: " + ex.getMessage(),
