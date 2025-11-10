@@ -1,15 +1,13 @@
 package com.justinaji.jproj.service;
 
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -21,23 +19,10 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JWTService {
 
-    private String secretKEY = "";
-    
-    public JWTService() {
-        try {
-            // Generate HMAC SHA-256 key
-            KeyGenerator keygen = KeyGenerator.getInstance("HmacSHA256");
-            SecretKey sk = keygen.generateKey();
+    @Value("${jwt.secret}") 
+    private String secretKEY;
 
-            // Save Base64 encoded key
-            secretKEY = Base64.getEncoder().encodeToString(sk.getEncoded());
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String gentoken(String mailid) {
+    public String gentoken(String username) {
 
         Map<String, Object> claims = new HashMap<>();
 
@@ -47,7 +32,7 @@ public class JWTService {
 
         return Jwts.builder()
             .setClaims(claims)
-            .setSubject(mailid)
+            .setSubject(username)
             .setIssuedAt(new Date(now))
             .setExpiration(new Date(expiry))
             .signWith(getkey())
@@ -78,8 +63,8 @@ public class JWTService {
     }
 
     public boolean validatetoken(String token, UserDetails userDetails) {
-        final String userEmail = extractUser(token);
-        return (userEmail.equals(userDetails.getUsername()) && !istokenExpired(token));
+        final String userName = extractUser(token);
+        return (userName.equals(userDetails.getUsername()) && !istokenExpired(token));
 
     }
 

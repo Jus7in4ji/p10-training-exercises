@@ -10,6 +10,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,5 +61,64 @@ public class CommonMethods {
         String decryptedString = new String(decrypted);
 
         System.out.println("DEcrypted string: "+decryptedString);
+    }
+
+    public static String encryptMessage(String text , String key) {
+        try{
+        Cipher cipher = Cipher.getInstance("AES");
+
+        cipher.init(Cipher.ENCRYPT_MODE, convertStringToSecretKeyto(key));
+        
+        byte[] ecrypted = cipher.doFinal(text.getBytes());
+
+        String encryptedString = Base64.getEncoder().encodeToString(ecrypted);
+        return encryptedString;
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String decryptMessage(String text , String key){
+        try{
+        Cipher cipher = Cipher.getInstance("AES");
+
+        cipher.init(Cipher.DECRYPT_MODE, convertStringToSecretKeyto(key));
+        
+        byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(text));
+        String decryptedString = new String(decrypted);
+        return decryptedString; 
+    }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+
+    public static SecretKey convertStringToSecretKeyto(String encodedKey) {
+        byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
+        SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+        return originalKey;
+    }
+
+    public static String convertSecretKeyToString(SecretKey secretKey) {
+        byte[] rawData = secretKey.getEncoded();
+        String encodedKey = Base64.getEncoder().encodeToString(rawData);
+        return encodedKey;
+    }
+
+    public static String generateKey(){
+        try {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(256);
+
+        SecretKey secretKey = keyGenerator.generateKey();
+        return convertSecretKeyToString(secretKey);
+        
+    } catch (NoSuchAlgorithmException e) {
+        throw new RuntimeException(e);
+    }
     }
 }

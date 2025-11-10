@@ -31,8 +31,8 @@ public class ChatController {
     }
     
     @GetMapping("/members")
-    public String getMethodName(@RequestParam String chat) {
-        return chatservice.getMembers(chat);
+    public String getMethodName(@RequestParam String groupname) {
+        return chatservice.getMembers(groupname);
     }
     
 

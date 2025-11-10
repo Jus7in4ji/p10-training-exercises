@@ -69,6 +69,7 @@ public class user_servicesimpl implements user_services {
 
                 chats chat = new chats(); //new 1-1 chat 
                 chat.setC_id(chatId);
+                chat.setChat_key(CommonMethods.generateKey());
                 chatRepo.save(chat);
 
                 members m1 = new members(); //register both(savedUser & otherUser) as members of 1-1 chat

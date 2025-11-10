@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.justinaji.jproj.dto.addmember;
 import com.justinaji.jproj.dto.chatdetails;
 import com.justinaji.jproj.dto.chatmember;
+import com.justinaji.jproj.exception.NotaMember;
 import com.justinaji.jproj.exception.Username_taken;
 import com.justinaji.jproj.exception.formatmismatch;
 import com.justinaji.jproj.model.chats;
@@ -47,7 +48,7 @@ public class chat_servicesimpl implements chat_services {
 
         users creator = CommonMethods.getCurrentUser();//get logged in user
 
-        chats chat = new chats(chatId, newGroup.getName(),creator,true,""); //new group chat 
+        chats chat = new chats(chatId, newGroup.getName(),creator,true, CommonMethods.generateKey()); //new group chat 
         chatRepo.save(chat);
         
         groupmembers.add(new chatmember(creator.getName(), true)); //add current user to memberslist
@@ -87,7 +88,7 @@ public class chat_servicesimpl implements chat_services {
                         .findFirst()
                         .orElse(null); 
 
-                if (other != null) sb.append("\n- Chat with: ").append(other.getName()).append("");
+                if (other != null) sb.append("\n- ").append(other.getName()).append("");
                 else sb.append("\n- Personal chat (unknown user)");
             }   
         });
@@ -121,7 +122,7 @@ public class chat_servicesimpl implements chat_services {
         members targetMember = chatMembers // Find if target user inside this chat
             .stream().filter(m -> m.getMember().getName().equals(name))
             .findFirst().orElse(null);
-        if (targetMember == null) return "The specified user is not a member of this chat.";
+        if (targetMember == null) throw new NotaMember(name, chat); 
         if(targetMember.isAdmin()) return "Unable to remove: The given user is also an admin ";
 
         memberRepo.delete(targetMember);
@@ -139,7 +140,7 @@ public class chat_servicesimpl implements chat_services {
         members targetMember = chatMembers // Find if target user inside this chat
             .stream().filter(m -> m.getMember().getName().equals(name))
             .findFirst().orElse(null);
-        if (targetMember == null) return "The specified user is not a member of this chat.";
+        if (targetMember == null) throw new NotaMember(name, chat); 
 
 
         targetMember.setAdmin(true); // Promote user to admin
@@ -151,14 +152,14 @@ public class chat_servicesimpl implements chat_services {
     @Override
     public String LeaveGroup(String chat){
         if (!chatRepo.existsByName(chat)) return "There exists no group of name '"+chat+"'.";
-        String uid = CommonMethods.getCurrentUser().getU_id();
+        users current_user = CommonMethods.getCurrentUser();
         List<members> chatMembers = memberRepo.findByChat(chatRepo.findByName(chat));
         
         members loggedInMember = chatMembers //Check if current_user is part of this chat
-                .stream().filter(m -> m.getMember().getU_id().equals(uid))
+                .stream().filter(m -> m.getMember().equals(current_user))
                 .findFirst().orElse(null);
                 
-        if (loggedInMember == null) return "You are not a member of this chat.";
+        if (loggedInMember == null) throw new NotaMember(current_user.getName(), chat); 
 
         memberRepo.delete(loggedInMember);
         return "You are no longer a member of "+chat;
@@ -170,28 +171,29 @@ public class chat_servicesimpl implements chat_services {
 
         if (!chatRepo.existsByName(chat)) return "There exists no group of name '"+chat+"'.";
 
-        String uid = CommonMethods.getCurrentUser().getU_id();
+        users current_user = CommonMethods.getCurrentUser();
         
         members loggedInMember = chatMembers //Check if current user is part of this chat
                 .stream()
-                .filter(m -> m.getMember().getU_id().equals(uid))
+                .filter(m -> m.getMember().equals(current_user))
                 .findFirst()
                 .orElse(null);
                 
-        if (loggedInMember == null) return "You are not a member of this chat.";
+        if (loggedInMember == null) throw new NotaMember(current_user.getName(), chat); 
         if (!loggedInMember.isAdmin()) return "You do not have Admin privileges in this chat.";
         return "ok";
     }
 
     @Override
     public String getMembers(String chat) {
-        
+        users current_user = CommonMethods.getCurrentUser();
+
         if (!chatRepo.existsByName(chat)) return "There exists no group of name '"+chat+"'.";
         List<members> listofMembers = memberRepo.findByChat(chatRepo.findByName(chat));
         if(listofMembers.size()<1) return "No members";
 
-        boolean present = listofMembers.stream().anyMatch(m -> m.getMember().equals(CommonMethods.getCurrentUser()));
-        if (!present) return "You are not a member of this chat ";
+        boolean present = listofMembers.stream().anyMatch(m -> m.getMember().equals(current_user));
+        if (!present) throw new NotaMember(current_user.getName(), chat); 
 
         StringBuilder sb = new StringBuilder();
         sb.append("Chat ").append(chat);
