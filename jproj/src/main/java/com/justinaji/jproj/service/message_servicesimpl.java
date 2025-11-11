@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.justinaji.jproj.dto.messageDTO;
 import com.justinaji.jproj.exception.No_messages;
+import com.justinaji.jproj.exception.NotaMember;
 import com.justinaji.jproj.exception.nochatFound;
 import com.justinaji.jproj.model.chats;
 import com.justinaji.jproj.model.members;
@@ -36,54 +37,99 @@ public class message_servicesimpl implements mesage_services{
     }
 
     @Override
-    public List<messageDTO> Getmessages(String chatname) {
+    public List<messageDTO> GetGrpmessages(String chatname) {
 
     users currentUser = CommonMethods.getCurrentUser();
     if(chatname.equals(currentUser.getName())) throw new nochatFound(chatname);
     List<messageDTO> dtoList = new ArrayList<>();
 
-    // Chat name exists → directly fetch messages
-    if (chatRepo.existsByName(chatname)) {
-
+    if (chatRepo.existsByName(chatname)) { //find if chat of given name exists
         chats currentChat = chatRepo.findByName(chatname);
+        List<members> chatMembers = memberRepo.findByChat(currentChat);
+
+        members loggedInMember = chatMembers //Check if current user is part of this chat
+                .stream()
+                .filter(m -> m.getMember().equals(currentUser))
+                .findFirst().orElse(null);
+
+        if (loggedInMember == null) throw new NotaMember(currentUser.getName(), chatname);
+
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(currentChat);
 
         chatMessages.forEach(msg -> {
             messageDTO dto = new messageDTO(
+                CommonMethods.decryptMessage( msg.getMessage(), currentChat.getChat_key() ),
                 msg.getSender().getName(),
-                msg.getMessage(),
                 msg.getSentTime()
             );
             dtoList.add(dto);
         });
     }
+    
+    else throw new nochatFound(chatname);
+    if(dtoList.isEmpty()) throw new No_messages(chatname);
 
-    // Otherwise treat chatname as a username
-    else if (urepo.existsByName(chatname)) {
+    return dtoList;
+}
+
+    @Override
+    @Transactional
+    public List<messageDTO> SendGrpMessage(String chatname, String message){ 
+        users currentUser = CommonMethods.getCurrentUser();
+        if(chatname.equals(currentUser.getName())) throw new nochatFound(chatname);
+
+        String messageId;
+        do { messageId = CommonMethods.getAlphaNumericString(); } //generate unique chat id
+        while (messageRepo.existsById(messageId));
+
+        if(chatRepo.existsByName(chatname)){
+            chats currentChat = chatRepo.findByName(chatname);
+            List<members> chatMembers = memberRepo.findByChat(currentChat);
+
+            members loggedInMember = chatMembers //Check if current user is part of this chat
+                    .stream()
+                    .filter(m -> m.getMember().equals(currentUser))
+                    .findFirst()
+                    .orElse(null);
+            if (loggedInMember == null) throw new NotaMember(currentUser.getName(), chatname);
+
+            String encryptedmessage = CommonMethods.encryptMessage(message, currentChat.getChat_key());
+
+            messages newmsg = new messages(messageId, encryptedmessage, currentUser, currentChat);  
+            messageRepo.saveAndFlush(newmsg);
+        }
+        else throw new nochatFound(chatname);
+
+        return GetGrpmessages(chatname);
+        
+    }
+
+    @Override
+    public List<messageDTO> GetPvtmessages(String chatname) {
+        users currentUser = CommonMethods.getCurrentUser();
+        if(chatname.equals(currentUser.getName())) throw new nochatFound(chatname);
+        List<messageDTO> dtoList = new ArrayList<>();
+        if (urepo.existsByName(chatname)) {
 
         users targetUser = urepo.findByName(chatname);
 
-        List<members> myChats = memberRepo.findByMember(currentUser); //chats with current user
-        List<members> targetchats = memberRepo.findByMember(targetUser); //chats with target user
+            Set<chats> myChatsSet = memberRepo.findByMember(currentUser)
+                .stream()
+                .map(m -> m.getChat())
+                .collect(Collectors.toSet()); //chats with current user
 
-        Set<chats> myChatsSet = myChats.stream() 
-            .map(m -> m.getChat())
-            .collect(Collectors.toSet());
-
-        chats privatechat = null;
-
-        for (members m : targetchats) {
-            chats c = m.getChat();
-            if (!c.isIsgroup() && myChatsSet.contains(c)) { //common chat for which isgroup = false
-                privatechat = c;
-                break;
-            }
-        }
+            chats privatechat = memberRepo.findByMember(targetUser)
+                .stream()
+                .map(m->m.getChat())
+                .filter(mchat->myChatsSet.contains(mchat))
+                .filter(mchat-> !mchat.isIsgroup())
+                .findFirst().orElse(null);
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(privatechat);   
+        
         chatMessages.forEach(msg -> {
                 messageDTO dto = new messageDTO(
+                    CommonMethods.decryptMessage(msg.getMessage(), privatechat.getChat_key()),
                     msg.getSender().getName(),
-                    msg.getMessage(),
                     msg.getSentTime()
                 );
                 dtoList.add(dto);
@@ -93,11 +139,11 @@ public class message_servicesimpl implements mesage_services{
     if(dtoList.isEmpty()) throw new No_messages(chatname);
 
     return dtoList;
-}
+    }
 
     @Override
     @Transactional
-    public List<messageDTO> SendMessage(String chatname, String message) { 
+    public List<messageDTO> SendPvtMessage(String chatname, String message){
         users currentUser = CommonMethods.getCurrentUser();
         if(chatname.equals(currentUser.getName())) throw new nochatFound(chatname);
 
@@ -105,33 +151,29 @@ public class message_servicesimpl implements mesage_services{
         do { messageId = CommonMethods.getAlphaNumericString(); } //generate unique chat id
         while (messageRepo.existsById(messageId));
 
-        if(chatRepo.existsByName(chatname)){
-            messages newmsg = new messages(messageId, message, currentUser, chatRepo.findByName(chatname));  
-            messageRepo.saveAndFlush(newmsg);
-        }
-        else if(urepo.existsByName(chatname)){
+        if(urepo.existsByName(chatname)){
             users targetUser = urepo.findByName(chatname);
 
-            List<members> myChats = memberRepo.findByMember(currentUser); //chats with current user
-            List<members> targetchats = memberRepo.findByMember(targetUser); //chats with target user
-            Set<chats> myChatsSet = myChats.stream() .map(m -> m.getChat()).collect(Collectors.toSet());
-            chats privatechat = null;
+            Set<chats> myChatsSet = memberRepo.findByMember(currentUser)
+                .stream()
+                .map(m -> m.getChat())
+                .collect(Collectors.toSet()); //chats with current user
 
-            for (members m : targetchats) {
-                chats c = m.getChat();
-                if (!c.isIsgroup() && myChatsSet.contains(c)) { //common chat for which isgroup = false
-                    privatechat = c;
-                    break;
-                }
-            }
+            chats privatechat = memberRepo.findByMember(targetUser)
+                .stream()
+                .map(m->m.getChat())
+                .filter(mchat->myChatsSet.contains(mchat))
+                .filter(mchat-> !mchat.isIsgroup())
+                .findFirst().orElse(null);
 
-            messages newmsg = new messages(messageId, message, currentUser, privatechat);
+            String encryptedmessage = CommonMethods.encryptMessage(message, privatechat.getChat_key());
+
+            messages newmsg = new messages(messageId, encryptedmessage, currentUser, privatechat);
             messageRepo.saveAndFlush(newmsg);
         }
         else throw new nochatFound(chatname);
 
-        return Getmessages(chatname);
-        
+        return GetPvtmessages(chatname);
     }
 
 }

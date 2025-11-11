@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.justinaji.jproj.dto.Messagerequest;
 import com.justinaji.jproj.dto.messageDTO;
 import com.justinaji.jproj.service.message_servicesimpl;
 
@@ -19,14 +20,24 @@ public class MessageController {
         this.msgservice = msgservice;
     }
 
-    @GetMapping("/messages")
-        public List<messageDTO> getMessages(@RequestParam String chat) {
-            return msgservice.Getmessages(chat);
+    @GetMapping("/privatechat")
+        public List<messageDTO> getpvtMessages(@RequestParam String receiver) {
+            return msgservice.GetPvtmessages(receiver);
         }
     
-    @PostMapping("/messages")
-        public List<messageDTO> SendMessage(@RequestParam String chat, @RequestBody String Message) {
-            return msgservice.SendMessage(chat, Message);
+    @PostMapping("/privatechat")
+        public List<messageDTO> SendpvtMessage(@RequestParam String receiver, @RequestBody Messagerequest Message) {
+            return msgservice.SendPvtMessage(receiver, Message.getMessage());
+        }
+    
+    @GetMapping("/groupchat")
+        public List<messageDTO> getGrpMessages(@RequestParam String groupname) {
+            return msgservice.GetGrpmessages(groupname);
+        }
+    
+    @PostMapping("/groupchat")
+        public List<messageDTO> SendGrpMessage(@RequestParam String groupname, @RequestBody Messagerequest Message) {
+            return msgservice.SendGrpMessage(groupname, Message.getMessage());
         }
 
 }

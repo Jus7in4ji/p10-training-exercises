@@ -6,8 +6,12 @@ import com.justinaji.jproj.dto.messageDTO;
 
 public interface mesage_services {
 
-    List<messageDTO> Getmessages(String chatname);
+    List<messageDTO> GetPvtmessages(String chatname) ;
 
-    List<messageDTO> SendMessage(String chatname, String message);
+    List<messageDTO> SendPvtMessage(String chatname, String message) ;
+
+    List<messageDTO> GetGrpmessages(String chatname) ;
+
+    List<messageDTO> SendGrpMessage(String chatname, String message) ;
 
 }
