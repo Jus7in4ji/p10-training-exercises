@@ -1,5 +1,6 @@
 package com.justinaji.jproj.service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.justinaji.jproj.dto.messageDTO;
+import com.justinaji.jproj.exception.NoUserFound;
 import com.justinaji.jproj.exception.No_messages;
 import com.justinaji.jproj.exception.NotaMember;
 import com.justinaji.jproj.exception.nochatFound;
@@ -74,7 +76,7 @@ public class message_servicesimpl implements mesage_services{
 
     @Override
     @Transactional
-    public List<messageDTO> SendGrpMessage(String chatname, String message){ 
+    public void SendGrpMessage(String chatname, String message){ 
         users currentUser = CommonMethods.getCurrentUser();
         if(chatname.equals(currentUser.getName())) throw new nochatFound(chatname);
 
@@ -95,12 +97,10 @@ public class message_servicesimpl implements mesage_services{
 
             String encryptedmessage = CommonMethods.encryptMessage(message, currentChat.getChat_key());
 
-            messages newmsg = new messages(messageId, encryptedmessage, currentUser, currentChat);  
+            messages newmsg = new messages(messageId, encryptedmessage, currentUser, currentChat, new Timestamp(System.currentTimeMillis()));  
             messageRepo.saveAndFlush(newmsg);
         }
-        else throw new nochatFound(chatname);
-
-        return GetGrpmessages(chatname);
+        else throw new nochatFound(chatname); 
         
     }
 
@@ -129,21 +129,21 @@ public class message_servicesimpl implements mesage_services{
         chatMessages.forEach(msg -> {
                 messageDTO dto = new messageDTO(
                     CommonMethods.decryptMessage(msg.getMessage(), privatechat.getChat_key()),
-                    msg.getSender().getName(),
+                    msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName() ,
                     msg.getSentTime()
                 );
                 dtoList.add(dto);
             });
     }
-    else throw new nochatFound(chatname);
-    if(dtoList.isEmpty()) throw new No_messages(chatname);
+    else throw new  NoUserFound(chatname);
+    if(dtoList.isEmpty()) throw new No_messages("(Private) "+chatname);
 
     return dtoList;
     }
 
     @Override
     @Transactional
-    public List<messageDTO> SendPvtMessage(String chatname, String message){
+    public void SendPvtMessage(String chatname, String message){
         users currentUser = CommonMethods.getCurrentUser();
         if(chatname.equals(currentUser.getName())) throw new nochatFound(chatname);
 
@@ -168,12 +168,10 @@ public class message_servicesimpl implements mesage_services{
 
             String encryptedmessage = CommonMethods.encryptMessage(message, privatechat.getChat_key());
 
-            messages newmsg = new messages(messageId, encryptedmessage, currentUser, privatechat);
+            messages newmsg = new messages(messageId, encryptedmessage, currentUser, privatechat, new Timestamp(System.currentTimeMillis()));
             messageRepo.saveAndFlush(newmsg);
         }
-        else throw new nochatFound(chatname);
-
-        return GetPvtmessages(chatname);
+        else throw new NoUserFound(chatname);
     }
 
 }

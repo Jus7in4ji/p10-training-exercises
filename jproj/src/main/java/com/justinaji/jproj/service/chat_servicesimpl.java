@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.justinaji.jproj.dto.addmember;
 import com.justinaji.jproj.dto.chatdetails;
 import com.justinaji.jproj.dto.chatmember;
+import com.justinaji.jproj.exception.NoUserFound;
 import com.justinaji.jproj.exception.NotaMember;
 import com.justinaji.jproj.exception.Username_taken;
 import com.justinaji.jproj.exception.formatmismatch;
@@ -54,9 +55,11 @@ public class chat_servicesimpl implements chat_services {
         groupmembers.add(new chatmember(creator.getName(), true)); //add current user to memberslist
         groupmembers
         .forEach(newmember -> {
-
-            membernames.add(newmember.getname());
-            users memberUser = urepo.findByName(newmember.getname());
+            String name = newmember.getname();
+            
+            if(!urepo.existsByName(newmember.getname())) throw new NoUserFound(name);
+            membernames.add(name);
+            users memberUser = urepo.findByName(name);
             
             members m = new members(chat,memberUser,newmember.getisadmin());
             memberRepo.save(m);
@@ -109,6 +112,7 @@ public class chat_servicesimpl implements chat_services {
             .findFirst().orElse(null);
         if (targetMember != null) return "Given User is already a member";
 
+        if(!urepo.existsByName(name)) throw new  NoUserFound(name);
         memberRepo.save(new members(chatRepo.findByName(chat),urepo.findByName(name),isadmin));
         return name+ " has been added into "+ chat ;
     }

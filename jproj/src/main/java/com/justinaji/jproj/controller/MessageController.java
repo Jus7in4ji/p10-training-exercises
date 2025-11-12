@@ -21,23 +21,24 @@ public class MessageController {
     }
 
     @GetMapping("/privatechat")
-        public List<messageDTO> getpvtMessages(@RequestParam String receiver) {
-            return msgservice.GetPvtmessages(receiver);
-        }
+    public List<messageDTO> getpvtMessages(@RequestParam String receiver) {
+        return msgservice.GetPvtmessages(receiver);
+    }
     
     @PostMapping("/privatechat")
-        public List<messageDTO> SendpvtMessage(@RequestParam String receiver, @RequestBody Messagerequest Message) {
-            return msgservice.SendPvtMessage(receiver, Message.getMessage());
-        }
+    public List<messageDTO> SendpvtMessage(@RequestParam String receiver, @RequestBody Messagerequest Message) {
+        msgservice.SendPvtMessage(receiver, Message.getMessage());
+        return msgservice.GetPvtmessages(receiver);
+    }
     
     @GetMapping("/groupchat")
-        public List<messageDTO> getGrpMessages(@RequestParam String groupname) {
-            return msgservice.GetGrpmessages(groupname);
-        }
+    public List<messageDTO> getGrpMessages(@RequestParam String groupname) {
+        return msgservice.GetGrpmessages(groupname);
+    }
     
     @PostMapping("/groupchat")
-        public List<messageDTO> SendGrpMessage(@RequestParam String groupname, @RequestBody Messagerequest Message) {
-            return msgservice.SendGrpMessage(groupname, Message.getMessage());
-        }
-
+    public List<messageDTO> SendGrpMessage(@RequestParam String groupname, @RequestBody Messagerequest Message) {
+        msgservice.SendGrpMessage(groupname, Message.getMessage());
+        return msgservice.GetGrpmessages(groupname);
+    }
 }

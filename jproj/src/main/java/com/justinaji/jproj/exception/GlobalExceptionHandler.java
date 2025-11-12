@@ -51,6 +51,11 @@ public class GlobalExceptionHandler{
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(NoUserFound.class)
+    public ResponseEntity<String>  handleinvaliduser(NoUserFound ex ){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleOtherExceptions(Exception ex) {
         return new ResponseEntity<>("An unexpected error occurred: " + ex.getMessage(),

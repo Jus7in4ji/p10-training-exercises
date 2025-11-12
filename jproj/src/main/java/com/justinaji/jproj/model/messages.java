@@ -25,14 +25,7 @@ public class messages {
     @JoinColumn(name = "chat")
     private chats chat;
 
-    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
+    @Column(columnDefinition = "TIMESTAMP")
     private Timestamp sentTime;
-
-    public messages(String m_id, String message, users sender, chats chat) {
-    this.m_id = m_id;
-    this.message = message;
-    this.sender = sender;
-    this.chat = chat;
-}
 
 }
