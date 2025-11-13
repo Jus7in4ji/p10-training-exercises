@@ -61,7 +61,7 @@ public class message_servicesimpl implements mesage_services{
         chatMessages.forEach(msg -> {
             messageDTO dto = new messageDTO(
                 CommonMethods.decryptMessage( msg.getMessage(), currentChat.getChat_key() ),
-                msg.getSender().getName(),
+                msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName(),
                 msg.getSentTime()
             );
             dtoList.add(dto);

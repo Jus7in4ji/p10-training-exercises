@@ -1,14 +1,10 @@
 package com.justinaji.jproj.service;
 
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -37,42 +33,16 @@ public class CommonMethods {
         return user.getUser();
     }
 
-    public static void encrypt(String text) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(256);
-
-        SecretKey secretKey = keyGenerator.generateKey();
-
-        Cipher cipher = Cipher.getInstance("AES");
-
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        
-        byte[] ecrypted = cipher.doFinal(text.getBytes());
-
-        String encryptedString = Base64.getEncoder().encodeToString(ecrypted);
-
-        System.out.println("ENcrypted string: "+encryptedString);
-
-
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
-
-        byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(encryptedString));
-
-        String decryptedString = new String(decrypted);
-
-        System.out.println("DEcrypted string: "+decryptedString);
-    }
-
     public static String encryptMessage(String text , String key) {
         try{
-        Cipher cipher = Cipher.getInstance("AES");
+            Cipher cipher = Cipher.getInstance("AES");
 
-        cipher.init(Cipher.ENCRYPT_MODE, convertStringToSecretKeyto(key));
-        
-        byte[] ecrypted = cipher.doFinal(text.getBytes());
+            cipher.init(Cipher.ENCRYPT_MODE, convertStringToSecretKeyto(key));
+            
+            byte[] ecrypted = cipher.doFinal(text.getBytes());
 
-        String encryptedString = Base64.getEncoder().encodeToString(ecrypted);
-        return encryptedString;
+            String encryptedString = Base64.getEncoder().encodeToString(ecrypted);
+            return encryptedString;
         }
         catch(Exception e){
             throw new RuntimeException(e);
@@ -81,21 +51,19 @@ public class CommonMethods {
 
     public static String decryptMessage(String text , String key){
         try{
-        Cipher cipher = Cipher.getInstance("AES");
+            Cipher cipher = Cipher.getInstance("AES");
 
-        cipher.init(Cipher.DECRYPT_MODE, convertStringToSecretKeyto(key));
-        
-        byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(text));
-        String decryptedString = new String(decrypted);
-        return decryptedString; 
-    }
+            cipher.init(Cipher.DECRYPT_MODE, convertStringToSecretKeyto(key));
+            
+            byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(text));
+            String decryptedString = new String(decrypted);
+            return decryptedString; 
+        }
         catch(Exception e){
             throw new RuntimeException(e);
         }
 
-
     }
-
 
     public static SecretKey convertStringToSecretKeyto(String encodedKey) {
         byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
@@ -111,14 +79,14 @@ public class CommonMethods {
 
     public static String generateKey(){
         try {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(256);
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+            keyGenerator.init(256);
 
-        SecretKey secretKey = keyGenerator.generateKey();
-        return convertSecretKeyToString(secretKey);
-        
-    } catch (NoSuchAlgorithmException e) {
-        throw new RuntimeException(e);
-    }
+            SecretKey secretKey = keyGenerator.generateKey();
+            return convertSecretKeyToString(secretKey);
+        } 
+        catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
