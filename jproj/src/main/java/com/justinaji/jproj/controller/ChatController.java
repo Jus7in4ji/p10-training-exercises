@@ -10,7 +10,10 @@ import com.justinaji.jproj.service.chat_servicesimpl;
 import com.justinaji.jproj.dto.addmember;
 import com.justinaji.jproj.dto.chatdetails;
 import com.justinaji.jproj.dto.UserEditRequest;
+import com.justinaji.jproj.dto.UserChat;
+
 import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -42,17 +45,17 @@ public class ChatController {
     }
     
     @PutMapping("/removemember")
-    public String Removefromchat(@RequestBody UserEditRequest request) {
+    public String Removefromchat(@RequestBody UserChat request) {
         return chatservice.RemoveMember(request.getChatname(), request.getUsername());
     }
 
     @PutMapping("/leave")
-    public String Leavechat(@RequestBody UserEditRequest request) {
-        return chatservice.LeaveGroup(request.getChatname());
+    public String Leavechat(@RequestParam String request) {
+        return chatservice.LeaveGroup(request);
     }
 
     @PutMapping("/makeradmin")
-    public String putMethodName(@RequestBody UserEditRequest request) {
+    public String putMethodName(@RequestBody UserChat request) {
         return chatservice.Makeadmin(request.getChatname(), request.getUsername());
     }
 }

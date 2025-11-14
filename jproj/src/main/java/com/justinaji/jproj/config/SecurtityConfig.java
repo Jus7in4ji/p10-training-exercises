@@ -32,7 +32,10 @@ public class SecurtityConfig {
         return http
             .csrf(customizer -> customizer.disable())
             .authorizeHttpRequests(request-> request
-                .requestMatchers("SignUp","login")
+                .requestMatchers("SignUp","login",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
+                    "/swagger-ui/**")
                 .permitAll()
                 .anyRequest().authenticated()) //makes sure all requests passed must be authenticated
             .httpBasic(Customizer.withDefaults()) // for REST access - Postman comands

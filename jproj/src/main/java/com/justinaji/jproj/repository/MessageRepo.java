@@ -9,7 +9,6 @@ import com.justinaji.jproj.model.users;
 import java.util.List;
 
 import com.justinaji.jproj.model.chats;
-import com.justinaji.jproj.service.message_servicesimpl;
 
 @Repository
 public interface MessageRepo extends JpaRepository<messages, String> {
