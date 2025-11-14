@@ -3,6 +3,7 @@ package com.justinaji.jproj.controller;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
@@ -17,18 +18,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
+@RequestMapping("/chats")
 public class ChatController {
 
     private final chat_servicesimpl chatservice;
 
     public ChatController( chat_servicesimpl chatservice) { this.chatservice = chatservice; }
 
-    @PostMapping("/Newchat/")
+    @PostMapping("/create")
     public chatdetails postMethodName(@RequestBody addmember newGroup) {
         return chatservice.CreateChat(newGroup); 
     }
     
-    @GetMapping("/chats")
+    @GetMapping("")
     public String getchats() {
         return chatservice.getChats();
     }
@@ -54,7 +56,7 @@ public class ChatController {
         return chatservice.LeaveGroup(request);
     }
 
-    @PutMapping("/makeradmin")
+    @PutMapping("/makeadmin")
     public String putMethodName(@RequestBody UserChat request) {
         return chatservice.Makeadmin(request.getChatname(), request.getUsername());
     }

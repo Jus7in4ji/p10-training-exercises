@@ -87,11 +87,11 @@ public class user_servicesimpl implements user_services {
     }
 
     @Override
-    public String login(users user) {
+    public String login(String username, String password) {
         Authentication authentication = 
-            authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getName(),user.getPassword()));
+            authManager.authenticate(new UsernamePasswordAuthenticationToken(username,password));
         
-            return jwtservice.gentoken(user.getName());
+            return jwtservice.gentoken(username);
     }
 
 }

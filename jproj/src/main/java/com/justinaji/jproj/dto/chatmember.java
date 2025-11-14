@@ -2,16 +2,17 @@ package com.justinaji.jproj.dto;
 
 public class chatmember {
     private String name;
-    private boolean isadmin;
+    private boolean isadmin= false;
     
     public chatmember(String name2, boolean b) {
         this.name = name2;
         this.isadmin = b;
     }
-    public String getname() {
+    public String getName() {
         return this.name;
     }
-    public boolean getisadmin() {
+
+    public boolean isAdmin() {   // boolean uses "is"
         return this.isadmin;
     }
 

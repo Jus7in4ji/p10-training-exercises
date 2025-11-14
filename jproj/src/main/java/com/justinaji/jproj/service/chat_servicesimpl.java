@@ -38,7 +38,7 @@ public class chat_servicesimpl implements chat_services {
     @Transactional
     public chatdetails CreateChat(addmember newGroup) {
         Set<String> membernames = new HashSet<>();
-        List<chatmember> groupmembers = newGroup.getmembers();
+        List<chatmember> groupmembers = newGroup.getMembers();
 
         if (newGroup.getName() == null || newGroup.getName().isEmpty()|| groupmembers.size()<=1) throw new formatmismatch();
         if (chatRepo.existsByName(newGroup.getName())|| urepo.existsByName(newGroup.getName())) throw new Username_taken();
@@ -55,13 +55,13 @@ public class chat_servicesimpl implements chat_services {
         groupmembers.add(new chatmember(creator.getName(), true)); //add current user to memberslist
         groupmembers
         .forEach(newmember -> {
-            String name = newmember.getname();
+            String name = newmember.getName();
             
-            if(!urepo.existsByName(newmember.getname())) throw new NoUserFound(name);
+            if(!urepo.existsByName(newmember.getName())) throw new NoUserFound(name);
             membernames.add(name);
             users memberUser = urepo.findByName(name);
             
-            members m = new members(chat,memberUser,newmember.getisadmin());
+            members m = new members(chat,memberUser,newmember.isAdmin());
             memberRepo.save(m);
         });
         

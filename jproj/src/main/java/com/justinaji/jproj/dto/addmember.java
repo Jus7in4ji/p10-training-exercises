@@ -10,7 +10,8 @@ public class addmember {
     public String getName() {
         return this.name;
     }
-    public List<chatmember> getmembers(){
+
+    public List<chatmember> getMembers() {
         return this.members;
     }
 }

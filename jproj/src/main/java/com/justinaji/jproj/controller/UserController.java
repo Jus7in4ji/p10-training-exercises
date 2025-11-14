@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.justinaji.jproj.dto.Loginform;
 import com.justinaji.jproj.model.users;
 import com.justinaji.jproj.service.user_servicesimpl;
 
@@ -22,9 +23,9 @@ public class UserController {
     }
     
     @PostMapping("/login")
-    public String login(@RequestBody users user) {
+    public String login(@RequestBody Loginform user) {
         
-        return ("Logged in . \nJWT token: "+userservice.login(user));
+        return ("Logged in . \nJWT token: "+userservice.login(user.getUsername(),user.getPassword()));
     }
     
 }
