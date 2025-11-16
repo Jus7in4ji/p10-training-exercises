@@ -52,9 +52,9 @@ public class ChatController {
     }
 
     @PutMapping("/leave")
-    public String Leavechat(@RequestParam String request) {
-        return chatservice.LeaveGroup(request);
-    }
+    public String Leavechat(@RequestParam String chatname) {
+        return chatservice.LeaveGroup(chatname);
+    } 
 
     @PutMapping("/makeadmin")
     public String putMethodName(@RequestBody UserChat request) {

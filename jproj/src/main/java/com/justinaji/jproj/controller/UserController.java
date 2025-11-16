@@ -25,7 +25,7 @@ public class UserController {
     @PostMapping("/login")
     public String login(@RequestBody Loginform user) {
         
-        return ("Logged in . \nJWT token: "+userservice.login(user.getUsername(),user.getPassword()));
+        return userservice.login(user.getUsername(),user.getPassword());
     }
     
 }

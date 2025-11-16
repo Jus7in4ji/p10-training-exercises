@@ -1,6 +1,12 @@
 package com.justinaji.jproj.service;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 import javax.crypto.Cipher;
@@ -88,5 +94,14 @@ public class CommonMethods {
         catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String formatTimestamp(Timestamp timestamp) {
+        if (timestamp == null) return null;
+
+        LocalDateTime ldt = timestamp.toLocalDateTime();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yy HH:mm:ss");
+
+        return ldt.format(formatter);
     }
 }

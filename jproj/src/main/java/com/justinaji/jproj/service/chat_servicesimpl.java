@@ -1,5 +1,6 @@
 package com.justinaji.jproj.service;
 
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,10 +14,12 @@ import com.justinaji.jproj.exception.NoUserFound;
 import com.justinaji.jproj.exception.NotaMember;
 import com.justinaji.jproj.exception.Username_taken;
 import com.justinaji.jproj.exception.formatmismatch;
+import com.justinaji.jproj.model.Logs;
 import com.justinaji.jproj.model.chats;
 import com.justinaji.jproj.model.members;
 import com.justinaji.jproj.model.users;
 import com.justinaji.jproj.repository.ChatRepo;
+import com.justinaji.jproj.repository.LogRepo;
 import com.justinaji.jproj.repository.MemberRepo;
 import com.justinaji.jproj.repository.UserRepo;
 
@@ -28,10 +31,12 @@ public class chat_servicesimpl implements chat_services {
     private final ChatRepo chatRepo;
     private final MemberRepo memberRepo;
     private final UserRepo urepo;
-    public chat_servicesimpl(ChatRepo chatRepo, MemberRepo memberRepo,UserRepo urepo){
+    private final LogRepo logRepo;
+    public chat_servicesimpl(ChatRepo chatRepo, MemberRepo memberRepo,UserRepo urepo, LogRepo logRepo){
         this.chatRepo = chatRepo;
         this.memberRepo = memberRepo;
         this.urepo = urepo;
+        this.logRepo = logRepo;
     }
 
     @Override
@@ -64,7 +69,13 @@ public class chat_servicesimpl implements chat_services {
             members m = new members(chat,memberUser,newmember.isAdmin());
             memberRepo.save(m);
         });
-        
+        String logid;
+            
+        do { logid = CommonMethods.getAlphaNumericString(); } 
+        while (logRepo.existsById(logid));
+
+        Logs l = new Logs(logid, "Chat Creation", "New Groupchat '"+newGroup.getName()+"' has been created.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
+        logRepo.save(l);
         return new chatdetails(newGroup.getName(), creator.getName(), membernames.size(), membernames); 
     }
 
@@ -114,6 +125,15 @@ public class chat_servicesimpl implements chat_services {
 
         if(!urepo.existsByName(name)) throw new  NoUserFound(name);
         memberRepo.save(new members(chatRepo.findByName(chat),urepo.findByName(name),isadmin));
+
+        String logid;
+            
+        do { logid = CommonMethods.getAlphaNumericString(); } 
+        while (logRepo.existsById(logid));
+
+        Logs l = new Logs(logid, "Addition to chat", "User '"+name+"' has been added to the chat '"+chat+"'.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
+        logRepo.save(l);
+
         return name+ " has been added into "+ chat ;
     }
 
@@ -131,6 +151,13 @@ public class chat_servicesimpl implements chat_services {
 
         memberRepo.delete(targetMember);
 
+        String logid;
+            
+        do { logid = CommonMethods.getAlphaNumericString(); } 
+        while (logRepo.existsById(logid));
+
+        Logs l = new Logs(logid, "Removal from chat", "User '"+name+"' has been removed from the chat '"+chat+"'.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
+        logRepo.save(l);
 
         return name+ " has been removed from "+ chat ;
     }
@@ -150,6 +177,14 @@ public class chat_servicesimpl implements chat_services {
         targetMember.setAdmin(true); // Promote user to admin
         memberRepo.save(targetMember);
 
+        String logid;
+            
+        do { logid = CommonMethods.getAlphaNumericString(); } 
+        while (logRepo.existsById(logid));
+
+        Logs l = new Logs(logid, "Granted Admin Role", "User '"+name+"' has granted Admin role in the chat '"+chat+"'.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
+        logRepo.save(l);
+
         return name + " is now an admin of " + chat;
     }
 
@@ -166,6 +201,15 @@ public class chat_servicesimpl implements chat_services {
         if (loggedInMember == null) throw new NotaMember(current_user.getName(), chat); 
 
         memberRepo.delete(loggedInMember);
+
+        String logid;
+            
+        do { logid = CommonMethods.getAlphaNumericString(); } 
+        while (logRepo.existsById(logid));
+
+        Logs l = new Logs(logid, "User Exited", "User '"+CommonMethods.getCurrentUser().getName()+"' has left the chat '"+chat+"'.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
+        logRepo.save(l);
+
         return "You are no longer a member of "+chat;
     }
 

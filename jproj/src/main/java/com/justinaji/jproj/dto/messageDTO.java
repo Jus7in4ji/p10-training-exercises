@@ -10,5 +10,5 @@ import lombok.Data;
 public class messageDTO {
     private String message;
     private String sender;
-    private Timestamp sentTime;
+    private String sentTime;
 }

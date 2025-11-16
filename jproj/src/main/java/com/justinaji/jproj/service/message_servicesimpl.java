@@ -13,11 +13,13 @@ import com.justinaji.jproj.exception.NoUserFound;
 import com.justinaji.jproj.exception.No_messages;
 import com.justinaji.jproj.exception.NotaMember;
 import com.justinaji.jproj.exception.nochatFound;
+import com.justinaji.jproj.model.Logs;
 import com.justinaji.jproj.model.chats;
 import com.justinaji.jproj.model.members;
 import com.justinaji.jproj.model.messages;
 import com.justinaji.jproj.model.users;
 import com.justinaji.jproj.repository.ChatRepo;
+import com.justinaji.jproj.repository.LogRepo;
 import com.justinaji.jproj.repository.MemberRepo;
 import com.justinaji.jproj.repository.MessageRepo;
 import com.justinaji.jproj.repository.UserRepo;
@@ -31,11 +33,13 @@ public class message_servicesimpl implements mesage_services{
     private final MemberRepo memberRepo;
     private final ChatRepo chatRepo;
     private final MessageRepo messageRepo;
-    public message_servicesimpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo, MessageRepo messageRepo) {
+    private final LogRepo logRepo;
+    public message_servicesimpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo, MessageRepo messageRepo, LogRepo logRepo) {
         this.urepo = urepo; 
         this.memberRepo = memberRepo;
         this.chatRepo = chatRepo;
         this.messageRepo = messageRepo;
+        this.logRepo = logRepo;
     }
 
     @Override
@@ -62,7 +66,7 @@ public class message_servicesimpl implements mesage_services{
             messageDTO dto = new messageDTO(
                 CommonMethods.decryptMessage( msg.getMessage(), currentChat.getChat_key() ),
                 msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName(),
-                msg.getSentTime()
+                CommonMethods.formatTimestamp(msg.getSentTime())
             );
             dtoList.add(dto);
         });
@@ -100,8 +104,7 @@ public class message_servicesimpl implements mesage_services{
             messages newmsg = new messages(messageId, encryptedmessage, currentUser, currentChat, new Timestamp(System.currentTimeMillis()));  
             messageRepo.saveAndFlush(newmsg);
         }
-        else throw new nochatFound(chatname); 
-        
+        else throw new nochatFound(chatname);
     }
 
     @Override
@@ -130,7 +133,7 @@ public class message_servicesimpl implements mesage_services{
                 messageDTO dto = new messageDTO(
                     CommonMethods.decryptMessage(msg.getMessage(), privatechat.getChat_key()),
                     msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName() ,
-                    msg.getSentTime()
+                    CommonMethods.formatTimestamp(msg.getSentTime()) 
                 );
                 dtoList.add(dto);
             });

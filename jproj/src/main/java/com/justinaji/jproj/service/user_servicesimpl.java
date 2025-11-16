@@ -1,5 +1,6 @@
 package com.justinaji.jproj.service;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +11,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.justinaji.jproj.exception.Username_taken;
+import com.justinaji.jproj.model.Logs;
 import com.justinaji.jproj.model.chats;
 import com.justinaji.jproj.model.members;
 import com.justinaji.jproj.model.users;
 import com.justinaji.jproj.repository.ChatRepo;
+import com.justinaji.jproj.repository.LogRepo;
 import com.justinaji.jproj.repository.MemberRepo;
 import com.justinaji.jproj.repository.UserRepo;
 
@@ -25,10 +28,12 @@ public class user_servicesimpl implements user_services {
     private final UserRepo urepo;
     private final MemberRepo memberRepo;
     private final ChatRepo chatRepo;
-    public user_servicesimpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo) {
+    private final LogRepo logrepo;
+    public user_servicesimpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo, LogRepo logrepo) {
         this.urepo = urepo; 
         this.memberRepo = memberRepo;
         this.chatRepo = chatRepo;
+        this.logrepo = logrepo;
     }
 
     @Autowired
@@ -82,7 +87,13 @@ public class user_servicesimpl implements user_services {
                 m2.setMember(otherUser);
                 memberRepo.save(m2);
             });
+        String logid;
+            
+        do { logid = CommonMethods.getAlphaNumericString(); } 
+        while (logrepo.existsById(logid));
 
+        Logs l = new Logs(logid, "Sign up", "New User '"+user.getName()+"' has Signed up.", new Timestamp(System.currentTimeMillis()), user);
+        logrepo.save(l);
         return "New user '" + user.getEmail() + "' registered successfully";
     }
 
@@ -90,7 +101,16 @@ public class user_servicesimpl implements user_services {
     public String login(String username, String password) {
         Authentication authentication = 
             authManager.authenticate(new UsernamePasswordAuthenticationToken(username,password));
-        
+            
+            
+            String logid;
+            
+            do { logid = CommonMethods.getAlphaNumericString(); } 
+            while (logrepo.existsById(logid));
+
+            Logs l = new Logs(logid, "Login", "User '"+username+"' has logged in", new Timestamp(System.currentTimeMillis()), urepo.findByName(username));
+            logrepo.save(l);
+
             return jwtservice.gentoken(username);
     }
 
