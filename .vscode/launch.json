@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "WebsockettestApplication",
+            "request": "launch",
+            "mainClass": "com.justianji.websockettest.WebsockettestApplication",
+            "projectName": "websockettest"
+        },
+        {
+            "type": "java",
             "name": "timstampformattest",
             "request": "launch",
             "mainClass": "com.justinaji.jproj.timstampformattest",
