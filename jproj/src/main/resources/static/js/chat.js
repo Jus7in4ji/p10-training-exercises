@@ -1,6 +1,8 @@
 var stompClient = null;
 var jwtToken = null;
 var currentRoom = "public"; // default room
+var activeSubscriptions = [];
+
 
 function storeToken() {
     jwtToken = document.getElementById("jwt-token").value.trim();
@@ -27,9 +29,25 @@ function connect() {
 function subscribeToRoom(roomName) {
     console.log("Subscribing to: /topic/" + roomName);
 
-    stompClient.subscribe("/topic/" + roomName, function (message) {
+    // Subscribe and store subscription handle
+    let subscription = stompClient.subscribe("/topic/" + roomName, function (message) {
         showMessage(JSON.parse(message.body));
     });
+
+    activeSubscriptions.push(subscription);
+}
+
+function unsubscribeAll() {
+    activeSubscriptions.forEach(sub => {
+        try {
+            sub.unsubscribe();
+        } catch (e) {
+            console.warn("Failed to unsubscribe:", e);
+        }
+    });
+
+    activeSubscriptions = []; // clear the list
+    console.log("Unsubscribed from all rooms");
 }
 
 // Called when user enters a new room name and clicks "Set Room"
@@ -43,10 +61,11 @@ function setRoom() {
     currentRoom = newRoom;
     alert("Chat room set to: " + currentRoom);
 
-    // resubscribe to the new room
-    stompClient.subscribe("/topic/" + currentRoom, function (message) {
-        showMessage(JSON.parse(message.body));
-    });
+    // Unsubscribe from all previous rooms
+    unsubscribeAll();
+
+    // Subscribe to new room
+    subscribeToRoom(currentRoom);
 }
 
 // SEND MESSAGE
