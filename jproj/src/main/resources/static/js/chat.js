@@ -34,9 +34,18 @@ function sendMessage() {
 
 function showMessage(message) {
     var chatBox = document.getElementById("chat-box");
-    var messageElement = document.createElement("p");
-    messageElement.textContent = message.from + ": " + message.text;
-    chatBox.appendChild(messageElement);
+
+    var wrapper = document.createElement("div");
+    wrapper.classList.add("message-bubble");
+
+    wrapper.innerHTML = `
+        <div class="message-header">${message.from}</div>
+        <div class="message-text">${message.text}</div>
+        <div class="message-time">${message.sentTime}</div>
+    `;
+
+    chatBox.appendChild(wrapper);
+    chatBox.scrollTop = chatBox.scrollHeight; // auto-scroll
 }
 
 connect();

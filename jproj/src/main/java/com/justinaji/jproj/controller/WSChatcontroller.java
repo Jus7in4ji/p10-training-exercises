@@ -18,19 +18,19 @@ public class WSChatcontroller {
     @SendTo("/topic/public")
     public WSmessage sendMessage(WSmessage message) {
 
-        String username = "Random user";
+    String username = "Random user";
 
-        try {
-            // Extract username from token
-            String extracted = jwtService.extractUser(message.getToken());
-            if (extracted != null) {
-                username = extracted;
-            }
-        } catch (Exception e) {
-            // token invalid → keep "Random user"
-        }
+    try {
+        String extracted = jwtService.extractUser(message.getToken());
+        if (extracted != null) username = extracted;
+    } catch (Exception e) {}
 
-        message.setFrom(username);
-        return message;
-    }
+    String currentTime = java.time.LocalDateTime.now()
+            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy | hh:mm:ss a"));
+
+    message.setFrom(username);
+    message.setSentTime(currentTime);
+
+    return message;
+}
 }
