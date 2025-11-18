@@ -11,7 +11,13 @@
 </head>
 <body>
 <div class="chat-container">
-    <h2>WebSocket Chat Application</h2>
+    <h2>Testing websocket with global chat</h2>
+
+    <div class="token-box">
+        <input type="text" id="jwt-token" placeholder="Enter JWT token here..." />
+        <button onclick="storeToken()">Set Token</button>
+    </div>
+
     <div id="chat-box" class="chat-box"></div>
     <div class="input-container">
         <input type="text" id="message" class="message-input" placeholder="Enter your message here..." />
