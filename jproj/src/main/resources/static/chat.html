@@ -13,10 +13,16 @@
 <div class="chat-container">
     <h2>Testing websocket with global chat</h2>
 
-    <div class="token-box">
-        <input type="text" id="jwt-token" placeholder="Enter JWT token here..." />
-        <button onclick="storeToken()">Set Token</button>
+    <div style="margin-bottom: 10px;">
+        <input type="text" id="jwt-token" placeholder="Enter JWT token" class="message-input">
+        <button onclick="storeToken()" class="send-button">Set Token</button>
     </div>
+
+    <div style="margin-bottom: 10px;">
+        <input type="text" id="chat-room" placeholder="Enter chat room (default: public)" class="message-input">
+        <button onclick="setRoom()" class="send-button">Set Room</button>
+    </div>
+
 
     <div id="chat-box" class="chat-box"></div>
     <div class="input-container">

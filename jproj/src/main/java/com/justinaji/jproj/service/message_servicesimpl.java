@@ -177,4 +177,10 @@ public class message_servicesimpl implements mesage_services{
         else throw new NoUserFound(chatname);
     }
 
+    public String ischatvalid(String chatname, String username, boolean isgroup){
+        String type = isgroup? "Group chat": "privat chat";
+        if(chatname.equals("global")) return "Invalid. there exists no "+type+"  of name "+ chatname+ " for user "+username;
+        return "Valid";
+    }
+
 }

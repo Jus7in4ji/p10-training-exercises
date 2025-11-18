@@ -1,37 +1,87 @@
 var stompClient = null;
 var jwtToken = null;
+var currentRoom = "public"; // default room
 
 function storeToken() {
-    jwtToken = document.getElementById("jwt-token").value;
-    alert("Token set!");
+    jwtToken = document.getElementById("jwt-token").value.trim();
+
+    if (!jwtToken) {
+        alert("Please enter a valid JWT token!");
+        return;
+    }
+    alert("Token set successfully!");
 }
 
+// Connect WebSocket and subscribe to default room
 function connect() {
     var socket = new SockJS('/chat');
     stompClient = Stomp.over(socket);
+
     stompClient.connect({}, function (frame) {
         console.log("Connected: " + frame);
-        stompClient.subscribe("/topic/public", function (message) {
-            showMessage(JSON.parse(message.body));
-        });
+        subscribeToRoom(currentRoom);
     });
 }
 
+// subscribe function wrapper
+function subscribeToRoom(roomName) {
+    console.log("Subscribing to: /topic/" + roomName);
+
+    stompClient.subscribe("/topic/" + roomName, function (message) {
+        showMessage(JSON.parse(message.body));
+    });
+}
+
+// Called when user enters a new room name and clicks "Set Room"
+function setRoom() {
+    let newRoom = document.getElementById("chat-room").value.trim();
+
+    if (newRoom.length === 0) {
+        newRoom = "public";
+    }
+
+    currentRoom = newRoom;
+    alert("Chat room set to: " + currentRoom);
+
+    // resubscribe to the new room
+    stompClient.subscribe("/topic/" + currentRoom, function (message) {
+        showMessage(JSON.parse(message.body));
+    });
+}
+
+// SEND MESSAGE
 function sendMessage() {
-    var messageContent = document.getElementById("message").value;
+    var messageContent = document.getElementById("message").value.trim();
 
-    if (messageContent.trim().length === 0) return;
+    // Do NOT send without token
+    if (!jwtToken || jwtToken.trim().length === 0) {
+        alert("Please enter a valid Token before sending messages.");
+        return;
+    }
 
+    // Do NOT send empty message
+    if (messageContent.length === 0) return;
+
+    // Do NOT send if disconnected
+    if (!stompClient || !stompClient.connected) {
+        alert("WebSocket is disconnected. Refresh the page.");
+        return;
+    }
+
+    // Build message object
     var msg = {
         text: messageContent,
-        token: jwtToken   // ⭐ send token to backend
+        token: jwtToken,
+        room: currentRoom
     };
 
+    // 5️⃣ Send
     stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(msg));
 
     document.getElementById("message").value = "";
 }
 
+// DISPLAY MESSAGE
 function showMessage(message) {
     var chatBox = document.getElementById("chat-box");
 
@@ -45,7 +95,7 @@ function showMessage(message) {
     `;
 
     chatBox.appendChild(wrapper);
-    chatBox.scrollTop = chatBox.scrollHeight; // auto-scroll
+    chatBox.scrollTop = chatBox.scrollHeight; // keep scroll at bottom
 }
 
 connect();

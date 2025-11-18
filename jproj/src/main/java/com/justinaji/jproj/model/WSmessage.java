@@ -12,6 +12,8 @@ public class WSmessage {
     private String text;
     private String token;  
     private String sentTime; 
+    private String room;
+
 }
 
 
