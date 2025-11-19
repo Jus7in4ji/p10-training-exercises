@@ -227,4 +227,37 @@ public class message_servicesimpl implements mesage_services{
         }
         return result;
     }
+
+    public List<messageDTO> getchathistory(String username , String chatid){
+        List<messageDTO> history = new ArrayList<>();
+
+        users currentUser = urepo.findByName(username);
+        chats targetchat = chatRepo.findById(chatid).orElseThrow(() -> new RuntimeException("Chat id not found: "));
+
+        List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(targetchat);   
+        
+        chatMessages.forEach(msg -> {
+                messageDTO dto = new messageDTO(
+                    CommonMethods.decryptMessage(msg.getMessage(), targetchat.getChat_key()),
+                    msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName() ,
+                    CommonMethods.formatTimestamp(msg.getSentTime()) 
+                );
+                history.add(dto);
+            });
+
+        return history;
+    }
+
+    public void Sendmessage(String text, String username, String chatid){
+        String messageId;
+        do { messageId = CommonMethods.getAlphaNumericString(); } //generate unique chat id
+        while (messageRepo.existsById(messageId));
+
+        users sender = urepo.findByName(username);
+        chats chat = chatRepo.findById(chatid).orElseThrow(() -> new RuntimeException("Chat id not found: "));
+
+
+        messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, new Timestamp(System.currentTimeMillis()));  
+        messageRepo.save(newmsg);
+    }
 }

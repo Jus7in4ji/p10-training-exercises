@@ -72,4 +72,16 @@ public class MessageController {
         if(room.equals("public")) result.put("Status", "Disconnected from Chat");
         return result;
     }
+
+    @PostMapping("/gethistory")
+    public List<messageDTO> getMethodName(@RequestBody Map<String, String> payload) {
+
+        String chatid = payload.get("chatid");
+        String token = payload.get("token");
+        
+        return msgservice.getchathistory(jwtService.extractUser(token), chatid);
+    }
+    
 }
+
+

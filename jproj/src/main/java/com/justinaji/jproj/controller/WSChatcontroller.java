@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 
 import com.justinaji.jproj.model.WSmessage;
 import com.justinaji.jproj.service.JWTService;
+import com.justinaji.jproj.service.message_servicesimpl;
 
 @Controller
 public class WSChatcontroller {
@@ -17,6 +18,10 @@ public class WSChatcontroller {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    private final message_servicesimpl msgservice;
+    public WSChatcontroller(message_servicesimpl msgservice){
+        this.msgservice = msgservice;
+    }
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(WSmessage message) {
 
@@ -39,10 +44,10 @@ public class WSChatcontroller {
 
 
         String room = message.getRoom();
-        if (room == null || room.trim().isEmpty()|| room.equals("public")) {
-            System.out.println("Message: "+message+" unable to be sent");//no valid room found
+        if (!room.equals("public")) {
+            messagingTemplate.convertAndSend("/topic/" + room, message); // send only if roomid is valid
+            msgservice.Sendmessage(message.getText(), username, room); 
         }
-        else messagingTemplate.convertAndSend("/topic/" + room, message); // send only if roomid is valid
 
         
     }

@@ -53,8 +53,8 @@ function unsubscribeAll() {
     console.log("Unsubscribed from all rooms");
 }
 
-// Called when user enters a new room name and clicks "Set Room"
-function setRoom() {
+// user enters room name and clicks "Set Room"
+async function setRoom() {
     let requestedRoom = document.getElementById("chat-room").value.trim();
 
     if (requestedRoom.length === 0) {
@@ -64,7 +64,7 @@ function setRoom() {
     const token = localStorage.getItem("jwtToken");
 
     // Send request to backend
-    fetch("/subscribe-room", {
+    const res = await fetch("/subscribe-room", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -74,25 +74,51 @@ function setRoom() {
             token: token,
             isGroup: getIsGroup()
         })
-    })
-    .then(res => res.json())
-    .then(data => {
+    });
 
-        // Display ONLY status + room
-        alert("Status: " + data.Status + "\nRoom: " + data.Room);
+    const data = await res.json();
 
-        // UPDATE currentRoom secretly using roomid
-        currentRoom = data.roomid;
+    alert("Status: " + data.Status + "\nRoom: " + data.Room);
 
-        console.log("Current room internally set to:", currentRoom);
+    // Backend gives the true chat id:
+    currentRoom = data.roomid;
+    console.log("Current room internally set to:", currentRoom);
 
-        // Resubscribe cleanly
-        unsubscribeAll();
-        document.getElementById("chat-box").innerHTML = "";//clear previous chat
+    unsubscribeAll();
+    const chatBox = document.getElementById("chat-box").innerHTML = "";
 
-        subscribeToRoom(currentRoom);
-    })
-    .catch(err => console.error("Error:", err));
+    // LOAD CHAT HISTORY
+    if (currentRoom !== "public") {
+        try {
+            const historyResponse = await fetch("/gethistory", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    chatid: currentRoom,
+                    token: token
+                })
+            });
+
+            const history = await historyResponse.json();
+
+            if (history && Array.isArray(history)) {
+                history.forEach(entry => {
+                    showMessage({
+                        from: entry.sender,
+                        text: entry.message,
+                        sentTime: entry.sentTime
+                    });
+                });
+            }
+        } catch (err) {
+            console.error("Failed to load history:", err);
+        }
+    }
+
+    subscribeToRoom(currentRoom);
+    
 }
 
 function getIsGroup() {
