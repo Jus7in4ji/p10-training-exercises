@@ -1,6 +1,8 @@
 package com.justinaji.jproj.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,5 +42,27 @@ public class MessageController {
     public List<messageDTO> SendGrpMessage(@RequestParam String groupname, @RequestBody Messagerequest Message) {
         msgservice.SendGrpMessage(groupname, Message.getMessage());
         return msgservice.GetGrpmessages(groupname);
+    }
+
+    @PostMapping("/subscribe-room")
+    public Map<String, String> subscribeRoom(@RequestBody Map<String, String> payload) {
+
+        String room = payload.get("room");
+        String token = payload.get("token");
+
+        System.out.println("Room received from JS: " + room+"\nJWT received from JS: " + token);
+
+        Map<String, String> result = new HashMap<>();
+        if(!room.equals("invalid")){ 
+            result.put("Status", "Success");
+            result.put("Room","valid");
+            result.put("roomid",room);
+        }
+        else{
+            result.put("Status", "Invalid. room name is invalid");
+            result.put("Room","invalid");
+            result.put("roomid","public");
+        }
+        return result;
     }
 }

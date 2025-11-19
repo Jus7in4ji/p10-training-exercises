@@ -11,18 +11,32 @@
 </head>
 <body>
 <div class="chat-container">
-    <h2>Testing websocket with global chat</h2>
+    <h2>Websocket chat</h2>
 
-    <div style="margin-bottom: 10px;">
-        <input type="text" id="jwt-token" placeholder="Enter JWT token" class="message-input">
-        <button onclick="storeToken()" class="send-button">Set Token</button>
+    <div class="token-row" style="margin-bottom: 10px;">
+    <input type="password" id="jwt-token" placeholder="Enter JWT token" class="message-input">
+    <button onclick="storeToken()" class="send-button">Set Token</button>
+</div>
+
+<div class="room-slider-row" style="margin-bottom: 10px;">
+    <!-- Toggle on RIGHT -->
+    <div class="toggle-container">
+        <input id="toggle-on" name="toggle" value="false" type="radio" checked>
+        <label for="toggle-on">Private</label>
+
+        <input id="toggle-off" name="toggle" value="true" type="radio">
+        <label for="toggle-off">Group</label>
     </div>
-
-    <div style="margin-bottom: 10px;">
+    <!-- Chat room input + button on LEFT -->
+    <div class="room-box">
         <input type="text" id="chat-room" placeholder="Enter chat room (default: public)" class="message-input">
         <button onclick="setRoom()" class="send-button">Set Room</button>
     </div>
 
+    
+
+</div>
+    
 
     <div id="chat-box" class="chat-box"></div>
     <div class="input-container">

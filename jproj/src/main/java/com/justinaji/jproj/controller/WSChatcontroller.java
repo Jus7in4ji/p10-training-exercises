@@ -20,7 +20,7 @@ public class WSChatcontroller {
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(WSmessage message) {
 
-        // 1️⃣ Reject if token is missing
+        // Reject if token is missing
         if (message.getToken() == null || message.getToken().trim().isEmpty()) {
             return; // do not send message
         }
@@ -32,22 +32,19 @@ public class WSChatcontroller {
             return; // invalid token ⇒ reject message
         }
 
-        // 2️⃣ Override sender name with JWT username
+        // Override sender name with JWT username
         message.setFrom(username);
-
-        // 3️⃣ Add timestamp
         String currentTime = java.time.LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy | hh:mm:ss a"));
-
         message.setSentTime(currentTime);
 
-        // 4️⃣ Determine chat room (default = "public")
+        //Determine chat room (default = "public")
         String room = message.getRoom();
         if (room == null || room.trim().isEmpty()) {
             room = "public";
         }
 
-        // 5️⃣ Send to correct topic
+        //Send 
         messagingTemplate.convertAndSend("/topic/" + room, message);
     }
 }

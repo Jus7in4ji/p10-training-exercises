@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+    background-color: #d9ffad;
     color: #333;
     margin: 0;
     padding: 0;
@@ -15,7 +15,8 @@ body {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 400px;
+    width: 600px;
+    min-height: 80%;
     max-width: 100%;
 }
 
@@ -106,4 +107,62 @@ h2 {
     font-size: 12px;
     color: #666;
     text-align: right;
+}
+
+/* Full-width JWT row */
+.token-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.token-row input {
+    flex: 1;
+}
+
+/* Chat room + slider row */
+.room-slider-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+/* Chat room field grows, slider stays right */
+.room-box {
+    display: flex;
+    flex: 1;
+    gap: 10px;
+}
+
+/* Toggle slider container */
+.toggle-container {
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+/* Hide radios */
+.toggle-container input {
+    display: none;
+}
+
+/* Button styles */
+.toggle-container label {
+    padding: 6px 12px;       /* reduced padding */
+    cursor: pointer;
+    user-select: none;
+    text-align: center;
+    white-space: nowrap;     /* prevents wrapping */
+    background-color: #ccc; 
+    color: #333;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Selected option = Dark Green */
+.toggle-container input:checked + label {
+    background-color: #2e8b2e;   /* dark green */
+    color: white;
 }

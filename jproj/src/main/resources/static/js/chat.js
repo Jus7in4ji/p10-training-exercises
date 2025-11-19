@@ -6,11 +6,12 @@ var activeSubscriptions = [];
 
 function storeToken() {
     jwtToken = document.getElementById("jwt-token").value.trim();
-
+    
     if (!jwtToken) {
         alert("Please enter a valid JWT token!");
         return;
     }
+    localStorage.setItem("jwtToken",jwtToken);
     alert("Token set successfully!");
 }
 
@@ -26,7 +27,7 @@ function connect() {
 }
 
 // subscribe function wrapper
-function subscribeToRoom(roomName) {
+async function subscribeToRoom(roomName) {
     console.log("Subscribing to: /topic/" + roomName);
 
     // Subscribe and store subscription handle
@@ -52,21 +53,43 @@ function unsubscribeAll() {
 
 // Called when user enters a new room name and clicks "Set Room"
 function setRoom() {
-    let newRoom = document.getElementById("chat-room").value.trim();
+    let requestedRoom = document.getElementById("chat-room").value.trim();
 
-    if (newRoom.length === 0) {
-        newRoom = "public";
+    if (requestedRoom.length === 0) {
+        requestedRoom = "public";
     }
 
-    currentRoom = newRoom;
-    alert("Chat room set to: " + currentRoom);
+    const token = localStorage.getItem("jwtToken");
 
-    // Unsubscribe from all previous rooms
-    unsubscribeAll();
+    // Send request to backend
+    fetch("/subscribe-room", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            room: requestedRoom,
+            token: token
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
 
-    // Subscribe to new room
-    subscribeToRoom(currentRoom);
+        // Display ONLY status + room
+        alert("Status: " + data.Status + "\nRoom: " + data.Room);
+
+        // UPDATE currentRoom secretly using roomid
+        currentRoom = data.roomid;
+
+        console.log("Current room internally set to:", currentRoom);
+
+        // Resubscribe cleanly
+        unsubscribeAll();
+        subscribeToRoom(currentRoom);
+    })
+    .catch(err => console.error("Error:", err));
 }
+
 
 // SEND MESSAGE
 function sendMessage() {
@@ -94,7 +117,7 @@ function sendMessage() {
         room: currentRoom
     };
 
-    // 5️⃣ Send
+    // Send
     stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(msg));
 
     document.getElementById("message").value = "";
