@@ -31,20 +31,19 @@ public class WSChatcontroller {
         } catch (Exception e) {
             return; // invalid token ⇒ reject message
         }
-
         // Override sender name with JWT username
         message.setFrom(username);
         String currentTime = java.time.LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy | hh:mm:ss a"));
         message.setSentTime(currentTime);
 
-        //Determine chat room (default = "public")
-        String room = message.getRoom();
-        if (room == null || room.trim().isEmpty()) {
-            room = "public";
-        }
 
-        //Send 
-        messagingTemplate.convertAndSend("/topic/" + room, message);
+        String room = message.getRoom();
+        if (room == null || room.trim().isEmpty()|| room.equals("public")) {
+            System.out.println("Message: "+message+" unable to be sent");//no valid room found
+        }
+        else messagingTemplate.convertAndSend("/topic/" + room, message); // send only if roomid is valid
+
+        
     }
 }

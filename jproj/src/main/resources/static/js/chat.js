@@ -13,6 +13,8 @@ function storeToken() {
     }
     localStorage.setItem("jwtToken",jwtToken);
     alert("Token set successfully!");
+
+    document.getElementById("jwt-token").value = ""; //clear jwt textbox
 }
 
 // Connect WebSocket and subscribe to default room
@@ -69,7 +71,8 @@ function setRoom() {
         },
         body: JSON.stringify({
             room: requestedRoom,
-            token: token
+            token: token,
+            isGroup: getIsGroup()
         })
     })
     .then(res => res.json())
@@ -85,11 +88,16 @@ function setRoom() {
 
         // Resubscribe cleanly
         unsubscribeAll();
+        document.getElementById("chat-box").innerHTML = "";//clear previous chat
+
         subscribeToRoom(currentRoom);
     })
     .catch(err => console.error("Error:", err));
 }
 
+function getIsGroup() {
+    return document.querySelector('input[name="toggle"]:checked').value === "true";
+}
 
 // SEND MESSAGE
 function sendMessage() {

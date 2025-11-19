@@ -2,7 +2,9 @@ package com.justinaji.jproj.service;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -177,10 +179,52 @@ public class message_servicesimpl implements mesage_services{
         else throw new NoUserFound(chatname);
     }
 
-    public String ischatvalid(String chatname, String username, boolean isgroup){
-        String type = isgroup? "Group chat": "privat chat";
-        if(chatname.equals("global")) return "Invalid. there exists no "+type+"  of name "+ chatname+ " for user "+username;
-        return "Valid";
-    }
+    public HashMap<String,String> ischatvalid(String chatname, String username, boolean isgroup){
+        HashMap<String , String> result = new HashMap<>();
+        result.put("roomid", "public");
 
+        if (isgroup){
+            if(chatRepo.existsByName(chatname)){
+                chats currentChat = chatRepo.findByName(chatname);
+                List<members> chatMembers = memberRepo.findByChat(currentChat);
+
+                members loggedInMember = chatMembers //Check if current user is part of this chat
+                        .stream()
+                        .filter(m -> m.getMember().getName().equals(username))
+                        .findFirst()
+                        .orElse(null);
+                        
+                if (loggedInMember == null) result.put("Status",  username+" is not a member of "+chatname+".");
+                else{
+                    result.put("Status",  "Success");
+                    result.put("roomid", currentChat.getC_id());
+                }
+            }
+            else result.put("Status","No Chat of name "+chatname+" exists.");
+        }
+        else{
+            if(urepo.existsByName(chatname)){
+                if(chatname.equals(username)) result.put("Status","Make sure the username isn't your own.");
+                
+                else{
+                    users targetUser = urepo.findByName(chatname);
+                    Set<chats> myChatsSet = memberRepo.findByMember(urepo.findByName(username))
+                        .stream()
+                        .map(m -> m.getChat())
+                        .collect(Collectors.toSet()); //chats with current user
+
+                    chats privatechat = memberRepo.findByMember(targetUser)
+                        .stream()
+                        .map(m->m.getChat())
+                        .filter(mchat->myChatsSet.contains(mchat))
+                        .filter(mchat-> !mchat.isIsgroup())
+                        .findFirst().orElse(null); 
+                    result.put("Status",  "Success");
+                    result.put("roomid", privatechat.getC_id());
+                    }
+            }
+            else result.put("Status","No User of name "+chatname+" exists.");
+        }
+        return result;
+    }
 }
