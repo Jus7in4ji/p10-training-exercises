@@ -229,6 +229,7 @@ public class message_servicesimpl implements mesage_services{
     }
 
     public List<messageDTO> getchathistory(String username , String chatid){
+        if (username == null || username.trim().isEmpty())return null;
         List<messageDTO> history = new ArrayList<>();
 
         users currentUser = urepo.findByName(username);

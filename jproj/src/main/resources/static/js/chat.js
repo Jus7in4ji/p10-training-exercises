@@ -2,19 +2,42 @@ var stompClient = null;
 var jwtToken = null;
 var currentRoom = "public"; // default room
 var activeSubscriptions = [];
+var username = null;
 
 
-function storeToken() {
+async function storeToken() {
     jwtToken = document.getElementById("jwt-token").value.trim();
     
     if (!jwtToken) {
         alert("Please enter a valid JWT token!");
         return;
     }
-    localStorage.setItem("jwtToken",jwtToken);
-    alert("Token set successfully!");
 
-    document.getElementById("jwt-token").value = ""; //clear jwt textbox
+    // Save token
+    localStorage.setItem("jwtToken", jwtToken);
+
+    //get username from jwt token
+    const res = await fetch("/getusername?token=" + encodeURIComponent(jwtToken), {
+        method: "GET",
+        headers: {
+            "Accept": "application/json"
+        }
+    });
+
+    const data = await res.json();
+    username = data.username;
+
+    if (!username) {
+        alert("Invalid Token! Could not extract username.");
+        return;
+    }
+
+    // Save username also
+    localStorage.setItem("username", username);
+
+    alert("Token set successfully!\nLogged in as: " + username);
+
+    document.getElementById("jwt-token").value = "";
 }
 
 // Connect WebSocket and subscribe to default room
@@ -71,7 +94,7 @@ async function setRoom() {
         },
         body: JSON.stringify({
             room: requestedRoom,
-            token: token,
+            user: username,
             isGroup: getIsGroup()
         })
     });
@@ -97,7 +120,7 @@ async function setRoom() {
                 },
                 body: JSON.stringify({
                     chatid: currentRoom,
-                    token: token
+                    user: username
                 })
             });
 
@@ -147,7 +170,7 @@ function sendMessage() {
     // Build message object
     var msg = {
         text: messageContent,
-        token: jwtToken,
+        from: username,
         room: currentRoom
     };
 
@@ -164,8 +187,14 @@ function showMessage(message) {
     var wrapper = document.createElement("div");
     wrapper.classList.add("message-bubble");
 
+    var sender = message.from;
+    if(sender === username ){
+        sender+=" (You)";
+    }
+
+
     wrapper.innerHTML = `
-        <div class="message-header">${message.from}</div>
+        <div class="message-header">${sender}</div>
         <div class="message-text">${message.text}</div>
         <div class="message-time">${message.sentTime}</div>
     `;

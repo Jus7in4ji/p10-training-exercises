@@ -24,9 +24,6 @@ public class MessageController {
         this.msgservice = msgservice;
     }
 
-    @Autowired
-    private JWTService jwtService; 
-
     @GetMapping("/privatechat")
     public List<messageDTO> getpvtMessages(@RequestParam String receiver) {
         return msgservice.GetPvtmessages(receiver);
@@ -53,19 +50,13 @@ public class MessageController {
     public Map<String, String> subscribeRoom(@RequestBody Map<String, String> payload) {
 
         String room = payload.get("room");
-        String token = payload.get("token");
+        String username = payload.get("user");
         boolean isGroup = Boolean.parseBoolean(payload.get("isGroup"));
         
-        System.out.println("Room received from JS: " + room+"\nJWT received from JS: " + token+"\nisGroup: " + isGroup);
+        System.out.println("Room received from JS: " + room+"\nusername received from JS: " + username+"\nisGroup: " + isGroup);
         
-        String username="";
-        try {
-            username = jwtService.extractUser(token);
-        } catch (Exception e){}
-
         HashMap<String, String> result =  msgservice.ischatvalid(room, username ,isGroup);
 
-        
 
         if(result.get("Status").equals("Success")) result.put("Room",room);
         else result.put("Room","[None]");
@@ -77,9 +68,9 @@ public class MessageController {
     public List<messageDTO> getMethodName(@RequestBody Map<String, String> payload) {
 
         String chatid = payload.get("chatid");
-        String token = payload.get("token");
+        String username = payload.get("user");
         
-        return msgservice.getchathistory(jwtService.extractUser(token), chatid);
+        return msgservice.getchathistory(username, chatid);
     }
     
 }

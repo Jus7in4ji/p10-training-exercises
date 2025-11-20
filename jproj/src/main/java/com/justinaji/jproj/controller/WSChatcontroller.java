@@ -6,14 +6,10 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import com.justinaji.jproj.model.WSmessage;
-import com.justinaji.jproj.service.JWTService;
 import com.justinaji.jproj.service.message_servicesimpl;
 
 @Controller
 public class WSChatcontroller {
-
-    @Autowired
-    private JWTService jwtService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -24,20 +20,13 @@ public class WSChatcontroller {
     }
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(WSmessage message) {
-
+        String username = message.getFrom();
         // Reject if token is missing
-        if (message.getToken() == null || message.getToken().trim().isEmpty()) {
+        if (username == null || username.trim().isEmpty()) {
             return; // do not send message
         }
 
-        String username;
-        try {
-            username = jwtService.extractUser(message.getToken());
-        } catch (Exception e) {
-            return; // invalid token ⇒ reject message
-        }
-        // Override sender name with JWT username
-        message.setFrom(username);
+        
         String currentTime = java.time.LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy | hh:mm:ss a"));
         message.setSentTime(currentTime);

@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class WSmessage {
     private String from;
-    private String text;
-    private String token;  
+    private String text;  
     private String sentTime; 
     private String room;
 
