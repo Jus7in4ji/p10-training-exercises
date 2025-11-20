@@ -21,16 +21,14 @@ public class WSChatcontroller {
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(WSmessage message) {
         String username = message.getFrom();
-        // Reject if token is missing
+        // Reject if username is missing
         if (username == null || username.trim().isEmpty()) {
             return; // do not send message
         }
 
-        
         String currentTime = java.time.LocalDateTime.now()
-                .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy | hh:mm:ss a"));
+                .format(java.time.format.DateTimeFormatter.ofPattern("hh:mm:ss a"));
         message.setSentTime(currentTime);
-
 
         String room = message.getRoom();
         if (!room.equals("public")) {

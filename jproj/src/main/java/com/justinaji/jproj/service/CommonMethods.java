@@ -2,9 +2,11 @@ package com.justinaji.jproj.service;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Date;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -94,11 +96,23 @@ public class CommonMethods {
     }
 
     public static String formatTimestamp(Timestamp timestamp) {
-        if (timestamp == null) return null;
+        //get current date and year values
+        Date date = new Date(new Timestamp(System.currentTimeMillis()).getTime());
+        String today = new SimpleDateFormat("yyyy/MM/dd").format(date);
+        String currentyear = new SimpleDateFormat("yyyy").format(date);
 
+        //convert given timestamp to it's year and date values
         LocalDateTime ldt = timestamp.toLocalDateTime();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yy HH:mm:ss");
+        String givenyear = ldt.format(DateTimeFormatter.ofPattern("yyyy"));
+        String givendate = ldt.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
-        return ldt.format(formatter);
+        String result;
+        if(givenyear.equals(currentyear)){// compare the two sets
+            result = givendate.equals(today) ?  
+            ldt.format(DateTimeFormatter.ofPattern("hh:mm:ss a")) : //only time 
+            ldt.format(DateTimeFormatter.ofPattern("dd/MM hh:mm:ss a"));  // time with day/month
+        }
+        else result = ldt.format(DateTimeFormatter.ofPattern("dd/MM/yy hh:mm:ss a")); // full date and time 
+        return result;
     }
 }

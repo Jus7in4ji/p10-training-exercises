@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,8 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.justinaji.jproj.dto.Messagerequest;
 import com.justinaji.jproj.dto.messageDTO;
-import com.justinaji.jproj.service.JWTService;
 import com.justinaji.jproj.service.message_servicesimpl;
+
+import io.swagger.v3.oas.annotations.Hidden;
 
 @RestController
 public class MessageController {
@@ -46,31 +46,26 @@ public class MessageController {
         return msgservice.GetGrpmessages(groupname);
     }
 
+    @Hidden
     @PostMapping("/subscribe-room")
     public Map<String, String> subscribeRoom(@RequestBody Map<String, String> payload) {
-
         String room = payload.get("room");
-        String username = payload.get("user");
-        boolean isGroup = Boolean.parseBoolean(payload.get("isGroup"));
         
-        System.out.println("Room received from JS: " + room+"\nusername received from JS: " + username+"\nisGroup: " + isGroup);
-        
-        HashMap<String, String> result =  msgservice.ischatvalid(room, username ,isGroup);
-
+        HashMap<String, String> result =  msgservice.ischatvalid(
+            room, payload.get("user"), Boolean.parseBoolean(payload.get("isGroup")));
 
         if(result.get("Status").equals("Success")) result.put("Room",room);
         else result.put("Room","[None]");
+
         if(room.equals("public")) result.put("Status", "Disconnected from Chat");
+
         return result;
     }
 
+    @Hidden
     @PostMapping("/gethistory")
-    public List<messageDTO> getMethodName(@RequestBody Map<String, String> payload) {
-
-        String chatid = payload.get("chatid");
-        String username = payload.get("user");
-        
-        return msgservice.getchathistory(username, chatid);
+    public List<messageDTO> getMethodName(@RequestBody Map<String, String> payload) {   
+        return msgservice.getchathistory(payload.get("user"), payload.get("chatid"));
     }
     
 }

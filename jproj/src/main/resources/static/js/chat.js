@@ -7,7 +7,8 @@ var username = null;
 
 async function storeToken() {
     jwtToken = document.getElementById("jwt-token").value.trim();
-    
+    username = null;
+
     if (!jwtToken) {
         alert("Please enter a valid JWT token!");
         return;
@@ -28,14 +29,14 @@ async function storeToken() {
     username = data.username;
 
     if (!username) {
-        alert("Invalid Token! Could not extract username.");
+        alert("Invalid Token. Could not extract username.");
         return;
     }
 
     // Save username also
     localStorage.setItem("username", username);
 
-    alert("Token set successfully!\nLogged in as: " + username);
+    alert("Token set .\nLogged in as: " + username);
 
     document.getElementById("jwt-token").value = "";
 }
@@ -153,11 +154,14 @@ function sendMessage() {
     var messageContent = document.getElementById("message").value.trim();
 
     // Do NOT send without token
-    if (!jwtToken || jwtToken.trim().length === 0) {
+    if (!username || username.trim().length === 0) {
         alert("Please enter a valid Token before sending messages.");
         return;
     }
-
+    if(currentRoom =="public"){
+        alert("You are not connected to any chats.");
+        return
+    }
     // Do NOT send empty message
     if (messageContent.length === 0) return;
 
@@ -191,7 +195,6 @@ function showMessage(message) {
     if(sender === username ){
         sender+=" (You)";
     }
-
 
     wrapper.innerHTML = `
         <div class="message-header">${sender}</div>
