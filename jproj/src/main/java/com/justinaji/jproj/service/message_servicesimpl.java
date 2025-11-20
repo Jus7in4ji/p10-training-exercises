@@ -178,6 +178,7 @@ public class message_servicesimpl implements mesage_services{
         else throw new NoUserFound(chatname);
     }
 
+    @Override
     public HashMap<String,String> ischatvalid(String chatname, String username, boolean isgroup){
         HashMap<String , String> result = new HashMap<>();
         result.put("roomid", "public");
@@ -227,6 +228,7 @@ public class message_servicesimpl implements mesage_services{
         return result;
     }
 
+    @Override
     public List<messageDTO> getchathistory(String username , String chatid){
         if (username == null || username.trim().isEmpty())return null;
         List<messageDTO> history = new ArrayList<>();
@@ -248,6 +250,7 @@ public class message_servicesimpl implements mesage_services{
         return history;
     }
 
+    @Override
     public void Sendmessage(String text, String username, String chatid){
         String messageId;
         do { messageId = CommonMethods.getAlphaNumericString(); } //generate unique chat id

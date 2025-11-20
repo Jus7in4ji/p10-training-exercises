@@ -102,9 +102,7 @@ public class user_servicesimpl implements user_services {
         Authentication authentication = 
             authManager.authenticate(new UsernamePasswordAuthenticationToken(username,password));
             
-            
             String logid;
-            
             do { logid = CommonMethods.getAlphaNumericString(); } 
             while (logrepo.existsById(logid));
 
