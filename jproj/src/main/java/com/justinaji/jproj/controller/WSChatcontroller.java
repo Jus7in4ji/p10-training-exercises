@@ -31,7 +31,7 @@ public class WSChatcontroller {
         message.setSentTime(currentTime);
 
         String room = message.getRoom();
-        if (!room.equals("public")) {
+        if (room!= null) {
             messagingTemplate.convertAndSend("/topic/" + room, message); // send only if roomid is valid
             msgservice.Sendmessage(message.getText(), username, room); 
         }

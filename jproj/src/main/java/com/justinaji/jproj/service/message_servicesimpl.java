@@ -181,7 +181,7 @@ public class message_servicesimpl implements mesage_services{
     @Override
     public HashMap<String,String> ischatvalid(String chatname, String username, boolean isgroup){
         HashMap<String , String> result = new HashMap<>();
-        result.put("roomid", "public");
+        result.put("roomid", null);
 
         if (isgroup){
             if(chatRepo.existsByName(chatname)){

@@ -1,6 +1,6 @@
 var stompClient = null;
 var jwtToken = null;
-var currentRoom = "public"; // default room
+var currentRoom = null; // default room
 var activeSubscriptions = [];
 var username = null;
 
@@ -81,8 +81,14 @@ function unsubscribeAll() {
 async function setRoom() {
     let requestedRoom = document.getElementById("chat-room").value.trim();
 
+
+    unsubscribeAll();
+    const chatBox = document.getElementById("chat-box").innerHTML = "";
     if (requestedRoom.length === 0) {
-        requestedRoom = "public";
+        currentRoom= null;
+        alert("Status: Disconnected from chat.\nRoom: [None]");
+        console.log("Current room internally set to:", currentRoom);
+        return;
     }
 
     const token = localStorage.getItem("jwtToken");
@@ -108,11 +114,9 @@ async function setRoom() {
     currentRoom = data.roomid;
     console.log("Current room internally set to:", currentRoom);
 
-    unsubscribeAll();
-    const chatBox = document.getElementById("chat-box").innerHTML = "";
 
     // LOAD CHAT HISTORY
-    if (currentRoom !== "public") {
+    if (currentRoom) {
         try {
             const historyResponse = await fetch("/gethistory", {
                 method: "POST",
@@ -158,7 +162,7 @@ function sendMessage() {
         alert("Please enter a valid Token before sending messages.");
         return;
     }
-    if(currentRoom =="public"){
+    if(!currentRoom){
         alert("You are not connected to any chats.");
         return
     }

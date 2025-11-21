@@ -49,7 +49,7 @@ public class Js2JavaRequestController {
         if(result.get("Status").equals("Success")) result.put("Room",room);
         else result.put("Room","[None]");
 
-        if(room.equals("public")) result.put("Status", "Disconnected from Chat");
+        if(room==null) result.put("Status", "Disconnected from Chat");
 
         return result;
     }
