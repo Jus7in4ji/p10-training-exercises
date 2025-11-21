@@ -166,3 +166,31 @@ h2 {
     background-color: #2e8b2e;   /* dark green */
     color: white;
 }
+
+.user-info {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: #026005;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-weight: bold;
+}
+
+.logout-button {
+    background-color: #fdf0f0;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: rgb(9, 6, 6);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.logout-button:hover {
+    background-color: #d1f79d;
+}

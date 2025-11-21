@@ -33,13 +33,32 @@ async function storeToken() {
         return;
     }
 
-    // Save username also
     localStorage.setItem("username", username);
+    document.getElementById("logged-user").innerText = username;
 
     alert("Token set .\nLogged in as: " + username);
 
     document.getElementById("jwt-token").value = "";
 }
+
+function logoutUser() {
+    localStorage.removeItem("jwtToken");
+    localStorage.removeItem("username");
+    jwtToken = null;
+    username = null;
+
+    unsubscribeAll();
+
+    if (stompClient && stompClient.connected) {
+        stompClient.disconnect(() => console.log("Disconnected"));
+    }
+
+    currentRoom = null;
+    document.getElementById("logged-user").innerText = "Not Logged In";
+    document.getElementById("chat-box").innerHTML = "";
+    alert("Logged out.");
+}
+
 
 // Connect WebSocket and subscribe to default room
 function connect() {
