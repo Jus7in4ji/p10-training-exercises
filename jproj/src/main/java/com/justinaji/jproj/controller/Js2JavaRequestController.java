@@ -56,6 +56,6 @@ public class Js2JavaRequestController {
 
     @PostMapping("/gethistory")
     public List<messageDTO> getMethodName(@RequestBody Map<String, String> payload) {   
-        return msgservice.getchathistory(payload.get("user"), payload.get("chatid"));
+        return msgservice.getchathistory(payload.get("user"), payload.get("chatid"), payload.get("timezone"));
     }
 }

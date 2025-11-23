@@ -17,7 +17,7 @@ public interface mesage_services {
 
     HashMap<String,String> ischatvalid(String chatname, String username, boolean isgroup);
 
-    List<messageDTO> getchathistory(String username , String chatid);
+    List<messageDTO> getchathistory(String username , String chatid, String timezone);
 
     void Sendmessage(String text, String username, String chatid);
 }

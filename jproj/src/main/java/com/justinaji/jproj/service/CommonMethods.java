@@ -2,11 +2,12 @@ package com.justinaji.jproj.service;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.Date;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -96,23 +97,34 @@ public class CommonMethods {
     }
 
     public static String formatTimestamp(Timestamp timestamp) {
-        //get current date and year values
-        Date date = new Date(new Timestamp(System.currentTimeMillis()).getTime());
-        String today = new SimpleDateFormat("yyyy/MM/dd").format(date);
-        String currentyear = new SimpleDateFormat("yyyy").format(date);
-
-        //convert given timestamp to it's year and date values
-        LocalDateTime ldt = timestamp.toLocalDateTime();
-        String givenyear = ldt.format(DateTimeFormatter.ofPattern("yyyy"));
-        String givendate = ldt.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-
-        String result;
-        if(givenyear.equals(currentyear)){// compare the two sets
-            result = givendate.equals(today) ?  
-            ldt.format(DateTimeFormatter.ofPattern("hh:mm:ss a")) : //only time 
-            ldt.format(DateTimeFormatter.ofPattern("dd/MM hh:mm:ss a"));  // time with day/month
-        }
-        else result = ldt.format(DateTimeFormatter.ofPattern("dd/MM/yy hh:mm:ss a")); // full date and time 
-        return result;
+        return formatTimestamp(timestamp, "UTC");
     }
+
+    public static String formatTimestamp(Timestamp timestamp, String timezone) {
+        ZoneId zone;
+        try {
+            zone = (timezone == null || timezone.trim().isEmpty())
+                    ? ZoneId.of("UTC") 
+                    : ZoneId.of(timezone);
+        } catch (Exception e) {
+            zone = ZoneId.of("UTC"); // use UTC if invalid timezone string
+        }
+
+        ZonedDateTime zdt = timestamp.toInstant().atZone(zone);
+
+        String today = LocalDate.now(zone).format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+        String currentyear = String.valueOf(Year.now(zone));
+
+        String givenyear = zdt.format(DateTimeFormatter.ofPattern("yyyy"));
+        String givendate = zdt.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+
+        if (givenyear.equals(currentyear)) {
+            return givendate.equals(today)
+                ? zdt.format(DateTimeFormatter.ofPattern("hh:mm:ss a"))
+                : zdt.format(DateTimeFormatter.ofPattern("dd/MM | hh:mm:ss a"));
+        } else {
+            return zdt.format(DateTimeFormatter.ofPattern("dd/MM/yy | hh:mm:ss a"));
+        }
+    }
+
 }

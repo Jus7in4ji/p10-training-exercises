@@ -1,5 +1,9 @@
 package com.justinaji.jproj.controller;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -26,9 +30,23 @@ public class WSChatcontroller {
             return; // do not send message
         }
 
-        String currentTime = java.time.LocalDateTime.now()
-                .format(java.time.format.DateTimeFormatter.ofPattern("hh:mm:ss a"));
-        message.setSentTime(currentTime);
+        String timezone = message.getSentTime();
+        ZoneId zone;
+
+        try {
+            zone = (timezone == null || timezone.trim().isEmpty())
+                    ? ZoneId.of("UTC")
+                    : ZoneId.of(timezone);
+        } catch (Exception e) {
+            zone = ZoneId.of("UTC"); // fallback
+        }
+
+        // Take the instant NOW in UTC, shift to given timezone
+        String finalTime = Instant.now()
+                .atZone(zone)
+                .format(DateTimeFormatter.ofPattern("hh:mm:ss a"));
+
+        message.setSentTime(finalTime);
 
         String room = message.getRoom();
         if (room!= null) {

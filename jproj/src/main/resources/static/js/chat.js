@@ -77,7 +77,7 @@ async function subscribeToRoom(roomName) {
 
     // Subscribe and store subscription handle
     let subscription = stompClient.subscribe("/topic/" + roomName, function (message) {
-        showMessage(JSON.parse(message.body));
+        showMessage(JSON.parse(message.body), true);
     });
 
     activeSubscriptions.push(subscription);
@@ -144,7 +144,8 @@ async function setRoom() {
                 },
                 body: JSON.stringify({
                     chatid: currentRoom,
-                    user: username
+                    user: username,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                 })
             });
 
@@ -156,7 +157,7 @@ async function setRoom() {
                         from: entry.sender,
                         text: entry.message,
                         sentTime: entry.sentTime
-                    });
+                    }, false);
                 });
             }
         } catch (err) {
@@ -198,7 +199,8 @@ function sendMessage() {
     var msg = {
         text: messageContent,
         from: username,
-        room: currentRoom
+        room: currentRoom,
+        sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
 
     // Send
@@ -208,7 +210,7 @@ function sendMessage() {
 }
 
 // DISPLAY MESSAGE
-function showMessage(message) {
+function showMessage(message, local) {
     var chatBox = document.getElementById("chat-box");
 
     var wrapper = document.createElement("div");
@@ -219,10 +221,19 @@ function showMessage(message) {
         sender+=" (You)";
     }
 
+    let timeString;
+    if (local === true) {
+        timeString = new Date().toLocaleTimeString([], {
+            hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+        });
+    } else {
+        // otherwise use backend timestamp already in message.sentTime
+        timeString = message.sentTime;
+    }
     wrapper.innerHTML = `
         <div class="message-header">${sender}</div>
         <div class="message-text">${message.text}</div>
-        <div class="message-time">${message.sentTime}</div>
+        <div class="message-time">${timeString}</div>
     `;
 
     chatBox.appendChild(wrapper);
@@ -230,3 +241,4 @@ function showMessage(message) {
 }
 
 connect();
+console.log("timezone is "+Intl.DateTimeFormat().resolvedOptions().timeZone)

@@ -1,6 +1,7 @@
 package com.justinaji.jproj.service;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,13 +15,11 @@ import com.justinaji.jproj.exception.NoUserFound;
 import com.justinaji.jproj.exception.No_messages;
 import com.justinaji.jproj.exception.NotaMember;
 import com.justinaji.jproj.exception.nochatFound;
-import com.justinaji.jproj.model.Logs;
 import com.justinaji.jproj.model.chats;
 import com.justinaji.jproj.model.members;
 import com.justinaji.jproj.model.messages;
 import com.justinaji.jproj.model.users;
 import com.justinaji.jproj.repository.ChatRepo;
-import com.justinaji.jproj.repository.LogRepo;
 import com.justinaji.jproj.repository.MemberRepo;
 import com.justinaji.jproj.repository.MessageRepo;
 import com.justinaji.jproj.repository.UserRepo;
@@ -34,13 +33,11 @@ public class message_servicesimpl implements mesage_services{
     private final MemberRepo memberRepo;
     private final ChatRepo chatRepo;
     private final MessageRepo messageRepo;
-    private final LogRepo logRepo;
-    public message_servicesimpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo, MessageRepo messageRepo, LogRepo logRepo) {
+    public message_servicesimpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo, MessageRepo messageRepo) {
         this.urepo = urepo; 
         this.memberRepo = memberRepo;
         this.chatRepo = chatRepo;
         this.messageRepo = messageRepo;
-        this.logRepo = logRepo;
     }
 
     @Override
@@ -229,7 +226,7 @@ public class message_servicesimpl implements mesage_services{
     }
 
     @Override
-    public List<messageDTO> getchathistory(String username , String chatid){
+    public List<messageDTO> getchathistory(String username , String chatid, String timezone){
         if (username == null || username.trim().isEmpty())return null;
         List<messageDTO> history = new ArrayList<>();
 
@@ -242,7 +239,7 @@ public class message_servicesimpl implements mesage_services{
                 messageDTO dto = new messageDTO(
                     CommonMethods.decryptMessage(msg.getMessage(), targetchat.getChat_key()),
                     msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName() ,
-                    CommonMethods.formatTimestamp(msg.getSentTime()) 
+                    CommonMethods.formatTimestamp(msg.getSentTime(), timezone) 
                 );
                 history.add(dto);
             });
@@ -260,7 +257,7 @@ public class message_servicesimpl implements mesage_services{
         chats chat = chatRepo.findById(chatid).orElseThrow(() -> new RuntimeException("Chat id not found: "));
 
 
-        messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, new Timestamp(System.currentTimeMillis()));  
+        messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, Timestamp.from(Instant.now()));  
         messageRepo.save(newmsg);
     }
 }
