@@ -41,11 +41,6 @@ public class GlobalExceptionHandler{
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(nochatFound.class)
-    public ResponseEntity<String>  HandleInvalidChatName(nochatFound ex ){
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
-
     @ExceptionHandler(NotaMember.class)
     public ResponseEntity<String>  handleAlienUser(NotaMember ex ){
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
