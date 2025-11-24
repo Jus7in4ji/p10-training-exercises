@@ -16,11 +16,6 @@ public class GlobalExceptionHandler{
                                     HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(invaliduser.class)
-    public ResponseEntity<String> handleinvaliduser(invaliduser ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
-
     @ExceptionHandler(formatmismatch.class)
     public ResponseEntity<String> handleformatmismatch(formatmismatch ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
@@ -29,11 +24,6 @@ public class GlobalExceptionHandler{
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handlebadcredentials(BadCredentialsException ex){ 
         return new ResponseEntity<>("User credentials are incorrect", HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(Username_taken.class)
-    public ResponseEntity<String> handleusedname(Username_taken ex){
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(No_messages.class)

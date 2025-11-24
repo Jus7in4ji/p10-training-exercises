@@ -83,19 +83,6 @@ public class CommonMethods {
         return encodedKey;
     }
 
-    public static String generateKey(){
-        try {
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-            keyGenerator.init(256);
-
-            SecretKey secretKey = keyGenerator.generateKey();
-            return convertSecretKeyToString(secretKey);
-        } 
-        catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static String formatTimestamp(Timestamp timestamp) {
         return formatTimestamp(timestamp, "UTC");
     }

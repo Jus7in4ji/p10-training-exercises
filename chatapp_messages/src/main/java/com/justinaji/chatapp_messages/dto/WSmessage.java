@@ -1,4 +1,4 @@
-package com.justinaji.chatapp_messages.model;
+package com.justinaji.chatapp_messages.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

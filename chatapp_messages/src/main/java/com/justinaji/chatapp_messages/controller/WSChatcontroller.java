@@ -9,7 +9,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import com.justinaji.chatapp_messages.model.WSmessage;
+import com.justinaji.chatapp_messages.dto.WSmessage;
 import com.justinaji.chatapp_messages.service.message_servicesimpl;
 
 @Controller
