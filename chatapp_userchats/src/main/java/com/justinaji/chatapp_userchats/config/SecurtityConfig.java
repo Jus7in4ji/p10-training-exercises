@@ -31,13 +31,9 @@ public class SecurtityConfig {
         return http
             .csrf(customizer -> customizer.disable())
             .authorizeHttpRequests(request-> request
-                .requestMatchers("/SignUp","/login", "/subscribe-room", "/gethistory", "/getusername",
+                .requestMatchers("/SignUp","/login",
                     //swagger documentation
-                    "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
-                    // websocket related requests
-                    "/chat.html", "/chat/**", "/chat", "/chat/info",  "/topic/**", "/app/**",
-                    // Static resources
-                    "/css/**", "/js/**", "/images/**", "/static/**", "/webjars/**")
+                    "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",)
                 .permitAll()
                 .anyRequest().authenticated()) //makes sure all requests passed must be authenticated
             .httpBasic(customizer -> customizer.disable())
