@@ -90,7 +90,7 @@ h2 {
     margin: 10px;
     border-radius: 10px;
     max-width: 70%;
-    position: relative;
+    position: relative;   /* required for absolute children */
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
@@ -196,18 +196,24 @@ h2 {
 }
 
 .message-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-top: 6px;
+    width: 100%;
+    text-align: right;
 }
 
 .time-left {
     font-size: 12px;
     color: #666;
+    position: absolute;
+    bottom: 5px;
+    right: 8px;
 }
 
+
 .status-right {
+    position: absolute;
+    top: 5px;
+    right: 8px;
     font-size: 14px;
     font-weight: bold;
 }
