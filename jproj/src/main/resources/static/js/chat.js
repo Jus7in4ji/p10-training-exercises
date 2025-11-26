@@ -268,7 +268,7 @@ async function showMessage(message, local) {
 
     wrapper.innerHTML = `
         <div class="message-header">${sender}</div>
-        <div class="message-text">${message.text+" "+message.msgid}</div>
+        <div class="message-text">${message.text}</div>
 
         <div class="message-footer">
             <span class="time-left">${timeString}</span>
