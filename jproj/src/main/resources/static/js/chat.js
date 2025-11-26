@@ -203,7 +203,7 @@ function markMessageAsRead(msgId) {
 }
 
 // SEND MESSAGE
-function sendMessage() {
+async function sendMessage() {
     var messageContent = document.getElementById("message").value.trim();
 
     // Do NOT send without token
@@ -218,8 +218,18 @@ function sendMessage() {
     // Do NOT send empty message
     if (messageContent.length === 0) return;
 
-    // Do NOT send if disconnected
-    if (!stompClient || !stompClient.connected) {
+    const res = await fetch("/getusername?token=" + encodeURIComponent(jwtToken), {
+        method: "GET",
+        headers: {
+            "Accept": "application/json"
+        }
+    });
+
+    const data = await res.json();
+    username = data.username;
+    active = data.active;
+
+    if (!username||!stompClient || !stompClient.connected|| active!= "true") {
         alert("Message was not sent!\n You are disconnected. make sure you are connected to the internet ");
         return;
     }

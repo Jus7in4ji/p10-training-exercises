@@ -1,5 +1,8 @@
 package com.justinaji.jproj.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +14,5 @@ public interface UserRepo extends JpaRepository<users, String>{
     boolean existsByName(String name);
     users findByEmail(String email);
     users findByName(String uname);
+    List<users> findByStatusTrueAndRecentLoginBefore(LocalDateTime cutoff);
 }

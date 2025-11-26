@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.justinaji.jproj.model.WSmessage;
+import com.justinaji.jproj.model.users;
+import com.justinaji.jproj.repository.UserRepo;
 import com.justinaji.jproj.service.JWTService;
 import com.justinaji.jproj.service.message_servicesimpl;
 
@@ -24,6 +26,9 @@ public class Js2JavaRequestController {
 
     @Autowired
     private JWTService jwtService;
+
+    @Autowired
+    private UserRepo urepo;
     
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -33,16 +38,24 @@ public class Js2JavaRequestController {
         this.msgservice = msgservice;
     }
 
+    //user&chat
     @GetMapping("/getusername")
     public Map<String, String> getUsername(@RequestParam String token) {
+        Map<String, String> user = new HashMap<>();
         try {
             String username = jwtService.extractUser(token);
-            return Map.of("username", username);
+            user.put("username", username);
+            users u = urepo.findByName(username);
+            user.put("active", u.isStatus()?"true":"false");
+
         } catch (Exception e) {
-            return Map.of("username", "");
+            user.put("username", "");
+            user.put("active", "false");
         }
+        return user;
     }
 
+    // user&chat
     @PostMapping("/subscribe-room")
     public Map<String, String> subscribeRoom(@RequestBody Map<String, String> payload) {
         String room = payload.get("room");
@@ -57,12 +70,15 @@ public class Js2JavaRequestController {
 
         return result;
     }
-
+    
+    // messaging
     @PostMapping("/gethistory")
     public List<WSmessage> getMethodName(@RequestBody Map<String, String> payload) {   
         return msgservice.getchathistory(payload.get("user"), payload.get("chatid"), payload.get("timezone"));
     }
 
+
+    // independent
     @PostMapping("/chat.read")
     public void markRead(@RequestBody Map<String, String> body) {
         String msgId = body.get("msgId");
