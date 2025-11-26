@@ -5,13 +5,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.justinaji.jproj.dto.messageDTO;
+import com.justinaji.jproj.model.WSmessage;
 import com.justinaji.jproj.service.JWTService;
 import com.justinaji.jproj.service.message_servicesimpl;
 
@@ -23,6 +24,9 @@ public class Js2JavaRequestController {
 
     @Autowired
     private JWTService jwtService;
+    
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     private final message_servicesimpl msgservice;
     public Js2JavaRequestController(message_servicesimpl msgservice){
@@ -55,7 +59,13 @@ public class Js2JavaRequestController {
     }
 
     @PostMapping("/gethistory")
-    public List<messageDTO> getMethodName(@RequestBody Map<String, String> payload) {   
+    public List<WSmessage> getMethodName(@RequestBody Map<String, String> payload) {   
         return msgservice.getchathistory(payload.get("user"), payload.get("chatid"), payload.get("timezone"));
+    }
+
+    @PostMapping("/chat.read")
+    public void markRead(@RequestBody Map<String, String> body) {
+        String msgId = body.get("msgId");
+        messagingTemplate.convertAndSend("/topic/read", msgId);
     }
 }

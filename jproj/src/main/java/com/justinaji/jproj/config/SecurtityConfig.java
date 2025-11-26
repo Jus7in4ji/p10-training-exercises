@@ -33,7 +33,7 @@ public class SecurtityConfig {
             .authorizeHttpRequests(request-> request
                 .requestMatchers("/SignUp","/login", "/subscribe-room", "/gethistory", "/getusername",
                     //swagger documentation
-                    "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
+                    "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**","/chat.read",
                     // websocket related requests
                     "/chat.html", "/chat/**", "/chat", "/chat/info",  "/topic/**", "/app/**",
                     // Static resources

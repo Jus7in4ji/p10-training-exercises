@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.justinaji.jproj.dto.messageDTO;
+import com.justinaji.jproj.model.WSmessage;
 
 public interface mesage_services {
 
@@ -17,7 +18,7 @@ public interface mesage_services {
 
     HashMap<String,String> ischatvalid(String chatname, String username, boolean isgroup);
 
-    List<messageDTO> getchathistory(String username , String chatid, String timezone);
+    List<WSmessage> getchathistory(String username , String chatid, String timezone);
 
-    void Sendmessage(String text, String username, String chatid);
+    String Sendmessage(String text, String username, String chatid);
 }

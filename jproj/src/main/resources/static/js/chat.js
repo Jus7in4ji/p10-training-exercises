@@ -76,8 +76,21 @@ async function subscribeToRoom(roomName) {
     console.log("Subscribing to: /topic/" + roomName);
 
     // Subscribe and store subscription handle
-    let subscription = stompClient.subscribe("/topic/" + roomName, function (message) {
-        showMessage(JSON.parse(message.body), true);
+    let subscription = stompClient.subscribe("/topic/" + roomName, function(response) {
+    var message = JSON.parse(response.body);
+
+    showMessage(message, true); // first display the message
+
+    // THEN call read function if incoming message
+    if (message.from !== username) {
+        stompClient.send("/app/chat.read", {}, JSON.stringify({msgId: message.msgid}));
+    }
+});
+
+
+    let readSub = stompClient.subscribe("/topic/read", function(message) {
+        const msgId = message.body;      // id from backend
+        markMessageAsRead(msgId);        // function to flip tick
     });
 
     activeSubscriptions.push(subscription);
@@ -154,8 +167,9 @@ async function setRoom() {
             if (history && Array.isArray(history)) {
                 history.forEach(entry => {
                     showMessage({
-                        from: entry.sender,
-                        text: entry.message,
+                        msgid:entry.msgid,
+                        from: entry.from,
+                        text: entry.text,
                         sentTime: entry.sentTime,
                         msgread: entry.msgread
                     }, false);
@@ -172,6 +186,20 @@ async function setRoom() {
 
 function getIsGroup() {
     return document.querySelector('input[name="toggle"]:checked').value === "true";
+}
+
+function markMessageAsRead(msgId) {
+    const messageElement = document.querySelector(`[data-id='${msgId}']`);
+    if (messageElement) {
+        const tickElement = messageElement.querySelector(".tick");
+        if (tickElement) {
+            tickElement.style.color = "#008000"; // green tick
+            console.log("tick found");
+        }
+        else {
+            console.log("no tick found");
+        }
+    }
 }
 
 // SEND MESSAGE
@@ -192,7 +220,7 @@ function sendMessage() {
 
     // Do NOT send if disconnected
     if (!stompClient || !stompClient.connected) {
-        alert("WebSocket is disconnected. Refresh the page.");
+        alert("Message was not sent!\n You are disconnected. make sure you are connected to the internet ");
         return;
     }
 
@@ -212,32 +240,25 @@ function sendMessage() {
 }
 
 // DISPLAY MESSAGE
-function showMessage(message, local) {
+async function showMessage(message, local) {
     var chatBox = document.getElementById("chat-box");
 
     var wrapper = document.createElement("div");
     wrapper.classList.add("message-bubble");
+    wrapper.setAttribute("data-id", message.msgid); // UNIQUE IDENTIFIER
 
-    var sender = message.from;
-    if(sender === username ){
-        sender+=" (You)";
-    }
+    let sender = message.from === username ? message.from + " (You)" : message.from;
 
-    let timeString;
-    if (local === true) {
-        timeString = new Date().toLocaleTimeString([], {
-            hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
-        });
-    } else {
-        // otherwise use backend timestamp already in message.sentTime
-        timeString = message.sentTime;
-    }
+    let timeString = local
+        ? new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:true })
+        : message.sentTime;
+
     const tickColor = message.msgread ? "#008000" : "#000000"; 
     const tickIcon = `<span class="tick" style="color:${tickColor};">✔</span>`;
 
     wrapper.innerHTML = `
         <div class="message-header">${sender}</div>
-        <div class="message-text">${message.text}</div>
+        <div class="message-text">${message.text+" "+message.msgid}</div>
 
         <div class="message-footer">
             <span class="time-left">${timeString}</span>

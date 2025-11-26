@@ -1,14 +1,11 @@
 package com.justinaji.jproj.controller;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import com.justinaji.jproj.dto.ReadRequest;
 import com.justinaji.jproj.model.WSmessage;
 import com.justinaji.jproj.service.message_servicesimpl;
 
@@ -17,11 +14,12 @@ public class WSChatcontroller {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
-
     private final message_servicesimpl msgservice;
+
     public WSChatcontroller(message_servicesimpl msgservice){
         this.msgservice = msgservice;
     }
+
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(WSmessage message) {
         String username = message.getFrom();
@@ -30,30 +28,20 @@ public class WSChatcontroller {
             return; // do not send message
         }
 
-        String timezone = message.getSentTime();
-        ZoneId zone;
-
-        try {
-            zone = (timezone == null || timezone.trim().isEmpty())
-                    ? ZoneId.of("UTC")
-                    : ZoneId.of(timezone);
-        } catch (Exception e) {
-            zone = ZoneId.of("UTC"); // fallback
-        }
-
-        // Take the instant NOW in UTC, shift to given timezone
-        String finalTime = Instant.now()
-                .atZone(zone)
-                .format(DateTimeFormatter.ofPattern("hh:mm:ss a"));
-
-        message.setSentTime(finalTime);
         message.setMsgread(false);
         String room = message.getRoom();
         if (room!= null) {
+            message.setMsgid(msgservice.Sendmessage(message.getText(), username, room)); 
             messagingTemplate.convertAndSend("/topic/" + room, message); // send only if roomid is valid
-            msgservice.Sendmessage(message.getText(), username, room); 
+            
         }
-
-        
     }
+
+    @MessageMapping("/chat.read")
+    public void markRead(ReadRequest body) {
+        String msgId = body.getMsgId();
+        messagingTemplate.convertAndSend("/topic/read", msgId);
+        msgservice.setread(msgId);
+    }
+
 }
