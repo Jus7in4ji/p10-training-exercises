@@ -194,3 +194,25 @@ h2 {
 .logout-button:hover {
     background-color: #d1f79d;
 }
+
+.message-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.time-left {
+    font-size: 12px;
+    color: #666;
+}
+
+.status-right {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.tick {
+    font-size: 15px;
+}
+

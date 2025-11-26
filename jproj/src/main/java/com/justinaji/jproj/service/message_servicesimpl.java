@@ -64,7 +64,7 @@ public class message_servicesimpl implements mesage_services{
             messageDTO dto = new messageDTO(
                 CommonMethods.decryptMessage( msg.getMessage(), currentChat.getChat_key() ),
                 msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName(),
-                CommonMethods.formatTimestamp(msg.getSentTime())
+                CommonMethods.formatTimestamp(msg.getSentTime()), false
             );
             dtoList.add(dto);
         });
@@ -99,7 +99,7 @@ public class message_servicesimpl implements mesage_services{
 
             String encryptedmessage = CommonMethods.encryptMessage(message, currentChat.getChat_key());
 
-            messages newmsg = new messages(messageId, encryptedmessage, currentUser, currentChat, new Timestamp(System.currentTimeMillis()));  
+            messages newmsg = new messages(messageId, encryptedmessage, currentUser, currentChat, new Timestamp(System.currentTimeMillis()),false);  
             messageRepo.saveAndFlush(newmsg);
         }
         else throw new nochatFound(chatname);
@@ -131,7 +131,7 @@ public class message_servicesimpl implements mesage_services{
                 messageDTO dto = new messageDTO(
                     CommonMethods.decryptMessage(msg.getMessage(), privatechat.getChat_key()),
                     msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName() ,
-                    CommonMethods.formatTimestamp(msg.getSentTime()) 
+                    CommonMethods.formatTimestamp(msg.getSentTime()) , false
                 );
                 dtoList.add(dto);
             });
@@ -169,7 +169,7 @@ public class message_servicesimpl implements mesage_services{
 
             String encryptedmessage = CommonMethods.encryptMessage(message, privatechat.getChat_key());
 
-            messages newmsg = new messages(messageId, encryptedmessage, currentUser, privatechat, new Timestamp(System.currentTimeMillis()));
+            messages newmsg = new messages(messageId, encryptedmessage, currentUser, privatechat, new Timestamp(System.currentTimeMillis()), false);
             messageRepo.saveAndFlush(newmsg);
         }
         else throw new NoUserFound(chatname);
@@ -239,7 +239,8 @@ public class message_servicesimpl implements mesage_services{
                 messageDTO dto = new messageDTO(
                     CommonMethods.decryptMessage(msg.getMessage(), targetchat.getChat_key()),
                     msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName() ,
-                    CommonMethods.formatTimestamp(msg.getSentTime(), timezone) 
+                    CommonMethods.formatTimestamp(msg.getSentTime(), timezone),
+                    msg.isMsgread()
                 );
                 history.add(dto);
             });
@@ -257,7 +258,7 @@ public class message_servicesimpl implements mesage_services{
         chats chat = chatRepo.findById(chatid).orElseThrow(() -> new RuntimeException("Chat id not found: "));
 
 
-        messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, Timestamp.from(Instant.now()));  
+        messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, Timestamp.from(Instant.now()), false);  
         messageRepo.save(newmsg);
     }
 }

@@ -28,4 +28,5 @@ public class messages {
     @Column(columnDefinition = "TIMESTAMP")
     private Timestamp sentTime;
 
+    private boolean msgread = false;
 }

@@ -12,6 +12,7 @@ public class WSmessage {
     private String text;  
     private String sentTime; 
     private String room;
+    private boolean msgread;
 
 }
 

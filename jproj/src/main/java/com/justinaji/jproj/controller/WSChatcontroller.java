@@ -47,7 +47,7 @@ public class WSChatcontroller {
                 .format(DateTimeFormatter.ofPattern("hh:mm:ss a"));
 
         message.setSentTime(finalTime);
-
+        message.setMsgread(false);
         String room = message.getRoom();
         if (room!= null) {
             messagingTemplate.convertAndSend("/topic/" + room, message); // send only if roomid is valid

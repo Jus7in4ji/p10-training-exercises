@@ -156,7 +156,8 @@ async function setRoom() {
                     showMessage({
                         from: entry.sender,
                         text: entry.message,
-                        sentTime: entry.sentTime
+                        sentTime: entry.sentTime,
+                        msgread: entry.msgread
                     }, false);
                 });
             }
@@ -200,6 +201,7 @@ function sendMessage() {
         text: messageContent,
         from: username,
         room: currentRoom,
+        msgread : true,
         sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
 
@@ -230,10 +232,17 @@ function showMessage(message, local) {
         // otherwise use backend timestamp already in message.sentTime
         timeString = message.sentTime;
     }
+    const tickColor = message.msgread ? "#008000" : "#000000"; 
+    const tickIcon = `<span class="tick" style="color:${tickColor};">✔</span>`;
+
     wrapper.innerHTML = `
         <div class="message-header">${sender}</div>
         <div class="message-text">${message.text}</div>
-        <div class="message-time">${timeString}</div>
+
+        <div class="message-footer">
+            <span class="time-left">${timeString}</span>
+            <span class="status-right">${tickIcon}</span>
+        </div>
     `;
 
     chatBox.appendChild(wrapper);

@@ -9,4 +9,5 @@ public class messageDTO {
     private String message;
     private String sender;
     private String sentTime;
+    private boolean msgread;
 }
