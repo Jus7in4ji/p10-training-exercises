@@ -173,6 +173,9 @@ async function setRoom() {
                         sentTime: entry.sentTime,
                         msgread: entry.msgread
                     }, false);
+                    if (entry.from !== username) {
+                        stompClient.send("/app/chat.read", {}, JSON.stringify({msgId: entry.msgid}));
+                    }
                 });
             }
         } catch (err) {
