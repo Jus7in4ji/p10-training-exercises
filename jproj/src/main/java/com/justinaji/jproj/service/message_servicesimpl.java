@@ -65,7 +65,7 @@ public class message_servicesimpl implements mesage_services{
             messageDTO dto = new messageDTO(
                 CommonMethods.decryptMessage( msg.getMessage(), currentChat.getChat_key() ),
                 msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName(),
-                CommonMethods.formatTimestamp(msg.getSentTime()), false
+                CommonMethods.formatTimestamp(msg.getSentTime())
             );
             dtoList.add(dto);
         });
@@ -132,7 +132,7 @@ public class message_servicesimpl implements mesage_services{
                 messageDTO dto = new messageDTO(
                     CommonMethods.decryptMessage(msg.getMessage(), privatechat.getChat_key()),
                     msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName() ,
-                    CommonMethods.formatTimestamp(msg.getSentTime()) , false
+                    CommonMethods.formatTimestamp(msg.getSentTime())
                 );
                 dtoList.add(dto);
             });

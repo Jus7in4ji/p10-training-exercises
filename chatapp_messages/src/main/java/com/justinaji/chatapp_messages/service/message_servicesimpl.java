@@ -15,6 +15,7 @@ import com.justinaji.chatapp_messages.exception.NoUserFound;
 import com.justinaji.chatapp_messages.exception.No_messages;
 import com.justinaji.chatapp_messages.exception.NotaMember;
 import com.justinaji.chatapp_messages.exception.nochatFound;
+import com.justinaji.chatapp_messages.dto.WSmessage;
 import com.justinaji.chatapp_messages.model.chats;
 import com.justinaji.chatapp_messages.model.members;
 import com.justinaji.chatapp_messages.model.messages;
@@ -99,7 +100,7 @@ public class message_servicesimpl implements mesage_services{
 
             String encryptedmessage = CommonMethods.encryptMessage(message, currentChat.getChat_key());
 
-            messages newmsg = new messages(messageId, encryptedmessage, currentUser, currentChat, new Timestamp(System.currentTimeMillis()), false);  
+            messages newmsg = new messages(messageId, encryptedmessage, currentUser, currentChat, new Timestamp(System.currentTimeMillis()),false);  
             messageRepo.saveAndFlush(newmsg);
         }
         else throw new nochatFound(chatname);
@@ -142,6 +143,21 @@ public class message_servicesimpl implements mesage_services{
     return dtoList;
     }
 
+    public void settrueexcept(chats chat , users user){
+        List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(chat);
+         // Loop through each message
+        for (messages msg : chatMessages) {
+            // If message sender is NOT the user passed
+            if (!msg.getSender().equals(user)) {
+                // Set msgread to true
+                msg.setMsgread(true);
+            }
+        }
+
+        // Save all updated messages in batch
+        messageRepo.saveAll(chatMessages);
+    }
+
     @Override
     @Transactional
     public void SendPvtMessage(String chatname, String message){
@@ -169,7 +185,7 @@ public class message_servicesimpl implements mesage_services{
 
             String encryptedmessage = CommonMethods.encryptMessage(message, privatechat.getChat_key());
 
-            messages newmsg = new messages(messageId, encryptedmessage, currentUser, privatechat, new Timestamp(System.currentTimeMillis()),false);
+            messages newmsg = new messages(messageId, encryptedmessage, currentUser, privatechat, new Timestamp(System.currentTimeMillis()), false);
             messageRepo.saveAndFlush(newmsg);
         }
         else throw new NoUserFound(chatname);
@@ -195,6 +211,7 @@ public class message_servicesimpl implements mesage_services{
                 else{
                     result.put("Status",  "Success");
                     result.put("roomid", currentChat.getC_id());
+                    settrueexcept(currentChat, urepo.findByName(username));
                 }
             }
             else result.put("Status","No Chat of name "+chatname+" exists.");
@@ -218,6 +235,7 @@ public class message_servicesimpl implements mesage_services{
                         .findFirst().orElse(null); 
                     result.put("Status",  "Success");
                     result.put("roomid", privatechat.getC_id());
+                    settrueexcept(privatechat, urepo.findByName(username));
                     }
             }
             else result.put("Status","No User of name "+chatname+" exists.");
@@ -226,9 +244,9 @@ public class message_servicesimpl implements mesage_services{
     }
 
     @Override
-    public List<messageDTO> getchathistory(String username , String chatid, String timezone){
+    public List<WSmessage> getchathistory(String username , String chatid, String timezone){
         if (username == null || username.trim().isEmpty())return null;
-        List<messageDTO> history = new ArrayList<>();
+        List<WSmessage> history = new ArrayList<>();
 
         users currentUser = urepo.findByName(username);
         chats targetchat = chatRepo.findById(chatid).orElseThrow(() -> new RuntimeException("Chat id not found: "));
@@ -236,10 +254,13 @@ public class message_servicesimpl implements mesage_services{
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(targetchat);   
         
         chatMessages.forEach(msg -> {
-                messageDTO dto = new messageDTO(
-                    CommonMethods.decryptMessage(msg.getMessage(), targetchat.getChat_key()),
+                WSmessage dto = new WSmessage(
+                    msg.getM_id(),
                     msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName() ,
-                    CommonMethods.formatTimestamp(msg.getSentTime(), timezone) 
+                    CommonMethods.decryptMessage(msg.getMessage(), targetchat.getChat_key()),
+                    CommonMethods.formatTimestamp(msg.getSentTime(), timezone),
+                    null,
+                    msg.isMsgread()
                 );
                 history.add(dto);
             });
@@ -248,7 +269,7 @@ public class message_servicesimpl implements mesage_services{
     }
 
     @Override
-    public void Sendmessage(String text, String username, String chatid){
+    public String Sendmessage(String text, String username, String chatid){
         String messageId;
         do { messageId = CommonMethods.getAlphaNumericString(); } //generate unique chat id
         while (messageRepo.existsById(messageId));
@@ -257,7 +278,14 @@ public class message_servicesimpl implements mesage_services{
         chats chat = chatRepo.findById(chatid).orElseThrow(() -> new RuntimeException("Chat id not found: "));
 
 
-        messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, Timestamp.from(Instant.now()),false);  
+        messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, Timestamp.from(Instant.now()), false);  
         messageRepo.save(newmsg);
+        return messageId;
+    }
+
+    public void setread(String messageid){
+        messages m = messageRepo.findById(messageid).orElseThrow(() -> new RuntimeException("message not found: "));
+        m.setMsgread(true);
+        messageRepo.save(m);
     }
 }

@@ -8,11 +8,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WSmessage {
+    private String msgid;
     private String from;
     private String text;  
     private String sentTime; 
     private String room;
-
+    private boolean msgread;
 }
 
 

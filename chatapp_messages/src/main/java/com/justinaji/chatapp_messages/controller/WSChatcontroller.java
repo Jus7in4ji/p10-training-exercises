@@ -9,6 +9,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import com.justinaji.chatapp_messages.dto.ReadRequest;
 import com.justinaji.chatapp_messages.dto.WSmessage;
 import com.justinaji.chatapp_messages.service.message_servicesimpl;
 
@@ -55,5 +56,12 @@ public class WSChatcontroller {
         }
 
         
+    }
+
+    @MessageMapping("/chat.read")
+    public void markRead(ReadRequest body) {
+        String msgId = body.getMsgId();
+        messagingTemplate.convertAndSend("/topic/read", msgId);
+        msgservice.setread(msgId);
     }
 }

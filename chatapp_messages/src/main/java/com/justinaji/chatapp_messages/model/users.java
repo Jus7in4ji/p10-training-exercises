@@ -1,5 +1,7 @@
 package com.justinaji.chatapp_messages.model; 
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -25,4 +27,8 @@ public class users {
     private String password;
     
     private boolean status = false;
+
+    @Column(name = "recent_login", columnDefinition = "DATETIME")
+    private LocalDateTime recentLogin;
+
 }

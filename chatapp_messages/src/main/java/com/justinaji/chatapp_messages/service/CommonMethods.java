@@ -1,6 +1,5 @@
 package com.justinaji.chatapp_messages.service;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Year;
@@ -10,7 +9,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
