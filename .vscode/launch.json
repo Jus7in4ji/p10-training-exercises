@@ -8,6 +8,27 @@
             "type": "java",
             "name": "UserChat_microservice",
             "request": "launch",
+            "mainClass": "com.justinaji.chatapp_userchats.UserChat_microservice",
+            "projectName": "com.justinaji-chatapp_userchats"
+        },
+        {
+            "type": "java",
+            "name": "Message_microservice",
+            "request": "launch",
+            "mainClass": "com.justinaji.chatapp_messages.Message_microservice",
+            "projectName": "com.justinaji-chatapp_messages"
+        },
+        {
+            "type": "java",
+            "name": "Message_microservice",
+            "request": "launch",
+            "mainClass": "chatapp.chatapp_messages.src.main.java.com.justinaji.chatapp_messages.Message_microservice",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "UserChat_microservice",
+            "request": "launch",
             "mainClass": "ChatApp.chatapp_userchats.src.main.java.com.justinaji.chatapp_userchats.UserChat_microservice",
             "projectName": "p10-training-exercises_fee05145"
         },

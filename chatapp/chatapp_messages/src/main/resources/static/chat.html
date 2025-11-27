@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+    <link rel="stylesheet" href="/css/chat.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="/js/chat.js"></script>
+</head>
+<body>
+
+<div class="user-info">
+    <span id="logged-user">Not Logged In</span>
+    <button onclick="logoutUser()" class="logout-button">Logout</button>
+</div>
+
+<div class="chat-container">
+    <h2>Websocket chat</h2>
+
+    <div class="token-row" style="margin-bottom: 10px;">
+    <input type="password" id="jwt-token" placeholder="Enter JWT token" class="message-input">
+    <button onclick="storeToken()" class="send-button">Set Token</button>
+</div>
+
+<div class="room-slider-row" style="margin-bottom: 10px;">
+    <!-- Toggle on RIGHT -->
+    <div class="toggle-container">
+        <input id="toggle-on" name="toggle" value="false" type="radio" checked>
+        <label for="toggle-on">Private</label>
+
+        <input id="toggle-off" name="toggle" value="true" type="radio">
+        <label for="toggle-off">Group</label>
+    </div>
+    <!-- Chat room input + button on LEFT -->
+    <div class="room-box">
+        <input type="text" id="chat-room" placeholder="Enter chat room (default: public)" class="message-input">
+        <button onclick="setRoom()" class="send-button">Set Room</button>
+    </div>
+
+</div>
+    <div id="chat-box" class="chat-box"></div>
+    <div class="input-container">
+        <input type="text" id="message" class="message-input" placeholder="Enter your message here..." />
+        <button id="send-button" class="send-button" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+</body>
+</html>
