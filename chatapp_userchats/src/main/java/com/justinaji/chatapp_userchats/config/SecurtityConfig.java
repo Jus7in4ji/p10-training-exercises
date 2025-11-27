@@ -33,7 +33,7 @@ public class SecurtityConfig {
             .authorizeHttpRequests(request-> request
                 .requestMatchers("/SignUp","/login",
                     //swagger documentation
-                    "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",)
+                    "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
                 .permitAll()
                 .anyRequest().authenticated()) //makes sure all requests passed must be authenticated
             .httpBasic(customizer -> customizer.disable())

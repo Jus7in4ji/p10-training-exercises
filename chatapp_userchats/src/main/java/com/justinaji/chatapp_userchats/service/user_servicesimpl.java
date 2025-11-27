@@ -1,6 +1,7 @@
 package com.justinaji.chatapp_userchats.service;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ public class user_servicesimpl implements user_services {
     private final MemberRepo memberRepo;
     private final ChatRepo chatRepo;
     private final LogRepo logrepo;
+    
     public user_servicesimpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo, LogRepo logrepo) {
         this.urepo = urepo; 
         this.memberRepo = memberRepo;
@@ -101,6 +103,11 @@ public class user_servicesimpl implements user_services {
     public String login(String username, String password) {
         Authentication authentication = 
             authManager.authenticate(new UsernamePasswordAuthenticationToken(username,password));
+
+            users u = urepo.findByName(username);
+            u.setRecentLogin(LocalDateTime.now());
+            u.setStatus(true);
+            urepo.save(u);
             
             String logid;
             do { logid = CommonMethods.getAlphaNumericString(); } 
