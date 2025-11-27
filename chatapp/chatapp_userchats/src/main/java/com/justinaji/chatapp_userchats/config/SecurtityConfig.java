@@ -30,8 +30,9 @@ public class SecurtityConfig {
 
         return http
             .csrf(customizer -> customizer.disable())
+            .cors(customizer -> customizer.configure(http)) 
             .authorizeHttpRequests(request-> request
-                .requestMatchers("/SignUp","/login",
+                .requestMatchers("/SignUp","/login","/getusername", "/subscribe-room",
                     //swagger documentation
                     "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
                 .permitAll()

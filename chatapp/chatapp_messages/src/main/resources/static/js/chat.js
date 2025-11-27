@@ -18,7 +18,7 @@ async function storeToken() {
     localStorage.setItem("jwtToken", jwtToken);
 
     //get username from jwt token
-    const res = await fetch("/getusername?token=" + encodeURIComponent(jwtToken), {
+    const res = await fetch("http://localhost:8082/getusername?token=" + encodeURIComponent(jwtToken), {
         method: "GET",
         headers: {
             "Accept": "application/json"
@@ -126,7 +126,7 @@ async function setRoom() {
     const token = localStorage.getItem("jwtToken");
 
     // Send request to backend
-    const res = await fetch("/subscribe-room", {
+    const res = await fetch("http://localhost:8082/subscribe-room", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -221,7 +221,7 @@ async function sendMessage() {
     // Do NOT send empty message
     if (messageContent.length === 0) return;
 
-    const res = await fetch("/getusername?token=" + encodeURIComponent(jwtToken), {
+    const res = await fetch("http://localhost:8082/getusername?token=" + encodeURIComponent(jwtToken), {
         method: "GET",
         headers: {
             "Accept": "application/json"

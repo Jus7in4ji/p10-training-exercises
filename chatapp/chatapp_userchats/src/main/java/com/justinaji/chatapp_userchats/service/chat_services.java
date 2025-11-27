@@ -1,5 +1,7 @@
 package com.justinaji.chatapp_userchats.service;
 
+import java.util.HashMap;
+
 import com.justinaji.chatapp_userchats.dto.addmember;
 import com.justinaji.chatapp_userchats.dto.chatdetails;
 
@@ -18,4 +20,6 @@ public interface  chat_services {
     String Makeadmin(String chat, String name);
 
     String LeaveGroup(String chat);
+
+    HashMap<String,String> ischatvalid(String chatname, String username, boolean isgroup);
 }
