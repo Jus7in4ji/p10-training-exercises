@@ -6,6 +6,34 @@
     "configurations": [
         {
             "type": "java",
+            "name": "UserChat_microservice",
+            "request": "launch",
+            "mainClass": "ChatApp.chatapp_userchats.src.main.java.com.justinaji.chatapp_userchats.UserChat_microservice",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "Message_microservice",
+            "request": "launch",
+            "mainClass": "ChatApp.chatapp_messages.src.main.java.com.justinaji.chatapp_messages.Message_microservice",
+            "projectName": "p10-training-exercises_fee05145"
+        },
+        {
+            "type": "java",
+            "name": "Message_microservice",
+            "request": "launch",
+            "mainClass": "com.justinaji.chatapp_messages.Message_microservice",
+            "projectName": "chatapp_messages"
+        },
+        {
+            "type": "java",
+            "name": "UserChat_microservice",
+            "request": "launch",
+            "mainClass": "com.justinaji.chatapp_userchats.UserChat_microservice",
+            "projectName": "chatapp_userchats"
+        },
+        {
+            "type": "java",
             "name": "WebsockettestApplication",
             "request": "launch",
             "mainClass": "com.justianji.websockettest.WebsockettestApplication",

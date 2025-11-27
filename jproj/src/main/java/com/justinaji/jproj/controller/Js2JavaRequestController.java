@@ -71,7 +71,7 @@ public class Js2JavaRequestController {
         return result;
     }
     
-    // messaging
+    // dependent , needs both
     @PostMapping("/gethistory")
     public List<WSmessage> getMethodName(@RequestBody Map<String, String> payload) {   
         return msgservice.getchathistory(payload.get("user"), payload.get("chatid"), payload.get("timezone"));

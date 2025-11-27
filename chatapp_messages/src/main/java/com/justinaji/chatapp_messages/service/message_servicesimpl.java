@@ -191,6 +191,10 @@ public class message_servicesimpl implements mesage_services{
         else throw new NoUserFound(chatname);
     }
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------ Methods used by WEBSOCKET chats -----------------------------------------------------------
+
+    //independent / chat and user only 
     @Override
     public HashMap<String,String> ischatvalid(String chatname, String username, boolean isgroup){
         HashMap<String , String> result = new HashMap<>();
@@ -243,12 +247,12 @@ public class message_servicesimpl implements mesage_services{
         return result;
     }
 
+    //dependent
     @Override
     public List<WSmessage> getchathistory(String username , String chatid, String timezone){
         if (username == null || username.trim().isEmpty())return null;
         List<WSmessage> history = new ArrayList<>();
 
-        users currentUser = urepo.findByName(username);
         chats targetchat = chatRepo.findById(chatid).orElseThrow(() -> new RuntimeException("Chat id not found: "));
 
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(targetchat);   
@@ -256,7 +260,7 @@ public class message_servicesimpl implements mesage_services{
         chatMessages.forEach(msg -> {
                 WSmessage dto = new WSmessage(
                     msg.getM_id(),
-                    msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName() ,
+                    msg.getSender().getName() ,
                     CommonMethods.decryptMessage(msg.getMessage(), targetchat.getChat_key()),
                     CommonMethods.formatTimestamp(msg.getSentTime(), timezone),
                     null,
@@ -268,6 +272,7 @@ public class message_servicesimpl implements mesage_services{
         return history;
     }
 
+    //dependent
     @Override
     public String Sendmessage(String text, String username, String chatid){
         String messageId;
@@ -283,6 +288,7 @@ public class message_servicesimpl implements mesage_services{
         return messageId;
     }
 
+    //independent / messages only 
     public void setread(String messageid){
         messages m = messageRepo.findById(messageid).orElseThrow(() -> new RuntimeException("message not found: "));
         m.setMsgread(true);

@@ -242,7 +242,7 @@ async function sendMessage() {
         text: messageContent,
         from: username,
         room: currentRoom,
-        msgread : true,
+        msgread : false,
         sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
 

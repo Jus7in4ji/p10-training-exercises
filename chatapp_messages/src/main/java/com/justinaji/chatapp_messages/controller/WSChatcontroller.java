@@ -51,8 +51,8 @@ public class WSChatcontroller {
 
         String room = message.getRoom();
         if (room!= null) {
+            message.setMsgid(msgservice.Sendmessage(message.getText(), username, room));//needs chat, user objects from other ms
             messagingTemplate.convertAndSend("/topic/" + room, message); // send only if roomid is valid
-            msgservice.Sendmessage(message.getText(), username, room); 
         }
 
         

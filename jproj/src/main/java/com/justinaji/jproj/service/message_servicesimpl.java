@@ -211,7 +211,6 @@ public class message_servicesimpl implements mesage_services{
                 else{
                     result.put("Status",  "Success");
                     result.put("roomid", currentChat.getC_id());
-                    settrueexcept(currentChat, urepo.findByName(username));
                 }
             }
             else result.put("Status","No Chat of name "+chatname+" exists.");
@@ -235,7 +234,6 @@ public class message_servicesimpl implements mesage_services{
                         .findFirst().orElse(null); 
                     result.put("Status",  "Success");
                     result.put("roomid", privatechat.getC_id());
-                    settrueexcept(privatechat, urepo.findByName(username));
                     }
             }
             else result.put("Status","No User of name "+chatname+" exists.");
@@ -248,7 +246,6 @@ public class message_servicesimpl implements mesage_services{
         if (username == null || username.trim().isEmpty())return null;
         List<WSmessage> history = new ArrayList<>();
 
-        users currentUser = urepo.findByName(username);
         chats targetchat = chatRepo.findById(chatid).orElseThrow(() -> new RuntimeException("Chat id not found: "));
 
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(targetchat);   
@@ -256,7 +253,7 @@ public class message_servicesimpl implements mesage_services{
         chatMessages.forEach(msg -> {
                 WSmessage dto = new WSmessage(
                     msg.getM_id(),
-                    msg.getSender().equals(currentUser)? msg.getSender().getName()+" (You)":msg.getSender().getName() ,
+                    msg.getSender().getName() ,
                     CommonMethods.decryptMessage(msg.getMessage(), targetchat.getChat_key()),
                     CommonMethods.formatTimestamp(msg.getSentTime(), timezone),
                     null,
