@@ -1,11 +1,11 @@
 package com.justinaji.chatapp_userchats.controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,12 +25,14 @@ import io.swagger.v3.oas.annotations.Hidden;
 @RestController
 public class MessageCommunications {
 
-     @Autowired
+    @Autowired
     private JWTService jwtService;
 
     private final UserRepo urepo;
     private final ChatRepo chatrepo ; 
     private final chat_servicesimpl chat_services;
+
+    Logger logger = LoggerFactory.getLogger(MessageCommunications.class);
 
     public MessageCommunications(chat_servicesimpl chat_services, UserRepo urepo,ChatRepo chatrepo){
         this.chat_services = chat_services;
@@ -51,6 +53,7 @@ public class MessageCommunications {
         } catch (Exception e) {
             user.put("username", "");
             user.put("active", "false");
+            logger.error("unable to verify token");
         }
         return user;
     }
@@ -66,7 +69,10 @@ public class MessageCommunications {
         if(result.get("Status").equals("Success")) result.put("Room",room);
         else result.put("Room","[None]");
 
-        if(room==null) result.put("Status", "Disconnected from Chat");
+        if(room==null){ 
+            result.put("Status", "Disconnected from Chat");
+            logger.info("user "+payload.get("user")+ " has been disconnected from the chat");
+        }
 
         return result;
     }

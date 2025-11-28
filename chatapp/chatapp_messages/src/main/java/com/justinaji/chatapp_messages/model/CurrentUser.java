@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public class CurrentUser implements UserDetails {
 
-    private users user;
+    private final users user;
     public CurrentUser(users user){
         this.user = user;
     }

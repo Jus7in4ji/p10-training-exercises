@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.justinaji.chatapp_userchats.dto.addmember;
@@ -41,14 +43,18 @@ public class chat_servicesimpl implements chat_services {
         this.logRepo = logRepo;
     }
 
+    Logger logger = LoggerFactory.getLogger(chat_servicesimpl.class);
+
     @Override
     @Transactional
     public chatdetails CreateChat(addmember newGroup) {
         Set<String> membernames = new HashSet<>();
         List<chatmember> groupmembers = newGroup.getMembers();
-
+        
         if (newGroup.getName() == null || newGroup.getName().isEmpty()|| groupmembers.size()<=1) throw new formatmismatch();
-        if (chatRepo.existsByName(newGroup.getName())|| urepo.existsByName(newGroup.getName())) throw new Username_taken();
+
+        String groupname = newGroup.getName();
+        if (chatRepo.existsByName(groupname)|| urepo.existsByName(groupname)) throw new Username_taken();
 
         String chatId;
         do { chatId = CommonMethods.getAlphaNumericString(); } //generate unique chat id
@@ -56,7 +62,7 @@ public class chat_servicesimpl implements chat_services {
 
         users creator = CommonMethods.getCurrentUser();//get logged in user
 
-        chats chat = new chats(chatId, newGroup.getName(),creator,true, CommonMethods.generateKey()); //new group chat 
+        chats chat = new chats(chatId, groupname,creator,true, CommonMethods.generateKey()); //new group chat 
         chatRepo.save(chat);
         
         groupmembers.add(new chatmember(creator.getName(), true)); //add current user to memberslist
@@ -76,9 +82,11 @@ public class chat_servicesimpl implements chat_services {
         do { logid = CommonMethods.getAlphaNumericString(); } 
         while (logRepo.existsById(logid));
 
-        Logs l = new Logs(logid, "Chat Creation", "New Groupchat '"+newGroup.getName()+"' has been created.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
+        Logs l = new Logs(logid, "Chat Creation", "New Groupchat '"+groupname+"' has been created.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
         logRepo.save(l);
-        return new chatdetails(newGroup.getName(), creator.getName(), membernames.size(), membernames); 
+        logger.info("New chat "+groupname+" was created");
+
+        return new chatdetails(groupname, creator.getName(), membernames.size(), membernames); 
     }
 
     @Override
@@ -129,12 +137,12 @@ public class chat_servicesimpl implements chat_services {
         memberRepo.save(new members(chatRepo.findByName(chat),urepo.findByName(name),isadmin));
 
         String logid;
-            
         do { logid = CommonMethods.getAlphaNumericString(); } 
         while (logRepo.existsById(logid));
 
         Logs l = new Logs(logid, "Addition to chat", "User '"+name+"' has been added to the chat '"+chat+"'.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
         logRepo.save(l);
+        logger.info("Added "+name+" to "+chat+" .");
 
         return name+ " has been added into "+ chat ;
     }
@@ -154,12 +162,12 @@ public class chat_servicesimpl implements chat_services {
         memberRepo.delete(targetMember);
 
         String logid;
-            
         do { logid = CommonMethods.getAlphaNumericString(); } 
         while (logRepo.existsById(logid));
 
         Logs l = new Logs(logid, "Removal from chat", "User '"+name+"' has been removed from the chat '"+chat+"'.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
         logRepo.save(l);
+        logger.info("Removed "+name+" from "+chat+" .");
 
         return name+ " has been removed from "+ chat ;
     }
@@ -186,6 +194,7 @@ public class chat_servicesimpl implements chat_services {
 
         Logs l = new Logs(logid, "Granted Admin Role", "User '"+name+"' has granted Admin role in the chat '"+chat+"'.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
         logRepo.save(l);
+        logger.info(name+"granted admin privileges in "+chat+" .");
 
         return name + " is now an admin of " + chat;
     }
@@ -211,6 +220,7 @@ public class chat_servicesimpl implements chat_services {
 
         Logs l = new Logs(logid, "User Exited", "User '"+CommonMethods.getCurrentUser().getName()+"' has left the chat '"+chat+"'.", new Timestamp(System.currentTimeMillis()), CommonMethods.getCurrentUser());
         logRepo.save(l);
+        logger.info(CommonMethods.getCurrentUser().getName()+" has left "+chat+" .");
 
         return "You are no longer a member of "+chat;
     }

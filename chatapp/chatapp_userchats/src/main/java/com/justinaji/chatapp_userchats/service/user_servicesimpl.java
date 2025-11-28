@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,6 +47,8 @@ public class user_servicesimpl implements user_services {
     JWTService jwtservice;
 
     private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
+
+    Logger logger = LoggerFactory.getLogger(user_servicesimpl.class);
 
     @Override
     @Transactional
@@ -96,6 +100,7 @@ public class user_servicesimpl implements user_services {
 
         Logs l = new Logs(logid, "Sign up", "New User '"+user.getName()+"' has Signed up.", new Timestamp(System.currentTimeMillis()), user);
         logrepo.save(l);
+        logger.info("user "+user.getName()+" registered ");
         return "New user '" + user.getEmail() + "' registered successfully";
     }
 
@@ -115,6 +120,7 @@ public class user_servicesimpl implements user_services {
 
             Logs l = new Logs(logid, "Login", "User '"+username+"' has logged in", new Timestamp(System.currentTimeMillis()), urepo.findByName(username));
             logrepo.save(l);
+            logger.info("user "+username+" logged in. ");
 
             return jwtservice.gentoken(username);
     }

@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,7 +23,7 @@ public class message_servicesimpl implements mesage_services{
     @Autowired
     private WebClient webClient;
 
-
+    Logger logger = LoggerFactory.getLogger(message_servicesimpl.class);
     private final MessageRepo messageRepo;
     public message_servicesimpl( MessageRepo messageRepo) {
         this.messageRepo = messageRepo;
@@ -38,16 +40,10 @@ public class message_servicesimpl implements mesage_services{
         List<WSmessage> history = new ArrayList<>();
 
          // CALL MS1 to get chat object
-        chats targetchat  = webClient.get()
-            .uri("http://localhost:8082/getchat?chatid=" + chatid)
-            .retrieve()
-            .bodyToMono(chats.class).block();
+        chats targetchat  = webClient.get().uri("http://localhost:8082/getchat?chatid=" + chatid).retrieve().bodyToMono(chats.class).block();
 
-        
-        
-        if (targetchat == null) {
-            throw new RuntimeException("Chat ID not found!");
-        }
+        if (targetchat == null) throw new RuntimeException("Chat ID not found!");
+
 
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(targetchat);   
         
@@ -81,6 +77,8 @@ public class message_servicesimpl implements mesage_services{
         
         messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, Timestamp.from(Instant.now()), false);  
         messageRepo.save(newmsg);
+        logger.info("message sent : "+username+" -->  chat("+chatid+"). ");
+
         return messageId;
     }
 

@@ -32,7 +32,9 @@ public class SecurtityConfig {
             .csrf(customizer -> customizer.disable())
             .cors(customizer -> customizer.configure(http)) 
             .authorizeHttpRequests(request-> request
-                .requestMatchers("/SignUp","/login","/getusername", "/subscribe-room","/getchat", "/getuser",
+                .requestMatchers("/SignUp","/login",
+                    // endpoints accessed by messages microservice
+                    "/getusername", "/subscribe-room","/getchat", "/getuser",
                     //swagger documentation
                     "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
                 .permitAll()
