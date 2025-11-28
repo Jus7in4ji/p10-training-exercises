@@ -32,7 +32,7 @@ public class SecurtityConfig {
             .csrf(customizer -> customizer.disable())
             .cors(customizer -> customizer.configure(http)) 
             .authorizeHttpRequests(request-> request
-                .requestMatchers("/SignUp","/login", "/subscribe-room", "/gethistory", "/getusername",
+                .requestMatchers("/SignUp","/login", "/gethistory",
                     //swagger documentation
                     "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
                     // websocket related requests

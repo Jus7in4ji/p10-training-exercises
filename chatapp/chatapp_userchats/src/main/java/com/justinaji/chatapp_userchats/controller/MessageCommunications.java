@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.justinaji.chatapp_userchats.model.chats;
 import com.justinaji.chatapp_userchats.model.users;
+import com.justinaji.chatapp_userchats.repository.ChatRepo;
 import com.justinaji.chatapp_userchats.repository.UserRepo;
 import com.justinaji.chatapp_userchats.service.JWTService;
 import com.justinaji.chatapp_userchats.service.chat_servicesimpl;
@@ -21,19 +23,21 @@ import io.swagger.v3.oas.annotations.Hidden;
 
 @Hidden
 @RestController
-public class Js2JavaRequestController {
+public class MessageCommunications {
 
      @Autowired
     private JWTService jwtService;
 
-    @Autowired
-    private UserRepo urepo;
-
+    private final UserRepo urepo;
+    private final ChatRepo chatrepo ; 
     private final chat_servicesimpl chat_services;
-    public Js2JavaRequestController(chat_servicesimpl chat_services){
-        this.chat_services = chat_services;
-    }
 
+    public MessageCommunications(chat_servicesimpl chat_services, UserRepo urepo,ChatRepo chatrepo){
+        this.chat_services = chat_services;
+        this.urepo = urepo;
+        this.chatrepo = chatrepo;
+    }
+//----------------------------------------------  Communication w/ frontend ( js->java )  ------------------------------------------------------------
     //user&chat
     @GetMapping("/getusername")
     public Map<String, String> getUsername(@RequestParam String token) {
@@ -66,5 +70,20 @@ public class Js2JavaRequestController {
 
         return result;
     }
+
+//----------------------------------------------  Communcation w/ message microservices  ----------------------------------------------------------------
+
+    @GetMapping("/getuser")
+    public users getuserfromname(@RequestParam String username) {
+        users u = urepo.findByName(username);
+        return u;
+    }
+    
+    @GetMapping("/getchat")
+    public chats getchatfromid(@RequestParam String chatid) {
+        chats c = chatrepo.findById(chatid).orElse(null);
+        return c;
+    }
+    
 
 }

@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.justinaji.chatapp_messages.dto.messageDTO;
 import com.justinaji.chatapp_messages.exception.NoUserFound;
@@ -26,9 +28,13 @@ import com.justinaji.chatapp_messages.repository.MessageRepo;
 import com.justinaji.chatapp_messages.repository.UserRepo;
 
 import jakarta.transaction.Transactional;
+import reactor.core.publisher.Mono;
 
 @Service
 public class message_servicesimpl implements mesage_services{
+
+    @Autowired
+    private WebClient webClient;
 
     private final UserRepo urepo;
     private final MemberRepo memberRepo;
@@ -192,60 +198,7 @@ public class message_servicesimpl implements mesage_services{
     }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------ Methods used by WEBSOCKET chats -----------------------------------------------------------
-
-    //independent / chat and user only 
-    @Override
-    public HashMap<String,String> ischatvalid(String chatname, String username, boolean isgroup){
-        HashMap<String , String> result = new HashMap<>();
-        result.put("roomid", null);
-
-        if (isgroup){
-            if(chatRepo.existsByName(chatname)){
-                chats currentChat = chatRepo.findByName(chatname);
-                List<members> chatMembers = memberRepo.findByChat(currentChat);
-
-                members loggedInMember = chatMembers //Check if current user is part of this chat
-                        .stream()
-                        .filter(m -> m.getMember().getName().equals(username))
-                        .findFirst()
-                        .orElse(null);
-                        
-                if (loggedInMember == null) result.put("Status",  username+" is not a member of "+chatname+".");
-                else{
-                    result.put("Status",  "Success");
-                    result.put("roomid", currentChat.getC_id());
-                    settrueexcept(currentChat, urepo.findByName(username));
-                }
-            }
-            else result.put("Status","No Chat of name "+chatname+" exists.");
-        }
-        else{
-            if(urepo.existsByName(chatname)){
-                if(chatname.equals(username)) result.put("Status","Make sure the username isn't your own.");
-                
-                else{
-                    users targetUser = urepo.findByName(chatname);
-                    Set<chats> myChatsSet = memberRepo.findByMember(urepo.findByName(username))
-                        .stream()
-                        .map(m -> m.getChat())
-                        .collect(Collectors.toSet()); //chats with current user
-
-                    chats privatechat = memberRepo.findByMember(targetUser)
-                        .stream()
-                        .map(m->m.getChat())
-                        .filter(mchat->myChatsSet.contains(mchat))
-                        .filter(mchat-> !mchat.isIsgroup())
-                        .findFirst().orElse(null); 
-                    result.put("Status",  "Success");
-                    result.put("roomid", privatechat.getC_id());
-                    settrueexcept(privatechat, urepo.findByName(username));
-                    }
-            }
-            else result.put("Status","No User of name "+chatname+" exists.");
-        }
-        return result;
-    }
+//------------------------------------ Methods used by WEBSOCKET chats ------------------------------------------------------------------------------
 
     //dependent
     @Override
@@ -253,7 +206,17 @@ public class message_servicesimpl implements mesage_services{
         if (username == null || username.trim().isEmpty())return null;
         List<WSmessage> history = new ArrayList<>();
 
-        chats targetchat = chatRepo.findById(chatid).orElseThrow(() -> new RuntimeException("Chat id not found: "));
+         // CALL MS1 to get chat object
+        Mono<chats> chatMono = webClient.get()
+            .uri("http://localhost:8082/getchat?chatid=" + chatid)
+            .retrieve()
+            .bodyToMono(chats.class);
+
+        chats targetchat = chatMono.block(); // convert reactive to normal object
+        
+        if (targetchat == null) {
+            throw new RuntimeException("Chat ID not found!");
+        }
 
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(targetchat);   
         
@@ -279,10 +242,12 @@ public class message_servicesimpl implements mesage_services{
         do { messageId = CommonMethods.getAlphaNumericString(); } //generate unique chat id
         while (messageRepo.existsById(messageId));
 
-        users sender = urepo.findByName(username);
-        chats chat = chatRepo.findById(chatid).orElseThrow(() -> new RuntimeException("Chat id not found: "));
+        users sender = webClient.get().uri("http://localhost:8082/getuser?username=" + username).retrieve().bodyToMono(users.class).block();
+        if (sender == null) throw new RuntimeException("user not found!");
 
-
+        chats chat  = webClient.get().uri("http://localhost:8082/getchat?chatid=" + chatid).retrieve().bodyToMono(chats.class).block();
+        if (chat == null) throw new RuntimeException("Chat ID not found!");
+        
         messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, Timestamp.from(Instant.now()), false);  
         messageRepo.save(newmsg);
         return messageId;

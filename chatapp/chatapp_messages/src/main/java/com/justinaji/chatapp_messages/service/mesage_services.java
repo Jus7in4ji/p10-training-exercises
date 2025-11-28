@@ -16,8 +16,6 @@ public interface mesage_services {
 
     void SendGrpMessage(String chatname, String message) ;
 
-    HashMap<String,String> ischatvalid(String chatname, String username, boolean isgroup);
-
     List<WSmessage> getchathistory(String username , String chatid, String timezone);
 
     String Sendmessage(String text, String username, String chatid);
