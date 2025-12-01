@@ -3,7 +3,7 @@ var jwtToken = null;
 var currentRoom = null; // default room
 var activeSubscriptions = [];
 var username = null;
-
+const gatewayurl = "http://localhost:8080"
 
 async function storeToken() {
     jwtToken = document.getElementById("jwt-token").value.trim();
@@ -18,7 +18,7 @@ async function storeToken() {
     localStorage.setItem("jwtToken", jwtToken);
 
     //get username from jwt token
-    const res = await fetch("http://localhost:8080/userchat/getusername?token=" + encodeURIComponent(jwtToken), {
+    const res = await fetch(gatewayurl+"/userchat/getusername?token=" + encodeURIComponent(jwtToken), {
         method: "GET",
         headers: {
             "Accept": "application/json"
@@ -126,7 +126,7 @@ async function setRoom() {
     const token = localStorage.getItem("jwtToken");
 
     // Send request to backend
-    const res = await fetch("http://localhost:8080/userchat/subscribe-room", {
+    const res = await fetch(gatewayurl+"/userchat/subscribe-room", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -150,7 +150,7 @@ async function setRoom() {
     // LOAD CHAT HISTORY
     if (currentRoom) {
         try {
-            const historyResponse = await fetch("http://localhost:8080/msg/gethistory", {
+            const historyResponse = await fetch(gatewayurl+"/msg/gethistory", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -221,7 +221,7 @@ async function sendMessage() {
     // Do NOT send empty message
     if (messageContent.length === 0) return;
 
-    const res = await fetch("http://localhost:8080/userchat/getusername?token=" + encodeURIComponent(jwtToken), {
+    const res = await fetch(gatewayurl+"/userchat/getusername?token=" + encodeURIComponent(jwtToken), {
         method: "GET",
         headers: {
             "Accept": "application/json"
