@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.justinaji.chatapp_messages.dto.WSmessage;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 
 @Hidden
 @RestController
+@RequestMapping("/msg")
 public class Js2JavaRequestController {
     
     private final message_servicesimpl msgservice;

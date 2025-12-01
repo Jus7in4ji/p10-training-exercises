@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "GatewayApplication",
+            "request": "launch",
+            "mainClass": "com.justinaji.gateway.GatewayApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
             "name": "UserChat_microservice",
             "request": "launch",
             "mainClass": "com.justinaji.chatapp_userchats.UserChat_microservice",

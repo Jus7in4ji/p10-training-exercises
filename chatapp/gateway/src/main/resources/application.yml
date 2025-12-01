@@ -1,0 +1,26 @@
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "http://localhost:8081"
+              - "http://localhost:8082"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: chatapp_userchats
+          uri: http://localhost:8082
+          predicates:
+            - Path=/userchat/**
+        - id: chatapp_messages
+          uri: http://localhost:8081
+          predicates:
+            - Path=/msg/**

@@ -20,9 +20,11 @@ import com.justinaji.chatapp_userchats.service.JWTService;
 import com.justinaji.chatapp_userchats.service.chat_servicesimpl;
 
 import io.swagger.v3.oas.annotations.Hidden;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Hidden
 @RestController
+@RequestMapping("/userchat")
 public class MessageCommunications {
 
     @Autowired
