@@ -2,6 +2,7 @@ package com.justinaji.chatapp_userchats.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import com.justinaji.chatapp_userchats.dto.Loginform;
@@ -11,6 +12,7 @@ import com.justinaji.chatapp_userchats.service.user_servicesimpl;
 
 
 @RestController
+@RequestMapping("/auth")
 public class UserController { 
 
     private final user_servicesimpl userservice;
