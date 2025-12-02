@@ -26,7 +26,7 @@ public class CommonMethods {
         return sb.toString(); 
     } 
 
-    static users getCurrentUser(){
+    public static users getCurrentUser(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         CurrentUser user = (CurrentUser) auth.getPrincipal();
         return user.getUser();

@@ -30,7 +30,14 @@ spring:
           predicates:
             - Path=/chats/**
             
+        - id: chatapp_test
+          uri: http://localhost:8082
+          predicates:
+            - Path=/new/**
+            
         - id: chatapp_messages
           uri: http://localhost:8081
           predicates:
             - Path=/msg/**
+jwt:
+  secret: xfjlcyD4pLcXF011QjeJPyEKdnxxTSUq9AJ2AcqC0+o=
