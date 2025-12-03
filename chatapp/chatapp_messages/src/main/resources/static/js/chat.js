@@ -18,15 +18,17 @@ async function storeToken() {
     localStorage.setItem("jwtToken", jwtToken);
 
     //get username from jwt token
-    const res = await fetch(gatewayurl+"/userchat/getusername?token=" + encodeURIComponent(jwtToken), {
+    const res = await fetch(gatewayurl + "/new/getname", {
         method: "GET",
         headers: {
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "Authorization": "Bearer " + jwtToken
         }
     });
 
     const data = await res.json();
     username = data.username;
+
 
     if (!username) {
         alert("Invalid Token. Could not extract username.");
@@ -129,7 +131,9 @@ async function setRoom() {
     const res = await fetch(gatewayurl+"/userchat/subscribe-room", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + jwtToken
         },
         body: JSON.stringify({
             room: requestedRoom,
@@ -153,7 +157,9 @@ async function setRoom() {
             const historyResponse = await fetch(gatewayurl+"/msg/gethistory", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + jwtToken
                 },
                 body: JSON.stringify({
                     chatid: currentRoom,
@@ -221,10 +227,11 @@ async function sendMessage() {
     // Do NOT send empty message
     if (messageContent.length === 0) return;
 
-    const res = await fetch(gatewayurl+"/userchat/getusername?token=" + encodeURIComponent(jwtToken), {
+    const res = await fetch(gatewayurl+"/userchat/isactive", {
         method: "GET",
         headers: {
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "Authorization": "Bearer " + jwtToken
         }
     });
 

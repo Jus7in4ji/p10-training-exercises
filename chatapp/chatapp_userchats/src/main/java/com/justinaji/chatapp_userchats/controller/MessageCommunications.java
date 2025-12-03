@@ -20,7 +20,10 @@ import com.justinaji.chatapp_userchats.service.JWTService;
 import com.justinaji.chatapp_userchats.service.chat_servicesimpl;
 
 import io.swagger.v3.oas.annotations.Hidden;
+
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.justinaji.chatapp_userchats.service.CommonMethods;
 
 @Hidden
 @RestController
@@ -43,13 +46,13 @@ public class MessageCommunications {
     }
 //----------------------------------------------  Communication w/ frontend ( js->java )  ------------------------------------------------------------
     //user&chat
-    @GetMapping("/getusername")
-    public Map<String, String> getUsername(@RequestParam String token) {
+    @GetMapping("/isactive")
+    public Map<String, String> getUsername() {
         Map<String, String> user = new HashMap<>();
         try {
-            String username = jwtService.extractUser(token);
-            user.put("username", username);
-            users u = urepo.findByName(username);
+            
+            users u = CommonMethods.getCurrentUser();
+            user.put("username", u.getName());
             user.put("active", u.isStatus()?"true":"false");
 
         } catch (Exception e) {
