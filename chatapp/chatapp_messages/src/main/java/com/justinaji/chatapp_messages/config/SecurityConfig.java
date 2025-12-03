@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-public class SecurtityConfig {
+public class SecurityConfig {
 
     @Autowired
     private UserDetailsService userDetailsService;
@@ -32,9 +32,7 @@ public class SecurtityConfig {
             .csrf(customizer -> customizer.disable())
             .cors(customizer -> customizer.configure(http)) 
             .authorizeHttpRequests(request-> request
-                .requestMatchers("/SignUp","/login", "/msg/**",
-                    //swagger documentation
-                    "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
+                .requestMatchers(
                     // websocket related requests
                     "/chat.html", "/chat/**", "/chat", "/chat/info",  "/topic/**", "/app/**",
                     // Static resources

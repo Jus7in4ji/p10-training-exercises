@@ -45,7 +45,11 @@ public class MessageCommunications {
         this.chatrepo = chatrepo;
     }
 //----------------------------------------------  Communication w/ frontend ( js->java )  ------------------------------------------------------------
-    //user&chat
+    @GetMapping("/getname")
+    public Map<String, String> getusername() {
+        return Map.of("username", CommonMethods.getCurrentUser().getName());
+    }    
+
     @GetMapping("/isactive")
     public Map<String, String> getUsername() {
         Map<String, String> user = new HashMap<>();

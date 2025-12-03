@@ -16,9 +16,10 @@ async function storeToken() {
 
     // Save token
     localStorage.setItem("jwtToken", jwtToken);
+    document.getElementById("chat-box").innerHTML = "";
 
     //get username from jwt token
-    const res = await fetch(gatewayurl + "/new/getname", {
+    const res = await fetch(gatewayurl + "/userchat/getname", {
         method: "GET",
         headers: {
             "Accept": "application/json",
@@ -32,12 +33,13 @@ async function storeToken() {
 
     if (!username) {
         alert("Invalid Token. Could not extract username.");
+        document.getElementById("logged-user").innerText = "";
+        localStorage.setItem("username", null);
         return;
     }
 
-    localStorage.setItem("username", username);
     document.getElementById("logged-user").innerText = username;
-
+    localStorage.setItem("username", username);
     alert("Token set .\nLogged in as: " + username);
 
     document.getElementById("jwt-token").value = "";
@@ -114,7 +116,10 @@ function unsubscribeAll() {
 // user enters room name and clicks "Set Room"
 async function setRoom() {
     let requestedRoom = document.getElementById("chat-room").value.trim();
-
+    if (!jwtToken) {
+        alert("Please login before connecting to any room");
+        return;
+    }
 
     unsubscribeAll();
     const chatBox = document.getElementById("chat-box").innerHTML = "";
@@ -240,6 +245,9 @@ async function sendMessage() {
     active = data.active;
 
     if (!username||!stompClient || !stompClient.connected|| active!= "true") {
+        const chatBox = document.getElementById("chat-box").innerHTML = "";
+        jwtToken = null;
+        unsubscribeAll();
         alert("Message was not sent!\n You are disconnected. make sure you are connected to the internet ");
         return;
     }
