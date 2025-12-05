@@ -40,9 +40,11 @@ public class message_servicesimpl implements mesage_services{
         if (username == null || username.trim().isEmpty())return null;
         List<WSmessage> history = new ArrayList<>();
 
-         // CALL MS1 to get chat object
-        chats targetchat  = webClient.get().uri("http://chatapp-userchats:8082/userchat/getchat?chatid=" + chatid).retrieve().bodyToMono(chats.class).block();
-
+        chats targetchat = webClient.get()
+            .uri("/userchat/getchat?chatid=" + chatid)  // Changed: removed http://localhost:8082
+            .retrieve()
+            .bodyToMono(chats.class)
+            .block();
         if (targetchat == null) throw new RuntimeException("Chat ID not found!");
 
 
@@ -70,10 +72,18 @@ public class message_servicesimpl implements mesage_services{
         do { messageId = CommonMethods.getAlphaNumericString(); } //generate unique chat id
         while (messageRepo.existsById(messageId));
 
-        users sender = webClient.get().uri("http://chatapp-userchats:8082/userchat/getuser?username=" + username).retrieve().bodyToMono(users.class).block();
+        users sender = webClient.get()
+            .uri("/userchat/getuser?username=" + username)
+            .retrieve()
+            .bodyToMono(users.class)
+            .block();
         if (sender == null) throw new RuntimeException("user not found!");
 
-        chats chat  = webClient.get().uri("http://chatapp-userchats:8082/userchat/getchat?chatid=" + chatid).retrieve().bodyToMono(chats.class).block();
+        chats chat = webClient.get()
+            .uri("/userchat/getchat?chatid=" + chatid)  // Changed: removed http://localhost:8082
+            .retrieve()
+            .bodyToMono(chats.class)
+            .block();        
         if (chat == null) throw new RuntimeException("Chat ID not found!");
         
         messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, Timestamp.from(Instant.now()), false);  
