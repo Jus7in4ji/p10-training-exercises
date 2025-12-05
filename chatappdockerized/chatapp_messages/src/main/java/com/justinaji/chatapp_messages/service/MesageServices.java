@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.justinaji.chatapp_messages.dto.WSmessage;
 
-public interface mesage_services {
+public interface MesageServices {
 
     List<WSmessage> getchathistory(String username , String chatid, String timezone);
 

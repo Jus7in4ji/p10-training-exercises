@@ -30,20 +30,20 @@ import com.justinaji.chatapp_userchats.repository.UserRepo;
 import jakarta.transaction.Transactional;
 
 @Service
-public class chat_servicesimpl implements chat_services {
+public class ChatServicesImpl implements ChatServices {
 
     private final ChatRepo chatRepo;
     private final MemberRepo memberRepo;
     private final UserRepo urepo;
     private final LogRepo logRepo;
-    public chat_servicesimpl(ChatRepo chatRepo, MemberRepo memberRepo,UserRepo urepo, LogRepo logRepo){
+    public ChatServicesImpl(ChatRepo chatRepo, MemberRepo memberRepo,UserRepo urepo, LogRepo logRepo){
         this.chatRepo = chatRepo;
         this.memberRepo = memberRepo;
         this.urepo = urepo;
         this.logRepo = logRepo;
     }
 
-    Logger logger = LoggerFactory.getLogger(chat_servicesimpl.class);
+    Logger logger = LoggerFactory.getLogger(ChatServicesImpl.class);
 
     @Override
     @Transactional

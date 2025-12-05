@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,8 +15,7 @@ import com.justinaji.chatapp_userchats.model.chats;
 import com.justinaji.chatapp_userchats.model.users;
 import com.justinaji.chatapp_userchats.repository.ChatRepo;
 import com.justinaji.chatapp_userchats.repository.UserRepo;
-import com.justinaji.chatapp_userchats.service.JWTService;
-import com.justinaji.chatapp_userchats.service.chat_servicesimpl;
+import com.justinaji.chatapp_userchats.service.ChatServicesImpl;
 
 import io.swagger.v3.oas.annotations.Hidden;
 
@@ -30,16 +28,13 @@ import com.justinaji.chatapp_userchats.service.CommonMethods;
 @RequestMapping("/userchat")
 public class MessageCommunications {
 
-    @Autowired
-    private JWTService jwtService;
-
     private final UserRepo urepo;
     private final ChatRepo chatrepo ; 
-    private final chat_servicesimpl chat_services;
+    private final ChatServicesImpl chat_services;
 
     Logger logger = LoggerFactory.getLogger(MessageCommunications.class);
 
-    public MessageCommunications(chat_servicesimpl chat_services, UserRepo urepo,ChatRepo chatrepo){
+    public MessageCommunications(ChatServicesImpl chat_services, UserRepo urepo,ChatRepo chatrepo){
         this.chat_services = chat_services;
         this.urepo = urepo;
         this.chatrepo = chatrepo;

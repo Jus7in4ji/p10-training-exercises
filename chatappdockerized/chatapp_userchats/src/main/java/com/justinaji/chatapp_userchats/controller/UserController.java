@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import com.justinaji.chatapp_userchats.dto.Loginform;
 import com.justinaji.chatapp_userchats.model.users;
-import com.justinaji.chatapp_userchats.service.user_servicesimpl;
+import com.justinaji.chatapp_userchats.service.UserServicesImpl;
 
 
 
@@ -15,8 +15,8 @@ import com.justinaji.chatapp_userchats.service.user_servicesimpl;
 @RequestMapping("/auth")
 public class UserController { 
 
-    private final user_servicesimpl userservice;
-    public UserController(user_servicesimpl userservice) {// Constructor injection
+    private final UserServicesImpl userservice;
+    public UserController(UserServicesImpl userservice) {// Constructor injection
         this.userservice = userservice;
     }
 

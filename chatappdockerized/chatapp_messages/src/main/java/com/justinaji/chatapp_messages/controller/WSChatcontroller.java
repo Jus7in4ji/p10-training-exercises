@@ -13,7 +13,7 @@ import org.springframework.stereotype.Controller;
 
 import com.justinaji.chatapp_messages.dto.ReadRequest;
 import com.justinaji.chatapp_messages.dto.WSmessage;
-import com.justinaji.chatapp_messages.service.message_servicesimpl;
+import com.justinaji.chatapp_messages.service.MessageServicesImpl;
 
 @Controller
 public class WSChatcontroller {
@@ -23,8 +23,8 @@ public class WSChatcontroller {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    private final message_servicesimpl msgservice;
-    public WSChatcontroller(message_servicesimpl msgservice){
+    private final MessageServicesImpl msgservice;
+    public WSChatcontroller(MessageServicesImpl msgservice){
         this.msgservice = msgservice;
     }
     @MessageMapping("/chat.sendMessage")

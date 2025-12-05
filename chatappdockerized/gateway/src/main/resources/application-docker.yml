@@ -38,11 +38,6 @@ spring:
           predicates:
             - Path=/chats/**
             
-        - id: chatapp_test
-          uri: http://chatapp-userchats:8082
-          predicates:
-            - Path=/new/**
-            
         - id: chatapp_messages
           uri: http://chatapp-messages:8081
           predicates:

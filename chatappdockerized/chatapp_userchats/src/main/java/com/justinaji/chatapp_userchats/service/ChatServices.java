@@ -5,7 +5,7 @@ import java.util.HashMap;
 import com.justinaji.chatapp_userchats.dto.addmember;
 import com.justinaji.chatapp_userchats.dto.chatdetails;
 
-public interface  chat_services {
+public interface  ChatServices {
 
     chatdetails CreateChat( addmember newGroup);
 

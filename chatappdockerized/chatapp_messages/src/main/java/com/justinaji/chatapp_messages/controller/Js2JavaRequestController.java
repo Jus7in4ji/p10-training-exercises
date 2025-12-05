@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.justinaji.chatapp_messages.dto.WSmessage;
-import com.justinaji.chatapp_messages.service.message_servicesimpl;
+import com.justinaji.chatapp_messages.service.MessageServicesImpl;
 
 import io.swagger.v3.oas.annotations.Hidden;
 
@@ -18,8 +18,8 @@ import io.swagger.v3.oas.annotations.Hidden;
 @RequestMapping("/msg")
 public class Js2JavaRequestController {
     
-    private final message_servicesimpl msgservice;
-    public Js2JavaRequestController(message_servicesimpl msgservice){
+    private final MessageServicesImpl msgservice;
+    public Js2JavaRequestController(MessageServicesImpl msgservice){
         this.msgservice = msgservice;
     }
    

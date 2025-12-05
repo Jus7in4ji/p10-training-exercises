@@ -18,15 +18,15 @@ import com.justinaji.chatapp_messages.model.users;
 import com.justinaji.chatapp_messages.repository.MessageRepo;
 
 @Service
-public class message_servicesimpl implements mesage_services{
+public class MessageServicesImpl implements MesageServices{
 
     @Autowired
     private WebClient webClient;
 
-    Logger logger = LoggerFactory.getLogger(message_servicesimpl.class);
+    Logger logger = LoggerFactory.getLogger(MessageServicesImpl.class);
 
     private final MessageRepo messageRepo;
-    public message_servicesimpl( MessageRepo messageRepo) {
+    public MessageServicesImpl( MessageRepo messageRepo) {
         this.messageRepo = messageRepo;
     }
 

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
-import com.justinaji.chatapp_userchats.service.chat_servicesimpl;
+import com.justinaji.chatapp_userchats.service.ChatServicesImpl;
 import com.justinaji.chatapp_userchats.dto.addmember;
 import com.justinaji.chatapp_userchats.dto.chatdetails;
 import com.justinaji.chatapp_userchats.dto.UserEditRequest;
@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/chats")
 public class ChatController {
 
-    private final chat_servicesimpl chatservice;
+    private final ChatServicesImpl chatservice;
 
-    public ChatController( chat_servicesimpl chatservice) { this.chatservice = chatservice; }
+    public ChatController( ChatServicesImpl chatservice) { this.chatservice = chatservice; }
 
     @PostMapping("/create")
     public chatdetails postMethodName(@RequestBody addmember newGroup) {

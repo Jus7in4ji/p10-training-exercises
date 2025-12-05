@@ -6,9 +6,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootApplication
-public class UserChat_microservice {
+public class UserChatMicroservice {
 	public static void main(String[] args) {
-		SpringApplication.run(UserChat_microservice.class, args);
+		SpringApplication.run(UserChatMicroservice.class, args);
 	}
 
 }

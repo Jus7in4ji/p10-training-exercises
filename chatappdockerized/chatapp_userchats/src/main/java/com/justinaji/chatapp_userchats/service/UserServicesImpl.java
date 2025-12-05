@@ -26,14 +26,14 @@ import com.justinaji.chatapp_userchats.repository.UserRepo;
 import jakarta.transaction.Transactional;
 
 @Service
-public class user_servicesimpl implements user_services {
+public class UserServicesImpl implements UserServices {
 
     private final UserRepo urepo;
     private final MemberRepo memberRepo;
     private final ChatRepo chatRepo;
     private final LogRepo logrepo;
     
-    public user_servicesimpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo, LogRepo logrepo) {
+    public UserServicesImpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo, LogRepo logrepo) {
         this.urepo = urepo; 
         this.memberRepo = memberRepo;
         this.chatRepo = chatRepo;
@@ -48,7 +48,7 @@ public class user_servicesimpl implements user_services {
 
     private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
-    Logger logger = LoggerFactory.getLogger(user_servicesimpl.class);
+    Logger logger = LoggerFactory.getLogger(UserServicesImpl.class);
 
     @Override
     @Transactional
