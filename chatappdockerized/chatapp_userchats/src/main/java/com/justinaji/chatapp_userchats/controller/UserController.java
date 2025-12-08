@@ -27,7 +27,6 @@ public class UserController {
     
     @PostMapping("/login")
     public String login(@RequestBody Loginform user) {
-        
         return userservice.login(user.getUsername(),user.getPassword());
     }
     

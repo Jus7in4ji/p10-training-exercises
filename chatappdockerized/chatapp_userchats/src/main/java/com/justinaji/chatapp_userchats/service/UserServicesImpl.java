@@ -32,19 +32,18 @@ public class UserServicesImpl implements UserServices {
     private final MemberRepo memberRepo;
     private final ChatRepo chatRepo;
     private final LogRepo logrepo;
+    private final AuthenticationManager authManager;
+    private final JWTService jwtservice;
     
-    public UserServicesImpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo, LogRepo logrepo) {
+    public UserServicesImpl(UserRepo urepo, MemberRepo memberRepo, ChatRepo chatRepo, LogRepo logrepo, AuthenticationManager authManager, JWTService jwtservice) {
         this.urepo = urepo; 
         this.memberRepo = memberRepo;
         this.chatRepo = chatRepo;
         this.logrepo = logrepo;
+        this.authManager = authManager;
+        this.jwtservice = jwtservice;
     }
 
-    @Autowired
-    AuthenticationManager authManager;
-
-    @Autowired
-    JWTService jwtservice;
 
     private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 

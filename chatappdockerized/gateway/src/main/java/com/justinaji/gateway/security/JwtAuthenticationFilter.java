@@ -1,5 +1,8 @@
 package com.justinaji.gateway.security;
 
+import org.hibernate.validator.internal.util.logging.LoggerFactory;
+import org.slf4j.Logger;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -8,6 +11,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -20,12 +24,15 @@ import reactor.core.publisher.Mono;
 @Component
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
+    @Value("${jwt.secret}") 
+    private String secretKEY;
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, org.springframework.cloud.gateway.filter.GatewayFilterChain chain) {
 
         String path = exchange.getRequest().getURI().getPath();
 
-        // Skip auth endpoints from JWT validation
+        // Skip auth endpoints 
         if (path.startsWith("/auth")) {
             return chain.filter(exchange);
         }
@@ -43,25 +50,22 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String token = authHeader.substring(7);
 
         try {
-            // Validate token exactly as your microservice does:
             Claims claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode("xfjlcyD4pLcXF011QjeJPyEKdnxxTSUq9AJ2AcqC0+o=")))
+                .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKEY)))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
-            // You can add extra validations if you want, but minimal validation is done here
 
         } catch (Exception e) {
             return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid JWT token: " + e.getMessage()));
         }
 
-        // Forward request unchanged (Authorization header remains)
         return chain.filter(exchange);
     }
 
     @Override
     public int getOrder() {
-        return -1;  // Make sure filter runs early
+        return -1;
     }
 }

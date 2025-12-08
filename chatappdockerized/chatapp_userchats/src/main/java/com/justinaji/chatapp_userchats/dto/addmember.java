@@ -14,5 +14,10 @@ public class addmember {
     public List<chatmember> getMembers() {
         return this.members;
     }
+
+    public addmember(String name, List<chatmember> members) {
+        this.name = name;
+        this.members = members;
+    }
 }
 

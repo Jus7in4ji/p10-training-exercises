@@ -46,7 +46,7 @@ public class MessageCommunications {
     }    
 
     @GetMapping("/isactive")
-    public Map<String, String> getUsername() {
+    public Map<String, String> getUsernameStatus() {
         Map<String, String> user = new HashMap<>();
         try {
             
