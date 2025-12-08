@@ -30,18 +30,13 @@ public class MessageServicesImpl implements MesageServices{
         this.messageRepo = messageRepo;
     }
 
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------ Methods used by WEBSOCKET chats ------------------------------------------------------------------------------
-
-    //dependent
     @Override
     public List<WSmessage> getchathistory(String username , String chatid, String timezone){
         if (username == null || username.trim().isEmpty())return null;
         List<WSmessage> history = new ArrayList<>();
 
         chats targetchat = webClient.get()
-            .uri("/userchat/getchat?chatid=" + chatid)  // Changed: removed http://localhost:8082
+            .uri("/userchat/getchat?chatid=" + chatid) 
             .retrieve()
             .bodyToMono(chats.class)
             .block();
@@ -65,11 +60,10 @@ public class MessageServicesImpl implements MesageServices{
         return history;
     }
 
-    //dependent
     @Override
     public String Sendmessage(String text, String username, String chatid){
         String messageId;
-        do { messageId = CommonMethods.getAlphaNumericString(); } //generate unique chat id
+        do { messageId = CommonMethods.getAlphaNumericString(); } // unique chat id
         while (messageRepo.existsById(messageId));
 
         users sender = webClient.get()
@@ -80,7 +74,7 @@ public class MessageServicesImpl implements MesageServices{
         if (sender == null) throw new RuntimeException("user not found!");
 
         chats chat = webClient.get()
-            .uri("/userchat/getchat?chatid=" + chatid)  // Changed: removed http://localhost:8082
+            .uri("/userchat/getchat?chatid=" + chatid)  
             .retrieve()
             .bodyToMono(chats.class)
             .block();        
@@ -93,7 +87,6 @@ public class MessageServicesImpl implements MesageServices{
         return messageId;
     }
 
-    //independent / messages only 
     public void setread(String messageid){
         messages m = messageRepo.findById(messageid).orElseThrow(() -> new RuntimeException("message not found: "));
         m.setMsgread(true);
