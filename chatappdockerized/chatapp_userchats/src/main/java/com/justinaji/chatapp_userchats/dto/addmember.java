@@ -2,7 +2,11 @@ package com.justinaji.chatapp_userchats.dto;
 
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+@Data
+@AllArgsConstructor
 public class addmember {
     String name;
     List<chatmember> members;
@@ -13,11 +17,6 @@ public class addmember {
 
     public List<chatmember> getMembers() {
         return this.members;
-    }
-
-    public addmember(String name, List<chatmember> members) {
-        this.name = name;
-        this.members = members;
     }
 }
 

@@ -36,24 +36,6 @@ public class WSChatcontroller {
             return; // do not send message
         }
 
-        String timezone = message.getSentTime();
-        ZoneId zone;
-
-        try {
-            zone = (timezone == null || timezone.trim().isEmpty())
-                    ? ZoneId.of("UTC")
-                    : ZoneId.of(timezone);
-        } catch (Exception e) {
-            zone = ZoneId.of("UTC"); // fallback
-        }
-
-        // Take the instant NOW in UTC, shift to given timezone
-        String finalTime = Instant.now()
-                .atZone(zone)
-                .format(DateTimeFormatter.ofPattern("hh:mm:ss a"));
-
-        message.setSentTime(finalTime);
-
         String room = message.getRoom();
         if (room!= null) {
             message.setMsgid(msgservice.Sendmessage(message.getText(), username, room));//needs chat, user objects from other ms
