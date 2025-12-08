@@ -20,12 +20,12 @@ public class WSChatcontroller {
     
     Logger logger = LoggerFactory.getLogger(WSChatcontroller.class);
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private  final SimpMessagingTemplate messagingTemplate;
 
     private final MessageServicesImpl msgservice;
-    public WSChatcontroller(MessageServicesImpl msgservice){
+    public WSChatcontroller(MessageServicesImpl msgservice, SimpMessagingTemplate messagingTemplate){
         this.msgservice = msgservice;
+        this.messagingTemplate = messagingTemplate;
     }
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(WSmessage message) {

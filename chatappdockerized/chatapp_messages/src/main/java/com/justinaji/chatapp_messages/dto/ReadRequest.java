@@ -5,4 +5,8 @@ import lombok.Data;
 @Data
 public class ReadRequest {
     private String msgId;
+
+    public ReadRequest(String msgId){
+        this.msgId = msgId;
+    }
 }
