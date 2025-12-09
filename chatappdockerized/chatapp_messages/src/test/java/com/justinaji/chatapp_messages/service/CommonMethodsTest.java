@@ -51,7 +51,7 @@ class CommonMethodsTest {
 
 
     @Test
-    void GetAlphaNumericString_ShouldContainOnlyAlphanumericCharacters() {
+    void GetAlphaNumericString_ContainOnlyAlphanumericCharacters() {
         // Act
         String result = CommonMethods.getAlphaNumericString();
 
@@ -60,20 +60,20 @@ class CommonMethodsTest {
     }
 
     @Test
-    void GetAlphaNumericString_MultipleCalls_ShouldGenerateDifferentStrings() {
+    void GetAlphaNumericString_MultipleCalls_GenerateDifferentStrings() {
         // Act
         Set<String> generatedStrings = new HashSet<>();
         for (int i = 0; i < 100; i++) {
             generatedStrings.add(CommonMethods.getAlphaNumericString());
         }
 
-        // Assert - with 100 calls, we should have many unique strings (allowing some collisions)
+        // Assert - with 100 calls, we  have many unique strings (allowing some collisions)
         assertTrue(generatedStrings.size() > 90, 
             "Expected more unique strings, got " + generatedStrings.size());
     }
 
     @Test
-    void GetCurrentUser_WithAuthenticatedUser_ShouldReturnUser() {
+    void GetCurrentUser_WithAuthenticatedUser_ReturnUser() {
         // Arrange
         when(securityContext.getAuthentication()).thenReturn(authentication);
 
@@ -87,7 +87,7 @@ class CommonMethodsTest {
     }
 
     @Test
-    void GetCurrentUser_ShouldReturnSameUserObjectFromCurrentUser() {
+    void GetCurrentUser_ReturnSameUserObjectFromCurrentUser() {
         // Arrange
         when(securityContext.getAuthentication()).thenReturn(authentication);
 
@@ -146,7 +146,7 @@ class CommonMethodsTest {
 
         String result = CommonMethods.formatTimestamp(timestamp, "INVALID_ZONE");
 
-        // Should fall back to UTC → today's case
+        //  fall back to UTC → today's case
         String expected = timestamp.toInstant()
                                    .atZone(java.time.ZoneId.of("UTC"))
                                    .format(java.time.format.DateTimeFormatter.ofPattern("hh:mm:ss a"));

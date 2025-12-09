@@ -1,4 +1,4 @@
-package com.justinaji.chatapp_messages.service;
+package com.justinaji.chatapp_userchats.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

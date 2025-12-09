@@ -42,7 +42,7 @@ class UserServicesImplTest {
     }
 
     @Test
-    void testRegisterUser_Success() {
+    void RegisterUser_Success() {
         when(urepo.existsByEmail("test@mail.com")).thenReturn(false);
         when(urepo.existsByName("testUser")).thenReturn(false);
         when(chatRepo.existsByName("testUser")).thenReturn(false);
@@ -56,7 +56,7 @@ class UserServicesImplTest {
     }
 
     @Test
-    void testRegisterUser_EmailExists() {
+    void RegisterUser_EmailExists() {
         when(urepo.existsByEmail("test@mail.com")).thenReturn(true);
 
         String result = userService.RegisterUser(user);
@@ -66,7 +66,7 @@ class UserServicesImplTest {
     }
 
     @Test
-    void testRegisterUser_MissingFields() {
+    void RegisterUser_MissingFields() {
         user.setEmail("");
         String result = userService.RegisterUser(user);
 
@@ -74,7 +74,7 @@ class UserServicesImplTest {
     }
 
    @Test
-    void testLogin_Success() {
+    void Login_Success() {
         Authentication authentication = mock(Authentication.class);
         when(authManager.authenticate(any())).thenReturn(authentication);
 

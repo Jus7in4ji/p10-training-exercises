@@ -1,4 +1,4 @@
-package com.justinaji.chatapp_messages.service;
+package com.justinaji.chatapp_userchats.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -12,9 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import com.justinaji.chatapp_messages.model.CurrentUser;
-import com.justinaji.chatapp_messages.model.users;
-import com.justinaji.chatapp_messages.repository.UserRepo;
+import com.justinaji.chatapp_userchats.model.CurrentUser;
+import com.justinaji.chatapp_userchats.model.users;
+import com.justinaji.chatapp_userchats.repository.UserRepo;
 
 @ExtendWith(MockitoExtension.class)
 class MyUserDetailServiceTest {

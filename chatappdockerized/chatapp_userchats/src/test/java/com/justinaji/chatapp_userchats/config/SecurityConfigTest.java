@@ -1,27 +1,20 @@
-package com.justinaji.chatapp_messages.config;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+package com.justinaji.chatapp_userchats.config;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -58,7 +51,7 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationProvider_ReturnDaoAuthenticationProvider() {
-        
+        // Act
         AuthenticationProvider provider = securityConfig.authenticationProvider();
 
         // Assert
@@ -68,7 +61,7 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationProvider_UseUserDetailsService() {
-        
+        // Act
         AuthenticationProvider provider = securityConfig.authenticationProvider();
 
         // Assert
@@ -78,9 +71,10 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationManager_ReturnAuthenticationManager() throws Exception {
-        
+        // Arrange
         when(authenticationConfiguration.getAuthenticationManager()).thenReturn(authenticationManager);
 
+        // Act
         AuthenticationManager manager = securityConfig.authenticationManager(authenticationConfiguration);
 
         // Assert
@@ -91,7 +85,7 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationProvider_MultipleCallsCreateNewInstances() {
-        
+        // Act
         AuthenticationProvider provider1 = securityConfig.authenticationProvider();
         AuthenticationProvider provider2 = securityConfig.authenticationProvider();
 
@@ -103,6 +97,7 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationManager_WithNullConfigThrowsException() {
+        // Act & Assert
         assertThrows(NullPointerException.class, () -> {
             securityConfig.authenticationManager(null);
         });
@@ -116,7 +111,7 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationProvider_PasswordEncoderStrength() {
-        
+        // Act
         AuthenticationProvider provider = securityConfig.authenticationProvider();
         
         // Assert - BCrypt with strength 12 is used
@@ -131,7 +126,7 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationProvider_IsConfiguredCorrectly() {
-        
+        // Act
         DaoAuthenticationProvider provider = (DaoAuthenticationProvider) securityConfig.authenticationProvider();
 
         // Assert
@@ -139,13 +134,4 @@ class SecurityConfigTest {
         // Verify the provider can be used (it doesn't throw exceptions when created)
         assertDoesNotThrow(() -> provider.toString());
     }
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Test
-    void contextLoads() {
-        // simply checking spring context loads without crashing
-    }
-
 }

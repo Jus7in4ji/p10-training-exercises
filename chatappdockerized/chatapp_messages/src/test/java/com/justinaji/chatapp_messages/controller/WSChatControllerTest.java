@@ -57,7 +57,7 @@ public class WSChatControllerTest {
     }
 
     @Test
-    void SendMessage_NoUsername_ShouldNotSend() {
+    void SendMessage_NoUsername_NotSend() {
         WSmessage message = new WSmessage(null, "   ", "text", null, "room123", false);
 
         wscontroller.sendMessage(message);
@@ -67,7 +67,7 @@ public class WSChatControllerTest {
     }
 
     @Test
-    void SendMessage_NoRoom_ShouldNotSend() {
+    void SendMessage_NoRoom_NotSend() {
         WSmessage message = new WSmessage(null, "justin", "text", null, null, false);
 
         wscontroller.sendMessage(message);
