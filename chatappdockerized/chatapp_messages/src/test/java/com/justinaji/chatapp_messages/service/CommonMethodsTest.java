@@ -1,18 +1,21 @@
 package com.justinaji.chatapp_messages.service;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.crypto.SecretKey;
+
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -27,7 +30,79 @@ class CommonMethodsTest {
     private Authentication authentication;
     private CurrentUser currentUser;
     private users testUser;
+    @BeforeEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+    @AfterEach
+    void tearDown() {
+        // Clean up security context
+        SecurityContextHolder.clearContext();
+    }
 
+
+    // getAlphaNumericString() should always be 8 chars
+    @Test
+    void testGetAlphaNumericString() {
+        String result = CommonMethods.getAlphaNumericString();
+        assertNotNull(result);
+        assertEquals(8, result.length());
+        assertTrue(result.matches("[0-9a-z]{8}"));
+    }
+
+
+    // getCurrentUser() — mock SecurityContextHolder
+
+    @Test
+    void testGetCurrentUser() {
+        // Mock objects
+        SecurityContext context = mock(SecurityContext.class);
+        Authentication auth = mock(Authentication.class);
+        CurrentUser principal = mock(CurrentUser.class);
+        users mockUser = new users();
+        mockUser.setName("justin");
+
+        // Wiring
+        when(context.getAuthentication()).thenReturn(auth);
+        when(auth.getPrincipal()).thenReturn(principal);
+        when(principal.getUser()).thenReturn(mockUser);
+
+        SecurityContextHolder.setContext(context);
+
+        // Call
+        users result = CommonMethods.getCurrentUser();
+        assertEquals("justin", result.getName());
+    }
+
+    // Encryption / Decryption
+    @Test
+    void testEncryptDecryptMessage() {
+        String text = "Hello Machane!";
+        String key = "1234567890123456"; // 16 bytes → AES key
+
+        // Convert key into Base64, because method expects Base64 string
+        String encodedKey = Base64.getEncoder().encodeToString(key.getBytes());
+
+        String encrypted = CommonMethods.encryptMessage(text, encodedKey);
+        assertNotNull(encrypted);
+        assertNotEquals(text, encrypted);
+
+        String decrypted = CommonMethods.decryptMessage(encrypted, encodedKey);
+        assertEquals(text, decrypted);
+    }
+
+    // SecretKey <-> String conversions
+    @Test
+    void testSecretKeyConversion() {
+        String key = "abcdefghijklmnop"; // 16 bytes
+        String encoded = Base64.getEncoder().encodeToString(key.getBytes());
+
+        SecretKey secretKey = CommonMethods.convertStringToSecretKeyto(encoded);
+        assertNotNull(secretKey);
+
+        String encodedBack = CommonMethods.convertSecretKeyToString(secretKey);
+        assertEquals(encoded, encodedBack);
+    }
     @BeforeEach
     void setUp() {
         // Setup security context
@@ -43,11 +118,6 @@ class CommonMethodsTest {
         authentication = new UsernamePasswordAuthenticationToken(currentUser, null, currentUser.getAuthorities());
     }
 
-    @AfterEach
-    void tearDown() {
-        // Clean up security context
-        SecurityContextHolder.clearContext();
-    }
 
 
     @Test
@@ -70,32 +140,6 @@ class CommonMethodsTest {
         // Assert - with 100 calls, we  have many unique strings (allowing some collisions)
         assertTrue(generatedStrings.size() > 90, 
             "Expected more unique strings, got " + generatedStrings.size());
-    }
-
-    @Test
-    void GetCurrentUser_WithAuthenticatedUser_ReturnUser() {
-        // Arrange
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-
-        // Act
-        users result = CommonMethods.getCurrentUser();
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(testUser.getName(), result.getName());
-        assertEquals(testUser.getPassword(), result.getPassword());
-    }
-
-    @Test
-    void GetCurrentUser_ReturnSameUserObjectFromCurrentUser() {
-        // Arrange
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-
-        // Act
-        users result = CommonMethods.getCurrentUser();
-
-        // Assert
-        assertSame(testUser, result);
     }
 
     @Test
