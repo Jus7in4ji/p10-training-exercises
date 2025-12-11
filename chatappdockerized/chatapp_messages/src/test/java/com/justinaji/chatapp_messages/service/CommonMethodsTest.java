@@ -122,8 +122,7 @@ class CommonMethodsTest {
 
     @Test
     void GetAlphaNumericString_ContainOnlyAlphanumericCharacters() {
-        // Act
-        String result = CommonMethods.getAlphaNumericString();
+         String result = CommonMethods.getAlphaNumericString();
 
         // Assert
         assertTrue(result.matches("^[0-9a-z]+$"));
@@ -131,8 +130,7 @@ class CommonMethodsTest {
 
     @Test
     void GetAlphaNumericString_MultipleCalls_GenerateDifferentStrings() {
-        // Act
-        Set<String> generatedStrings = new HashSet<>();
+         Set<String> generatedStrings = new HashSet<>();
         for (int i = 0; i < 100; i++) {
             generatedStrings.add(CommonMethods.getAlphaNumericString());
         }

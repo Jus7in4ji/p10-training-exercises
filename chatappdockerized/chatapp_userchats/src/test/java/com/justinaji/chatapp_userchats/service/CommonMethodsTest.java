@@ -51,16 +51,13 @@ class CommonMethodsTest {
 
     @Test
     void GetAlphaNumericString_ContainOnlyAlphanumericCharacters() {
-        // Act
         String result = CommonMethods.getAlphaNumericString();
 
-        // Assert
         assertTrue(result.matches("^[0-9a-z]+$"));
     }
 
     @Test
     void GetAlphaNumericString_MultipleCalls_GenerateDifferentStrings() {
-        // Act
         Set<String> generatedStrings = new HashSet<>();
         for (int i = 0; i < 100; i++) {
             generatedStrings.add(CommonMethods.getAlphaNumericString());
@@ -73,13 +70,10 @@ class CommonMethodsTest {
 
     @Test
     void GetCurrentUser_WithAuthenticatedUser_ReturnUser() {
-        // Arrange
         when(securityContext.getAuthentication()).thenReturn(authentication);
 
-        // Act
         users result = CommonMethods.getCurrentUser();
 
-        // Assert
         assertNotNull(result);
         assertEquals(testUser.getName(), result.getName());
         assertEquals(testUser.getPassword(), result.getPassword());
@@ -87,26 +81,20 @@ class CommonMethodsTest {
 
     @Test
     void GetCurrentUser_ReturnSameUserObjectFromCurrentUser() {
-        // Arrange
         when(securityContext.getAuthentication()).thenReturn(authentication);
 
-        // Act
         users result = CommonMethods.getCurrentUser();
 
-        // Assert
         assertSame(testUser, result);
     }
 
     @Test
     void ConvertSecretKeyToString_ReturnBase64EncodedString() {
-        // Arrange
         String originalKey = CommonMethods.generateKey();
         SecretKey secretKey = CommonMethods.convertStringToSecretKeyto(originalKey);
 
-        // Act
         String result = CommonMethods.convertSecretKeyToString(secretKey);
 
-        // Assert
         assertNotNull(result);
         assertFalse(result.isEmpty());
         // Verify it's valid Base64
@@ -115,13 +103,10 @@ class CommonMethodsTest {
 
     @Test
     void ConvertStringToSecretKeyto_ReturnValidSecretKey() {
-        // Arrange
         String encodedKey = CommonMethods.generateKey();
 
-        // Act
         SecretKey result = CommonMethods.convertStringToSecretKeyto(encodedKey);
 
-        // Assert
         assertNotNull(result);
         assertEquals("AES", result.getAlgorithm());
         assertNotNull(result.getEncoded());
@@ -130,31 +115,25 @@ class CommonMethodsTest {
 
     @Test
     void GenerateKey_ReturnNonEmptyString() {
-        // Act
         String result = CommonMethods.generateKey();
 
-        // Assert
         assertNotNull(result);
         assertFalse(result.isEmpty());
     }
 
     @Test
     void GenerateKey_ValidBase64String() {
-        // Act
         String result = CommonMethods.generateKey();
 
-        // Assert
         assertDoesNotThrow(() -> Base64.getDecoder().decode(result));
     }
 
     @Test
     void GenerateKey_MultipleCalls_GenerateDifferentKeys() {
-        // Act
         String key1 = CommonMethods.generateKey();
         String key2 = CommonMethods.generateKey();
         String key3 = CommonMethods.generateKey();
 
-        // Assert
         assertNotEquals(key1, key2);
         assertNotEquals(key2, key3);
         assertNotEquals(key1, key3);
@@ -162,37 +141,29 @@ class CommonMethodsTest {
 
     @Test
     void GenerateKey_Generate256BitKey() {
-        // Act
         String encodedKey = CommonMethods.generateKey();
         SecretKey secretKey = CommonMethods.convertStringToSecretKeyto(encodedKey);
 
-        // Assert
         // 256 bits = 32 bytes
         assertEquals(32, secretKey.getEncoded().length);
     }
 
     @Test
     void KeyConversion_RoundTrip() {
-        // Arrange
         String originalEncodedKey = CommonMethods.generateKey();
 
-        // Act
         SecretKey secretKey = CommonMethods.convertStringToSecretKeyto(originalEncodedKey);
         String convertedBackKey = CommonMethods.convertSecretKeyToString(secretKey);
 
-        // Assert
         assertEquals(originalEncodedKey, convertedBackKey);
     }
 
     @Test
     void KeyConversion_WithGeneratedKey_BeUsableForEncryption() {
-        // Arrange
         String encodedKey = CommonMethods.generateKey();
 
-        // Act
         SecretKey secretKey = CommonMethods.convertStringToSecretKeyto(encodedKey);
 
-        // Assert
         assertNotNull(secretKey);
         assertEquals("AES", secretKey.getAlgorithm());
         assertEquals("RAW", secretKey.getFormat());

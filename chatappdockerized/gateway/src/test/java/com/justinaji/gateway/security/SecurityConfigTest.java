@@ -24,22 +24,17 @@ class SecurityConfigTest {
 
     @Test
     void springSecurityFilterChain_ShouldReturnNonNull() {
-        // Arrange
         ServerHttpSecurity http = ServerHttpSecurity.http();
 
-        // Act
-        SecurityWebFilterChain filterChain = securityConfig.springSecurityFilterChain(http);
+         SecurityWebFilterChain filterChain = securityConfig.springSecurityFilterChain(http);
 
-        // Assert
-        assertNotNull(filterChain);
+         assertNotNull(filterChain);
     }
 
     @Test
     void springSecurityFilterChain_ShouldBuildSuccessfully() {
-        // Arrange
         ServerHttpSecurity http = ServerHttpSecurity.http();
 
-        // Act & Assert
         assertDoesNotThrow(() -> {
             SecurityWebFilterChain filterChain = securityConfig.springSecurityFilterChain(http);
             assertNotNull(filterChain);
@@ -48,23 +43,19 @@ class SecurityConfigTest {
 
     @Test
     void securityConfig_ShouldInstantiateWithoutErrors() {
-        // Act & Assert
         assertNotNull(securityConfig);
         assertDoesNotThrow(() -> new SecurityConfig());
     }
 
     @Test
     void springSecurityFilterChain_CalledMultipleTimes_ShouldCreateDifferentInstances() {
-        // Arrange
         ServerHttpSecurity http1 = ServerHttpSecurity.http();
         ServerHttpSecurity http2 = ServerHttpSecurity.http();
 
-        // Act
-        SecurityWebFilterChain chain1 = securityConfig.springSecurityFilterChain(http1);
+         SecurityWebFilterChain chain1 = securityConfig.springSecurityFilterChain(http1);
         SecurityWebFilterChain chain2 = securityConfig.springSecurityFilterChain(http2);
 
-        // Assert
-        assertNotNull(chain1);
+         assertNotNull(chain1);
         assertNotNull(chain2);
         assertNotSame(chain1, chain2);
     }

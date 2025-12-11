@@ -75,14 +75,11 @@ class JwtAuthenticationFilterTest {
     void filter_AuthEndpoint_ShouldSkipValidation() {
         when(exchange.getRequest()).thenReturn(request);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/auth/login"));
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        assertNotNull(result);
+         assertNotNull(result);
         result.block(); // Block to execute the reactive chain
         verify(chain, times(1)).filter(exchange);
     }
@@ -91,14 +88,11 @@ class JwtAuthenticationFilterTest {
     void filter_AuthSignUpEndpoint_ShouldSkipValidation() {
         when(exchange.getRequest()).thenReturn(request);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/auth/SignUp"));
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        assertNotNull(result);
+         assertNotNull(result);
         result.block();
         verify(chain, times(1)).filter(exchange);
     }
@@ -108,15 +102,12 @@ class JwtAuthenticationFilterTest {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + validToken);
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        assertNotNull(result);
+         assertNotNull(result);
         result.block();
         verify(chain, times(1)).filter(exchange);
     }
@@ -125,15 +116,12 @@ class JwtAuthenticationFilterTest {
     void filter_MissingAuthorizationHeader_ShouldReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
         // httpHeaders is empty (no Authorization header set)
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        assertNotNull(result);
+         assertNotNull(result);
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             result.block();
         });
@@ -146,15 +134,12 @@ class JwtAuthenticationFilterTest {
     void filter_InvalidBearerFormat_ShouldReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, "Basic " + validToken);
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             result.block();
         });
         assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
@@ -165,15 +150,12 @@ class JwtAuthenticationFilterTest {
     void filter_NoBearerPrefix_ShouldReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, validToken);
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             result.block();
         });
         assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
@@ -183,15 +165,12 @@ class JwtAuthenticationFilterTest {
     void filter_InvalidToken_ShouldReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer invalid.token.here");
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             result.block();
         });
         assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
@@ -203,7 +182,6 @@ class JwtAuthenticationFilterTest {
     void filter_ExpiredToken_ShouldReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
-        // Arrange
         SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(TEST_SECRET));
         long now = System.currentTimeMillis();
         String expiredToken = Jwts.builder()
@@ -216,11 +194,9 @@ class JwtAuthenticationFilterTest {
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + expiredToken);
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             result.block();
         });
         assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
@@ -232,62 +208,50 @@ class JwtAuthenticationFilterTest {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
         httpHeaders.set("authorization", "Bearer " + validToken);
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        assertNotNull(result);
+         assertNotNull(result);
         result.block();
         verify(chain, times(1)).filter(exchange);
     }
 
     @Test
     void filter_MalformedToken_ShouldReturnUnauthorized() {
-        // Arrange
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer malformed");
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        assertThrows(ResponseStatusException.class, () -> result.block());
+         assertThrows(ResponseStatusException.class, () -> result.block());
     }
 
     @Test
     void filter_EmptyBearerToken_ShouldReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer ");
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        assertThrows(ResponseStatusException.class, () -> result.block());
+         assertThrows(ResponseStatusException.class, () -> result.block());
     }
 
     @Test
     void filter_ProtectedEndpoint_WithoutToken_ShouldReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/chats"));
         // No Authorization header set
 
-        // Act
-        Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
+         Mono<Void> result = jwtAuthenticationFilter.filter(exchange, chain);
 
-        // Assert
-        assertThrows(ResponseStatusException.class, () -> result.block());
+         assertThrows(ResponseStatusException.class, () -> result.block());
         verify(chain, never()).filter(exchange);
     }
 
@@ -312,11 +276,9 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void getOrder_ShouldReturnNegativeOne() {
-        // Act
-        int order = jwtAuthenticationFilter.getOrder();
+         int order = jwtAuthenticationFilter.getOrder();
 
-        // Assert
-        assertEquals(-1, order);
+         assertEquals(-1, order);
     }
 
     @Test
@@ -324,7 +286,6 @@ class JwtAuthenticationFilterTest {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
-        // Arrange
         httpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + validToken);
 
         // Test /api/users
@@ -363,11 +324,9 @@ class JwtAuthenticationFilterTest {
     void filter_NullToken_AfterBearer_ShouldReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
-        // Arrange
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer null");
 
-        // Act & Assert
         assertThrows(ResponseStatusException.class, () -> {
             jwtAuthenticationFilter.filter(exchange, chain).block();
         });

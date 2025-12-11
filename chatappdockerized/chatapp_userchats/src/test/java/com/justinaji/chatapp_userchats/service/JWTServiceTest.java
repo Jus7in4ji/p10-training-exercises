@@ -49,10 +49,8 @@ class JWTServiceTest {
 
     @Test
     void Gentoken_GenerateValidToken() {
-        // Act
         String token = jwtService.gentoken(testUsername);
 
-        // Assert
         assertNotNull(token);
         assertFalse(token.isEmpty());
         assertTrue(token.split("\\.").length == 3); // JWT has 3 parts separated by dots
@@ -60,23 +58,18 @@ class JWTServiceTest {
 
     @Test
     void Gentoken_TokenContainCorrectUsername() {
-        // Act
         String token = jwtService.gentoken(testUsername);
         String extractedUsername = jwtService.extractUser(token);
 
-        // Assert
         assertEquals(testUsername, extractedUsername);
     }
 
     @Test
     void Gentoken_TokenHaveCorrectExpiration() {
-        // Arrange
         long beforeGeneration = System.currentTimeMillis();
         
-        // Act
         String token = jwtService.gentoken(testUsername);
         
-        // Assert
         Claims claims = parseToken(token);
         Date expiration = claims.getExpiration();
         Date issuedAt = claims.getIssuedAt();
@@ -90,37 +83,28 @@ class JWTServiceTest {
 
     @Test
     void ExtractUser_ReturnCorrectUsername() {
-        // Arrange
         String token = jwtService.gentoken(testUsername);
 
-        // Act
         String extractedUser = jwtService.extractUser(token);
 
-        // Assert
         assertEquals(testUsername, extractedUser);
     }
 
     @Test
     void Validatetoken_WithValidToken_ReturnTrue() {
-        // Arrange
         String token = jwtService.gentoken(testUsername);
 
-        // Act
         boolean isValid = jwtService.validatetoken(token, testUserDetails);
 
-        // Assert
         assertTrue(isValid);
     }
 
     @Test
     void Validatetoken_WithDifferentUsername_ReturnFalse() {
-        // Arrange
         String token = jwtService.gentoken("differentuser@example.com");
 
-        // Act
         boolean isValid = jwtService.validatetoken(token, testUserDetails);
 
-        // Assert
         assertFalse(isValid);
     }
 
@@ -129,7 +113,6 @@ class JWTServiceTest {
         // Arrange - create an expired token
         String expiredToken = createExpiredToken(testUsername);
 
-        // Act & Assert
         assertThrows(ExpiredJwtException.class, () -> {
             jwtService.validatetoken(expiredToken, testUserDetails);
         });
@@ -137,10 +120,8 @@ class JWTServiceTest {
 
     @Test
     void ExtractUser_WithInvalidToken_ThrowException() {
-        // Arrange
         String invalidToken = "invalid.token.here";
 
-        // Act & Assert
         assertThrows(Exception.class, () -> {
             jwtService.extractUser(invalidToken);
         });
@@ -148,7 +129,6 @@ class JWTServiceTest {
 
     @Test
     void Gentoken_MultipleCalls_GenerateDifferentTokens() {
-        // Act
         String token1 = jwtService.gentoken("name1");
         
         // Wait a bit to ensure different issuedAt timestamps
@@ -160,16 +140,13 @@ class JWTServiceTest {
         
         String token2 = jwtService.gentoken("name2");
 
-        // Assert
         assertNotEquals(token1, token2);
     }
 
     @Test
     void Validatetoken_WithNullUserDetails_ThrowException() {
-        // Arrange
         String token = jwtService.gentoken(testUsername);
 
-        // Act & Assert
         assertThrows(NullPointerException.class, () -> {
             jwtService.validatetoken(token, null);
         });

@@ -39,13 +39,10 @@ class MyUserDetailServiceTest {
 
     @Test
     void LoadUserByUsername_WithExistingUser_ReturnUserDetails() {
-        // Arrange
         when(userRepo.findByName(testUsername)).thenReturn(testUser);
 
-        // Act
         UserDetails result = myUserDetailService.loadUserByUsername(testUsername);
 
-        // Assert
         assertNotNull(result);
         assertTrue(result instanceof CurrentUser);
         assertEquals(testUsername, result.getUsername());
@@ -54,11 +51,9 @@ class MyUserDetailServiceTest {
 
     @Test
     void LoadUserByUsername_WithNonExistingUser_ThrowException() {
-        // Arrange
         String nonExistentUsername = "nonexistent";
         when(userRepo.findByName(nonExistentUsername)).thenReturn(null);
 
-        // Act & Assert
         UsernameNotFoundException exception = assertThrows(
             UsernameNotFoundException.class,
             () -> myUserDetailService.loadUserByUsername(nonExistentUsername)
@@ -70,10 +65,8 @@ class MyUserDetailServiceTest {
 
     @Test
     void LoadUserByUsername_WithNullUsername_ThrowException() {
-        // Arrange
         when(userRepo.findByName(null)).thenReturn(null);
 
-        // Act & Assert
         assertThrows(UsernameNotFoundException.class, () -> {
             myUserDetailService.loadUserByUsername(null);
         });
@@ -83,11 +76,9 @@ class MyUserDetailServiceTest {
 
     @Test
     void LoadUserByUsername_WithEmptyUsername_ThrowException() {
-        // Arrange
         String emptyUsername = "";
         when(userRepo.findByName(emptyUsername)).thenReturn(null);
 
-        // Act & Assert
         assertThrows(UsernameNotFoundException.class, () -> {
             myUserDetailService.loadUserByUsername(emptyUsername);
         });
@@ -97,29 +88,23 @@ class MyUserDetailServiceTest {
 
     @Test
     void LoadUserByUsername_RepositoryCalledWithCorrectParameter() {
-        // Arrange
         String username = "specificuser";
         users specificUser = new users();
         specificUser.setName(username);
         when(userRepo.findByName(username)).thenReturn(specificUser);
 
-        // Act
         myUserDetailService.loadUserByUsername(username);
 
-        // Assert
         verify(userRepo, times(1)).findByName(username);
         verify(userRepo, never()).findByName(argThat(arg -> !username.equals(arg)));
     }
 
     @Test
     void LoadUserByUsername_ReturnsCurrentUserWithCorrectUserObject() {
-        // Arrange
         when(userRepo.findByName(testUsername)).thenReturn(testUser);
 
-        // Act
         UserDetails result = myUserDetailService.loadUserByUsername(testUsername);
 
-        // Assert
         assertNotNull(result);
         assertTrue(result instanceof CurrentUser);
         
@@ -131,27 +116,21 @@ class MyUserDetailServiceTest {
 
     @Test
     void Constructor_WithValidUserRepo_Initialize() {
-        // Arrange
         UserRepo repo = mock(UserRepo.class);
 
-        // Act
         MyUserDetailService service = new MyUserDetailService(repo);
 
-        // Assert
         assertNotNull(service);
     }
 
     @Test
     void LoadUserByUsername_MultipleCalls_CallRepositoryEachTime() {
-        // Arrange
         when(userRepo.findByName(testUsername)).thenReturn(testUser);
 
-        // Act
         myUserDetailService.loadUserByUsername(testUsername);
         myUserDetailService.loadUserByUsername(testUsername);
         myUserDetailService.loadUserByUsername(testUsername);
 
-        // Assert
         verify(userRepo, times(3)).findByName(testUsername);
     }
 }

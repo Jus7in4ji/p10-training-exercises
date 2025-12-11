@@ -51,20 +51,16 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationProvider_ReturnDaoAuthenticationProvider() {
-        // Act
         AuthenticationProvider provider = securityConfig.authenticationProvider();
 
-        // Assert
         assertNotNull(provider);
         assertTrue(provider instanceof DaoAuthenticationProvider);
     }
 
     @Test
     void AuthenticationProvider_UseUserDetailsService() {
-        // Act
         AuthenticationProvider provider = securityConfig.authenticationProvider();
 
-        // Assert
         assertNotNull(provider);
         assertTrue(provider instanceof DaoAuthenticationProvider);
     }
@@ -74,10 +70,8 @@ class SecurityConfigTest {
         // Arrange
         when(authenticationConfiguration.getAuthenticationManager()).thenReturn(authenticationManager);
 
-        // Act
         AuthenticationManager manager = securityConfig.authenticationManager(authenticationConfiguration);
 
-        // Assert
         assertNotNull(manager);
         assertEquals(authenticationManager, manager);
         verify(authenticationConfiguration, times(1)).getAuthenticationManager();
@@ -85,11 +79,9 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationProvider_MultipleCallsCreateNewInstances() {
-        // Act
         AuthenticationProvider provider1 = securityConfig.authenticationProvider();
         AuthenticationProvider provider2 = securityConfig.authenticationProvider();
 
-        // Assert
         assertNotNull(provider1);
         assertNotNull(provider2);
         assertNotSame(provider1, provider2); // Each call creates a new instance
@@ -97,7 +89,6 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationManager_WithNullConfigThrowsException() {
-        // Act & Assert
         assertThrows(NullPointerException.class, () -> {
             securityConfig.authenticationManager(null);
         });
@@ -105,13 +96,11 @@ class SecurityConfigTest {
 
     @Test
     void SecurityConfig_BeansAreNotNull() {
-        // Assert
         assertNotNull(securityConfig);
     }
 
     @Test
     void AuthenticationProvider_PasswordEncoderStrength() {
-        // Act
         AuthenticationProvider provider = securityConfig.authenticationProvider();
         
         // Assert - BCrypt with strength 12 is used
@@ -126,10 +115,8 @@ class SecurityConfigTest {
 
     @Test
     void AuthenticationProvider_IsConfiguredCorrectly() {
-        // Act
         DaoAuthenticationProvider provider = (DaoAuthenticationProvider) securityConfig.authenticationProvider();
 
-        // Assert
         assertNotNull(provider);
         // Verify the provider can be used (it doesn't throw exceptions when created)
         assertDoesNotThrow(() -> provider.toString());

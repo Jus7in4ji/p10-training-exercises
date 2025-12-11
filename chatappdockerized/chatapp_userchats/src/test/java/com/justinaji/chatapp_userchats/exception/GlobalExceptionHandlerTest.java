@@ -27,147 +27,115 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleNoSuchAlgorithmException_ShouldReturnInternalServerError() {
-        // Arrange
         NoSuchAlgorithmException exception = new NoSuchAlgorithmException("AES algorithm not found");
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleNoSuchAlgorithmException(exception);
+         ResponseEntity<String> response = exceptionHandler.handleNoSuchAlgorithmException(exception);
 
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Encryption algorithm not found: AES algorithm not found", response.getBody());
     }
 
     @Test
     void handleInvalidUser_ShouldReturnUnauthorized() {
-        // Arrange
         invaliduser exception = new invaliduser();
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleinvaliduser(exception);
+         ResponseEntity<String> response = exceptionHandler.handleinvaliduser(exception);
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("User credentials are incorrect", response.getBody());
     }
 
     @Test
     void handleFormatMismatch_ShouldReturnUnauthorized() {
-        // Arrange
         formatmismatch exception = new formatmismatch();
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleformatmismatch(exception);
+         ResponseEntity<String> response = exceptionHandler.handleformatmismatch(exception);
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("Mismatch in format of data entered", response.getBody());
     }
 
     @Test
     void handleBadCredentials_ShouldReturnUnauthorizedWithCustomMessage() {
-        // Arrange
         BadCredentialsException exception = new BadCredentialsException("Bad credentials");
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handlebadcredentials(exception);
+         ResponseEntity<String> response = exceptionHandler.handlebadcredentials(exception);
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("User credentials are incorrect", response.getBody());
     }
 
     @Test
     void handleUsernameTaken_ShouldReturnUnauthorized() {
-        // Arrange
         Username_taken exception = new Username_taken();
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleusedname(exception);
+         ResponseEntity<String> response = exceptionHandler.handleusedname(exception);
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("The given name is already taken , please try another", response.getBody());
     }
 
     @Test
     void handleNoMessages_ShouldReturnUnauthorized() {
-        // Arrange
         String chatname = "TestChat";
         No_messages exception = new No_messages(chatname);
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleNoMessages(exception);
+         ResponseEntity<String> response = exceptionHandler.handleNoMessages(exception);
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("No messages found in chat : TestChat", response.getBody());
     }
 
     @Test
     void handleNotaMember_ShouldReturnUnauthorized() {
-        // Arrange
         String username = "john";
         String chatname = "Developers";
         NotaMember exception = new NotaMember(username, chatname);
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleAlienUser(exception);
+         ResponseEntity<String> response = exceptionHandler.handleAlienUser(exception);
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("Error: User ( john ) is not a member of the group ( Developers )", response.getBody());
     }
 
     @Test
     void handleNoUserFound_ShouldReturnUnauthorized() {
-        // Arrange
         String username = "nonexistentuser";
         NoUserFound exception = new NoUserFound(username);
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleinvaliduser(exception);
+         ResponseEntity<String> response = exceptionHandler.handleinvaliduser(exception);
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("Error: No user of the name 'nonexistentuser' exists.\nMake sure the information entered is correct. ", 
                      response.getBody());
     }
 
     @Test
     void handleOtherExceptions_ShouldReturnInternalServerError() {
-        // Arrange
         Exception exception = new Exception("Unexpected error occurred");
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleOtherExceptions(exception);
+         ResponseEntity<String> response = exceptionHandler.handleOtherExceptions(exception);
 
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("An unexpected error occurred: Unexpected error occurred", response.getBody());
     }
 
     @Test
     void handleNoSuchAlgorithmException_WithNullMessage_ShouldHandleGracefully() {
-        // Arrange
         NoSuchAlgorithmException exception = new NoSuchAlgorithmException();
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleNoSuchAlgorithmException(exception);
+         ResponseEntity<String> response = exceptionHandler.handleNoSuchAlgorithmException(exception);
 
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertTrue(response.getBody().contains("Encryption algorithm not found"));
     }
 
     @Test
     void handleBadCredentials_WithAnyMessage_ShouldReturnSameCustomMessage() {
-        // Arrange
         BadCredentialsException exception1 = new BadCredentialsException("Wrong password");
         BadCredentialsException exception2 = new BadCredentialsException("Invalid username");
 
-        // Act
-        ResponseEntity<String> response1 = exceptionHandler.handlebadcredentials(exception1);
+         ResponseEntity<String> response1 = exceptionHandler.handlebadcredentials(exception1);
         ResponseEntity<String> response2 = exceptionHandler.handlebadcredentials(exception2);
 
         // Assert - should return same message regardless of input
@@ -180,38 +148,30 @@ class GlobalExceptionHandlerTest {
         // Arrange - invaliduser has no parameters, always returns same message
         invaliduser exception = new invaliduser();
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleinvaliduser(exception);
+         ResponseEntity<String> response = exceptionHandler.handleinvaliduser(exception);
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("User credentials are incorrect", response.getBody());
     }
 
     @Test
     void handleOtherExceptions_WithRuntimeException_ShouldReturnInternalServerError() {
-        // Arrange
         RuntimeException exception = new RuntimeException("Runtime error");
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleOtherExceptions(exception);
+         ResponseEntity<String> response = exceptionHandler.handleOtherExceptions(exception);
 
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertTrue(response.getBody().contains("An unexpected error occurred"));
         assertTrue(response.getBody().contains("Runtime error"));
     }
 
     @Test
     void handleOtherExceptions_WithNullPointerException_ShouldReturnInternalServerError() {
-        // Arrange
         NullPointerException exception = new NullPointerException("Null pointer error");
 
-        // Act
-        ResponseEntity<String> response = exceptionHandler.handleOtherExceptions(exception);
+         ResponseEntity<String> response = exceptionHandler.handleOtherExceptions(exception);
 
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertTrue(response.getBody().contains("Null pointer error"));
     }
 

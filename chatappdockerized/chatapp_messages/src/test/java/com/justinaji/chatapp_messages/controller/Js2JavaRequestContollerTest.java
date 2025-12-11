@@ -29,7 +29,6 @@ class Js2JavaRequestControllerTest {
 
     @Test
     void GetHistory_Success() {
-        // Arrange
         Map<String,String> payload = new HashMap<>();
         payload.put("user", "justin");
         payload.put("chatid", "chat123");
@@ -41,11 +40,9 @@ class Js2JavaRequestControllerTest {
 
         when(msgservice.getchathistory("justin", "chat123", "UTC")).thenReturn(mockResponse);
 
-        // Act
-        List<WSmessage> result = controller.RetrieveChatHistory(payload);
+         List<WSmessage> result = controller.RetrieveChatHistory(payload);
 
-        // Assert
-        assertEquals(mockResponse, result);
+         assertEquals(mockResponse, result);
         verify(msgservice).getchathistory("justin", "chat123", "UTC");
     }
 }

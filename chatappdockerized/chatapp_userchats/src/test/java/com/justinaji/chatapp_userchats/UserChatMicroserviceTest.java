@@ -21,7 +21,7 @@ class UserChatMicroserviceTest {
 
     @Test
     void schedulingIsEnabled() {
-        // Verify @EnableScheduling is working by checking if the scheduler bean exists
+        //checking if the scheduler bean exists
         assertNotNull(applicationContext.getBean(ScheduledAnnotationBeanPostProcessor.class));
     }
 }
