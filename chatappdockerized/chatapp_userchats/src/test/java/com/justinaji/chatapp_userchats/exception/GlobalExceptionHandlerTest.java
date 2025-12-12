@@ -26,7 +26,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleNoSuchAlgorithmException_ShouldReturnInternalServerError() {
+    void handleNoSuchAlgorithmException_ReturnInternalServerError() {
         NoSuchAlgorithmException exception = new NoSuchAlgorithmException("AES algorithm not found");
 
          ResponseEntity<String> response = exceptionHandler.handleNoSuchAlgorithmException(exception);
@@ -36,7 +36,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleInvalidUser_ShouldReturnUnauthorized() {
+    void handleInvalidUser_ReturnUnauthorized() {
         invaliduser exception = new invaliduser();
 
          ResponseEntity<String> response = exceptionHandler.handleinvaliduser(exception);
@@ -46,7 +46,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleFormatMismatch_ShouldReturnUnauthorized() {
+    void handleFormatMismatch_ReturnUnauthorized() {
         formatmismatch exception = new formatmismatch();
 
          ResponseEntity<String> response = exceptionHandler.handleformatmismatch(exception);
@@ -56,7 +56,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleBadCredentials_ShouldReturnUnauthorizedWithCustomMessage() {
+    void handleBadCredentials_ReturnUnauthorizedWithCustomMessage() {
         BadCredentialsException exception = new BadCredentialsException("Bad credentials");
 
          ResponseEntity<String> response = exceptionHandler.handlebadcredentials(exception);
@@ -66,7 +66,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleUsernameTaken_ShouldReturnUnauthorized() {
+    void handleUsernameTaken_ReturnUnauthorized() {
         Username_taken exception = new Username_taken();
 
          ResponseEntity<String> response = exceptionHandler.handleusedname(exception);
@@ -76,7 +76,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleNoMessages_ShouldReturnUnauthorized() {
+    void handleNoMessages_ReturnUnauthorized() {
         String chatname = "TestChat";
         No_messages exception = new No_messages(chatname);
 
@@ -87,7 +87,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleNotaMember_ShouldReturnUnauthorized() {
+    void handleNotaMember_ReturnUnauthorized() {
         String username = "john";
         String chatname = "Developers";
         NotaMember exception = new NotaMember(username, chatname);
@@ -99,7 +99,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleNoUserFound_ShouldReturnUnauthorized() {
+    void handleNoUserFound_ReturnUnauthorized() {
         String username = "nonexistentuser";
         NoUserFound exception = new NoUserFound(username);
 
@@ -111,7 +111,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleOtherExceptions_ShouldReturnInternalServerError() {
+    void handleOtherExceptions_ReturnInternalServerError() {
         Exception exception = new Exception("Unexpected error occurred");
 
          ResponseEntity<String> response = exceptionHandler.handleOtherExceptions(exception);
@@ -121,7 +121,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleNoSuchAlgorithmException_WithNullMessage_ShouldHandleGracefully() {
+    void handleNoSuchAlgorithmException_WithNullMessage_HandleGracefully() {
         NoSuchAlgorithmException exception = new NoSuchAlgorithmException();
 
          ResponseEntity<String> response = exceptionHandler.handleNoSuchAlgorithmException(exception);
@@ -131,7 +131,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleBadCredentials_WithAnyMessage_ShouldReturnSameCustomMessage() {
+    void handleBadCredentials_WithAnyMessage_ReturnSameCustomMessage() {
         BadCredentialsException exception1 = new BadCredentialsException("Wrong password");
         BadCredentialsException exception2 = new BadCredentialsException("Invalid username");
 
@@ -144,7 +144,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleInvalidUser_WithEmptyMessage_ShouldReturnEmptyString() {
+    void handleInvalidUser_WithEmptyMessage_ReturnEmptyString() {
         // Arrange - invaliduser has no parameters, always returns same message
         invaliduser exception = new invaliduser();
 
@@ -155,7 +155,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleOtherExceptions_WithRuntimeException_ShouldReturnInternalServerError() {
+    void handleOtherExceptions_WithRuntimeException_ReturnInternalServerError() {
         RuntimeException exception = new RuntimeException("Runtime error");
 
          ResponseEntity<String> response = exceptionHandler.handleOtherExceptions(exception);
@@ -166,7 +166,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleOtherExceptions_WithNullPointerException_ShouldReturnInternalServerError() {
+    void handleOtherExceptions_WithNullPointerException_ReturnInternalServerError() {
         NullPointerException exception = new NullPointerException("Null pointer error");
 
          ResponseEntity<String> response = exceptionHandler.handleOtherExceptions(exception);
@@ -176,7 +176,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void allHandlers_ShouldReturnNonNullResponseEntity() {
+    void allHandlers_ReturnNonNullResponseEntity() {
         // Test that all handlers return non-null responses
         assertNotNull(exceptionHandler.handleNoSuchAlgorithmException(new NoSuchAlgorithmException()));
         assertNotNull(exceptionHandler.handleinvaliduser(new invaliduser()));
@@ -190,7 +190,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void allUnauthorizedHandlers_ShouldReturnCorrectStatusCode() {
+    void allUnauthorizedHandlers_ReturnCorrectStatusCode() {
         // Verify all handlers that should return UNAUTHORIZED do so
         assertEquals(HttpStatus.UNAUTHORIZED, 
             exceptionHandler.handleinvaliduser(new invaliduser()).getStatusCode());
@@ -209,7 +209,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void allInternalServerErrorHandlers_ShouldReturnCorrectStatusCode() {
+    void allInternalServerErrorHandlers_ReturnCorrectStatusCode() {
         // Verify handlers that should return INTERNAL_SERVER_ERROR do so
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, 
             exceptionHandler.handleNoSuchAlgorithmException(new NoSuchAlgorithmException()).getStatusCode());

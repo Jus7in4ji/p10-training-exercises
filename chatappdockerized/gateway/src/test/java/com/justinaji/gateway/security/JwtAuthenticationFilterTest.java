@@ -72,7 +72,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_AuthEndpoint_ShouldSkipValidation() {
+    void filter_AuthEndpoint_SkipValidation() {
         when(exchange.getRequest()).thenReturn(request);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
         when(request.getURI()).thenReturn(URI.create("http://localhost/auth/login"));
@@ -85,7 +85,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_AuthSignUpEndpoint_ShouldSkipValidation() {
+    void filter_AuthSignUpEndpoint_SkipValidation() {
         when(exchange.getRequest()).thenReturn(request);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
         when(request.getURI()).thenReturn(URI.create("http://localhost/auth/SignUp"));
@@ -98,7 +98,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_ValidToken_ShouldAllowRequest() {
+    void filter_ValidToken_AllowRequest() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
@@ -113,7 +113,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_MissingAuthorizationHeader_ShouldReturnUnauthorized() {
+    void filter_MissingAuthorizationHeader_ReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
@@ -131,7 +131,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_InvalidBearerFormat_ShouldReturnUnauthorized() {
+    void filter_InvalidBearerFormat_ReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
@@ -147,7 +147,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_NoBearerPrefix_ShouldReturnUnauthorized() {
+    void filter_NoBearerPrefix_ReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
@@ -162,7 +162,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_InvalidToken_ShouldReturnUnauthorized() {
+    void filter_InvalidToken_ReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
@@ -179,7 +179,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_ExpiredToken_ShouldReturnUnauthorized() {
+    void filter_ExpiredToken_ReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(TEST_SECRET));
@@ -204,7 +204,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_LowercaseAuthorizationHeader_ShouldWork() {
+    void filter_LowercaseAuthorizationHeader_Work() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
@@ -219,7 +219,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_MalformedToken_ShouldReturnUnauthorized() {
+    void filter_MalformedToken_ReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
@@ -231,7 +231,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_EmptyBearerToken_ShouldReturnUnauthorized() {
+    void filter_EmptyBearerToken_ReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));
@@ -243,7 +243,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_ProtectedEndpoint_WithoutToken_ShouldReturnUnauthorized() {
+    void filter_ProtectedEndpoint_WithoutToken_ReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(request.getURI()).thenReturn(URI.create("http://localhost/chats"));
@@ -256,7 +256,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_MultipleAuthEndpoints_ShouldAllSkipValidation() {
+    void filter_MultipleAuthEndpoints_AllSkipValidation() {
         when(exchange.getRequest()).thenReturn(request);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
         // Test /auth/login
@@ -275,14 +275,14 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void getOrder_ShouldReturnNegativeOne() {
+    void getOrder_ReturnNegativeOne() {
          int order = jwtAuthenticationFilter.getOrder();
 
          assertEquals(-1, order);
     }
 
     @Test
-    void filter_ValidTokenWithDifferentEndpoints_ShouldAllowAll() {
+    void filter_ValidTokenWithDifferentEndpoints_AllowAll() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
@@ -304,7 +304,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_AuthEndpointVariations_ShouldAllSkip() {
+    void filter_AuthEndpointVariations_AllSkip() {
         when(exchange.getRequest()).thenReturn(request);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
         // Test different /auth paths
@@ -321,7 +321,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void filter_NullToken_AfterBearer_ShouldReturnUnauthorized() {
+    void filter_NullToken_AfterBearer_ReturnUnauthorized() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getHeaders()).thenReturn(httpHeaders);
         when(request.getURI()).thenReturn(URI.create("http://localhost/api/users"));

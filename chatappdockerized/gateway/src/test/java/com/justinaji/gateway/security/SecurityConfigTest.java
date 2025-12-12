@@ -23,7 +23,7 @@ class SecurityConfigTest {
     }
 
     @Test
-    void springSecurityFilterChain_ShouldReturnNonNull() {
+    void springSecurityFilterChain_ReturnNonNull() {
         ServerHttpSecurity http = ServerHttpSecurity.http();
 
          SecurityWebFilterChain filterChain = securityConfig.springSecurityFilterChain(http);
@@ -32,7 +32,7 @@ class SecurityConfigTest {
     }
 
     @Test
-    void springSecurityFilterChain_ShouldBuildSuccessfully() {
+    void springSecurityFilterChain_BuildSuccessfully() {
         ServerHttpSecurity http = ServerHttpSecurity.http();
 
         assertDoesNotThrow(() -> {
@@ -42,13 +42,13 @@ class SecurityConfigTest {
     }
 
     @Test
-    void securityConfig_ShouldInstantiateWithoutErrors() {
+    void securityConfig_InstantiateWithoutErrors() {
         assertNotNull(securityConfig);
         assertDoesNotThrow(() -> new SecurityConfig());
     }
 
     @Test
-    void springSecurityFilterChain_CalledMultipleTimes_ShouldCreateDifferentInstances() {
+    void springSecurityFilterChain_CalledMultipleTimes_CreateDifferentInstances() {
         ServerHttpSecurity http1 = ServerHttpSecurity.http();
         ServerHttpSecurity http2 = ServerHttpSecurity.http();
 

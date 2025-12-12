@@ -41,7 +41,7 @@ class CommonMethodsTest {
     }
 
 
-    // getAlphaNumericString() should always be 8 chars
+    // getAlphaNumericString() should always 8 chars
     @Test
     void testGetAlphaNumericString() {
         String result = CommonMethods.getAlphaNumericString();
@@ -77,7 +77,7 @@ class CommonMethodsTest {
     // Encryption / Decryption
     @Test
     void testEncryptDecryptMessage() {
-        String text = "Hello Machane!";
+        String text = "Hello there!";
         String key = "1234567890123456"; // 16 bytes → AES key
 
         // Convert key into Base64, because method expects Base64 string
