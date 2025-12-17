@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="84_HTTP_Listener" doc:name="HTTP Listener config" doc:id="8824c706-86ed-43f9-9e23-f5541e6cda96" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<db:config name="MYSQL_UserFileDB" doc:name="Database Config" doc:id="bf9daf76-d054-4804-bdfe-4bac8f4130aa" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="entesql" database="java" />
+	</db:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="e5cd04c2-7fd3-49c5-b177-3f03db9927fb" file="test.properties" />
+	<flow name="RenameFile" doc:id="fa9bf560-9a4f-4372-bd8a-40e86bafd33f" >
+		<http:listener doc:name="Listener" doc:id="4b9c6779-ecef-4343-9884-107d0d22b35b" config-ref="84_HTTP_Listener" path="/files" allowedMethods="PUT" outputMimeType="application/json"/>
+		<set-variable value="#[{	id: payload.id,&#10;    name: payload.name&#10;}]" doc:name="Store request variables" doc:id="e0f60848-6784-47dd-a937-314da0f9f742" variableName="fileRenameRequest"/>
+		<db:select doc:name="get current name" doc:id="8116083a-69e4-4c52-b22b-f3bec88b62b6" config-ref="MYSQL_UserFileDB">
+			<db:sql ><![CDATA[select name from filedets where id = :id ;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{ id: vars.fileRenameRequest.id }]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="is ID valid" doc:id="518f4d96-b55b-4b8a-8eba-b175eb988582" >
+			<when expression="#[isEmpty(payload)]">
+				<ee:transform doc:name="Display Error" doc:id="3e2b365e-96a6-4e1a-b43c-34e1f13184ab" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+"message": "No such File exists"	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="#[payload[0].name]" doc:name="Set Variable" doc:id="500810d4-9ecc-4cee-9e56-3f844db6429f" variableName="oldname" />
+				<db:update doc:name="Rename file" doc:id="26e6ad60-a92a-4118-b7d9-e2ced210790f" config-ref="MYSQL_UserFileDB">
+			<db:sql><![CDATA[UPDATE filedets SET name = :name WHERE id = :id;
+]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+    id: vars.fileRenameRequest.id,
+    name: vars.fileRenameRequest.name,
+}]]]></db:input-parameters>
+		</db:update>
+				<ee:transform doc:name="Display Result" doc:id="204cdd4d-dd67-4bf3-bd32-146e68089c35">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    Message: "$(vars.oldname) was renamed to $(vars.fileRenameRequest.name )."
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="UploadFile" doc:id="b9f14ff8-0877-4aaa-9a95-80f261739d37" >
+		<http:listener doc:name="Listener" doc:id="fc582a87-1098-438f-b123-f33314231ad8" config-ref="84_HTTP_Listener" path="/files" allowedMethods="POST" outputMimeType="application/json"/>
+		<set-variable value="#[{	id: payload.id,&#10;    name: payload.name,&#10;    ftype:payload.ftype,&#10;    user:payload.user&#10;}]" doc:name="Store Request variables" doc:id="ccaaa07e-7d39-4172-a234-1f04094feb17" variableName="filedetails"/>
+		<db:select doc:name="get user from username" doc:id="75c64ef9-3ae5-4ebc-bd74-4a4cebfe679f" config-ref="MYSQL_UserFileDB">
+			<db:sql ><![CDATA[select id from users where name = :uname ;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	uname: vars.filedetails.user
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="check if User Exists" doc:id="b2ac5016-045d-4a3c-a1db-fff52a9528f1" >
+			<when expression="#[isEmpty(payload)]">
+				<ee:transform doc:name="Display Error" doc:id="c5a98ad3-52b4-4741-b474-db35c3152b91" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Message: "No user of the given name exists"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="#[payload[0].id]" doc:name="Store new userid" doc:id="de2ad3f5-77ac-45d7-8e58-15c6941935e0" variableName="userid"/>
+				<db:insert doc:name="Upload File" doc:id="953f30eb-0570-411d-a2ac-abb2643cbef6" config-ref="MYSQL_UserFileDB">
+			<db:sql><![CDATA[INSERT INTO filedets (id, name, type, userid)
+VALUES (
+    :id,
+    :name,
+    :ftype,
+    :userid
+);
+]]></db:sql>
+			<db:input-parameters><![CDATA[#[{	id: vars.filedetails.id, 
+    name:vars.filedetails.name,
+    ftype: vars.filedetails.ftype ,
+    userid: vars.userid
+}]]]></db:input-parameters>
+		</db:insert>
+				<ee:transform doc:name="Display result" doc:id="c04e8df5-94b8-4ab6-8faf-c7e8eeee5885">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    Message: "file $(vars.filedetails.name) uploaded"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="DeleteFile" doc:id="14416831-1c15-4667-9257-c6369db89de7" >
+		<http:listener doc:name="Listener" doc:id="4a496991-90ae-48db-83d7-9373942b5c46" config-ref="84_HTTP_Listener" path="/files" allowedMethods="DELETE"/>
+		<set-variable value="#[attributes.queryParams.fileid]" doc:name="Store ID" doc:id="72ce0780-b4fe-4346-bbea-b2cba9f50c85" variableName="fileId"/>
+		<db:select doc:name="Find file by id" doc:id="46fabe45-877f-402d-91ed-d1ad8bfe16c4" config-ref="MYSQL_UserFileDB">
+			<db:sql ><![CDATA[select name,type as ftype from filedets where id = :id ;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{ id: vars.fileId }]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="check if File exists" doc:id="f0846a36-594f-40b1-9f39-dab6e53cc72c" >
+			<when expression="#[isEmpty(payload)]">
+				<ee:transform doc:name="Display Error" doc:id="3cd1b90b-21ce-4c0d-9d62-60848ec9a2bb" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+"message": "No such File exists"	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="#[{&#10;    name: payload[0].name,&#10;    ftype: payload[0].ftype&#10;}]" doc:name="Store name and type" doc:id="487e9624-fffc-41b5-9c35-c74a01b10b0d" variableName="deletedfile" />
+				<db:delete doc:name="delete file " doc:id="1f0838fc-0919-40c5-8475-373215a59404" config-ref="MYSQL_UserFileDB">
+			<db:sql><![CDATA[delete from filedets where id = :id ;]]></db:sql>
+			<db:input-parameters><![CDATA[#[{ id: vars.fileId }]]]></db:input-parameters>
+		</db:delete>
+				<ee:transform doc:name="Display Result" doc:id="be22e45d-bd93-45c7-940b-5bdd6fa3eaf8">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    message: "file $(vars.deletedfile.name).$(vars.deletedfile.ftype) was deleted successfully"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="GetFiles" doc:id="7d501f24-e844-42d8-a11b-079aa1861500" >
+		<http:listener doc:name="files" doc:id="e03ee440-43b8-4cd6-8815-68ef1b89c202" path="/files" config-ref="84_HTTP_Listener" allowedMethods="GET" responseStreamingMode="ALWAYS"/>
+		<choice doc:name="All / Specific" doc:id="108676f6-6275-495c-b535-5e506ffd2c47">
+			<when expression="#[attributes.queryParams.fileid != null]">
+				<db:select doc:name="Get by ID" doc:id="658b268c-7667-4707-be15-3a6c5cda5940" config-ref="MYSQL_UserFileDB">
+			<db:sql><![CDATA[SELECT  f.id as fid, f.name as name,f.type as ftype, u.name user FROM filedets f
+INNER JOIN users u ON f.userid = u.id where f.id = :id ;]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	'id':attributes.queryParams.fileid
+}]]]></db:input-parameters>
+		</db:select>
+				<ee:transform doc:name="Display file details" doc:id="9d783102-b9b4-48a2-a0a5-492a5e12106c">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (item) -> {
+	FileName: item.name,
+	format: item.ftype,
+	UploadedBy: item.user
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<db:select doc:name="Get All files" doc:id="deb014c0-2163-40a0-a8d1-bc2cb47e0b69" config-ref="MYSQL_UserFileDB">
+			<db:sql><![CDATA[SELECT f.id as fid, f.name as name,f.type as ftype, u.name user FROM filedets f
+INNER JOIN users u ON f.userid = u.id;
+]]></db:sql>
+		</db:select>
+				<ee:transform doc:name="Display file details w ID" doc:id="5df1720e-ff55-4a72-b044-2f3b50d10c74">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (item) -> {
+	id : item.fid,
+	FileName: item.name,
+	format: item.ftype,
+	UploadedBy: item.user
+	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="RegisterUser" doc:id="57fb6f89-47d6-47bf-adbf-2db438a2540e" >
+		<http:listener doc:name="Listener" doc:id="ad52dbca-e2a0-4e35-b3b3-222a95c8966e" config-ref="84_HTTP_Listener" path="/registeruser" outputMimeType="application/json"/>
+		<set-variable value="#[payload.name]" doc:name="Store Username" doc:id="7c951894-65c9-4f08-803e-c3c32678bf83" variableName="newUser"/>
+		<db:insert doc:name="Add User to db" doc:id="f18ceee2-08c4-4730-acf1-c07b98d5baae" config-ref="MYSQL_UserFileDB">
+			<db:sql ><![CDATA[Insert into users values ( :id , :email, :name, :password, :admin );]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+    id: payload.id,
+    name: payload.name,
+    email: payload.mail,
+    admin: payload.admin default null,
+    password: payload.password
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Display Result" doc:id="8d86eb37-c54e-41fc-84dd-d6ad641a8fdf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "new user $(vars.newUser) registered"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="GETusers" doc:id="e2ce1450-b3d8-482c-b9ce-9657157dd08d">
+		<http:listener doc:name="getusers" doc:id="9d39b7e4-8f9b-46d1-855e-be8214e9f392" path="/users" config-ref="84_HTTP_Listener" />
+		<db:select doc:name="Fetch all Users" doc:id="29bff7a2-f613-474a-a85f-a070d5264245" config-ref="MYSQL_UserFileDB">
+			<db:sql><![CDATA[select * from users;]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Display Users(w/out id, password)" doc:id="e6344fce-0882-48bc-9b97-118c6818e538">
+			<ee:message>
+				<ee:set-payload><![CDATA[output application/json
+---
+payload map (item) -> {
+    username: item.name,
+    email: item.email,
+    Admin: item.admin
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
