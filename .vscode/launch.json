@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "KafkaproducerApplication",
+            "request": "launch",
+            "mainClass": "com.justinaji.kafkaproducer.KafkaproducerApplication",
+            "projectName": "kafkaproducer"
+        },
+        {
+            "type": "java",
             "name": "GatewayApplication",
             "request": "launch",
             "mainClass": "com.justinaji.gateway.GatewayApplication",
