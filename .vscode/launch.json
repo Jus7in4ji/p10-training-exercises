@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "KafkaconsumerApplication",
+            "request": "launch",
+            "mainClass": "com.justinaji.kafkaconsumer.KafkaconsumerApplication",
+            "projectName": "kafkaconsumer"
+        },
+        {
+            "type": "java",
             "name": "KafkaproducerApplication",
             "request": "launch",
             "mainClass": "com.justinaji.kafkaproducer.KafkaproducerApplication",
