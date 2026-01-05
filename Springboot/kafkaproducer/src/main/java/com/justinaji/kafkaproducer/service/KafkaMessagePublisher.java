@@ -13,10 +13,13 @@ public class KafkaMessagePublisher {
     @Autowired
     private KafkaTemplate<String,Object> template;
 
-    public void SendMsg2Topic(String Msg){
-        CompletableFuture<SendResult<String, Object>> future = template.send("newtopic", Msg);
+    public void SendMsg2Topic(String key, String Msg){
+        CompletableFuture<SendResult<String, Object>> future = template.send("newtopic",key, Msg);
         future.whenComplete((result,ex)->{
-            if (ex ==null) System.out.println("Sent Message : "+ Msg +"\n-with offset : "+result.getRecordMetadata().offset() );
+            if (ex ==null) System.out.println(
+                "Sent Message : "+ Msg +
+                "\n-with offset : "+result.getRecordMetadata().offset()+ 
+                "\n- partition: " + result.getRecordMetadata().partition());
             
             else System.out.println("Unable to Send Message("+Msg+") due to : "+ex.getMessage());
             
