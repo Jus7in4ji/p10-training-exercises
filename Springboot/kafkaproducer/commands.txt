@@ -1,0 +1,17 @@
+- Start server:
+.\kafka-server-start.bat C:\kafka\config\kraft\server.properties  
+
+- List Topics:
+.\kafka-topics.bat --bootstrap-server localhost:9092 --list
+
+- Create Topic:
+.\kafka-topics.bat --create --topic TOPIC_NAME --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1 
+
+- Start Producer:
+.\kafka-console-producer.bat --topic TOPIC_NAME --bootstrap-server localhost:9092 
+
+- consume from beginning :
+.\kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic TOPIC_NAME --from-beginning 
+
+- topic details:
+.\kafka-topics.bat --bootstrap-server localhost:9092 --describe --topic TOPIC_NAME 
