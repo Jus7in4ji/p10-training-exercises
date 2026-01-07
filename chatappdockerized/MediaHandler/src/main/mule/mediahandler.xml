@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="dbb57ee9-692f-45ca-9dc9-284aa030a6f8" >
+		<db:generic-connection url="jdbc:postgresql://localhost:5432/chatapp" driverClassName="org.postgresql.Driver" user="postgres" password="root" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config_87" doc:name="HTTP Listener config" doc:id="09d78e3e-7890-4d72-a452-076b1b365ba0" >
+		<http:listener-connection host="0.0.0.0" port="8087" />
+	</http:listener-config>
+	<flow name="InitializeTable" doc:id="06290756-b3e0-41ac-ac12-cc0c6c9be4ab" >
+		<scheduler doc:name="Scheduler" doc:id="dbea50e2-d331-407f-b44d-e1503d91222f">
+			<scheduling-strategy>
+				<fixed-frequency frequency="1" timeUnit="DAYS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<db:execute-script doc:name="Create table " doc:id="91af5cfe-3cdc-41cd-820d-e4dc00c4cfb4" config-ref="Database_Config">
+			<db:sql ><![CDATA[CREATE TABLE IF NOT EXISTS media (
+  fileid Varchar(8) PRIMARY KEY,
+  filetype VARCHAR(10),
+  name VARCHAR(20),
+  chatid VARCHAR(20),
+  sender VARCHAR(20),
+  path TEXT,
+  sentTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+]]></db:sql>
+		</db:execute-script>
+	</flow>
+	<flow name="GetAllMedia" doc:id="a4cb33bb-4b0c-4e52-bdcb-8e6a18dc6925" >
+		<http:listener doc:name="Listener" doc:id="ef05466b-875f-494a-86c0-e8b199a11898" path="/getmedia" config-ref="HTTP_Listener_config_87"/>
+		<db:select doc:name="Select ALL" doc:id="497be08d-01e1-4bbc-9371-299885801bac" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from media;]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Display payload" doc:id="8f5956a5-aceb-42b9-9780-e81472033ba2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Insertdata" doc:id="d7e4dbaa-8df4-48ec-919b-9573442ca2d0" >
+		<http:listener doc:name="Data insert API" doc:id="dc1843c0-bc95-4f9f-90fb-ea629b1739cb" config-ref="HTTP_Listener_config_87" path="/addmedia" allowedMethods="POST"/>
+		<flow-ref doc:name="Flow Reference" doc:id="93e5e330-7e04-4fed-96ba-4ac06c8f4498" name="InsertDataQuery"/>
+	</flow>
+	<flow name="mediahandlerFlow" doc:id="f0c20cd2-1261-40d6-b257-d1b8d518652f" >
+		<http:listener doc:name="FindByChat" doc:id="2f0a176a-96b5-4756-ad64-90d3a528ba3f" config-ref="HTTP_Listener_config_87" path="/getchatmedia"/>
+		<set-variable value="#[attributes.queryParams.chatid]" doc:name="Set Variable" doc:id="66805642-1d51-46cf-8b49-33afac74ba8e" variableName="chatid" />
+		<flow-ref doc:name="Flow Reference" doc:id="56bf2be2-fb11-4681-ba5a-3aa086e03694" name="RetrieveByChat"/>
+	</flow>
+	<flow name="RetrieveByChat" doc:id="3b77ec9f-4254-4a42-9962-19142d08b990" >
+		<db:select doc:name="Select" doc:id="670ca77d-0af1-4292-a353-8150d56b3118" config-ref="Database_Config">
+			<db:sql ><![CDATA[Select * from media where chatid = :chatid ;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[chatid: vars.chatid default ""]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="e5954dc5-9766-49bb-b1ce-21e0481e8c82" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="InsertDataQuery" doc:id="116b2e51-2f6b-4547-820e-396fc3d7d68e" >
+		<set-variable value="#[{	id: payload.id,&#10;    name: payload.name,&#10;    ftype:payload.filetype,&#10;    user:payload.sender,&#10;    chat:payload.chat,&#10;    path:payload.path&#10;}]" doc:name="Set Variable" doc:id="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" variableName="NewFile"/>
+		<db:insert doc:name="Insert" doc:id="5ec7988e-3509-4838-9f9e-47697272b882" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into media (fileid,filetype,name,path,chatid,sender) values(:id,:ftype,:name,:path,:chatid,:sender);]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id:vars.NewFile.id,
+	ftype:vars.NewFile.ftype,
+	name: vars.NewFile.name,
+	path: vars.NewFile.path,
+	chatid: vars.NewFile.chat,
+	sender: vars.NewFile.user
+}]]]></db:input-parameters>
+		</db:insert>
+		<set-payload value='#[vars.NewFile.name ++ "succesfully uploaded."]' doc:name="Set Payload" doc:id="abcaa2b7-3ccd-469f-9e62-761436ccce5a" />
+	</flow>
+</mule>

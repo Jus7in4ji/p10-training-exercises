@@ -13,5 +13,8 @@
 - consume from beginning :
 .\kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic TOPIC_NAME --from-beginning 
 
+-consume w all details: 
+.\kafka-console-consumer.bat --topic TOPIC_NAME --bootstrap-server localhost:90922 --property print.headers=true --from-beginning
+
 - topic details:
 .\kafka-topics.bat --bootstrap-server localhost:9092 --describe --topic TOPIC_NAME 
