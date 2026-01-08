@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.justinaji.chatapp_messages.dto.FileDownloadDto;
 import com.justinaji.chatapp_messages.model.media;
 import com.justinaji.chatapp_messages.repository.MediaRepo;
 
@@ -29,15 +29,13 @@ public class FileHandlerServices {
 
     Logger logger = LoggerFactory.getLogger(MessageServicesImpl.class);
 
-    
-    public FileHandlerServices(MediaRepo mediaRepo){
-        this.mediaRepo = mediaRepo;
-    }
+    public FileHandlerServices(MediaRepo mediaRepo){ this.mediaRepo = mediaRepo;}
 
     public media UploadFile(MultipartFile file,String sender,String chatid) throws IOException{
         
         String filepath = storagePath + file.getOriginalFilename();
         String Fileid;
+
         do { Fileid = CommonMethods.getAlphaNumericString(); } // unique chat id
         while (mediaRepo.existsById(Fileid));
         media newFile = new media(Fileid, filepath, sender, file.getOriginalFilename(), file.getContentType(), chatid, Timestamp.from(Instant.now()), false);
@@ -50,10 +48,13 @@ public class FileHandlerServices {
         return newFile;
     }
 
-    public byte[] DownloadFile(String fileid)throws  IOException{
-        Optional<media> downloadFile = mediaRepo.findById(fileid); 
-        String filepath = downloadFile.get().getPath();
-        byte[] file = Files.readAllBytes(new File(filepath).toPath());
-        return file;
+    public FileDownloadDto DownloadFile(String fileid) throws IOException {
+        media mediaFile = mediaRepo.findById(fileid).orElseThrow(() -> new RuntimeException("File not found"));
+
+        String filepath = mediaFile.getPath();
+        byte[] fileBytes = Files.readAllBytes(Paths.get(filepath));
+
+        return new FileDownloadDto( fileBytes, mediaFile.getFiletype(), mediaFile.getName());
     }
+
 }

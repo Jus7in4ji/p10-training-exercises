@@ -21,15 +21,11 @@ async function handleFileSelected(input) {
     }
 
     console.log("Selected file:", file);
-
-    // Optional: show file name in message box
     document.getElementById("message").value = `[${file.name}]`;
 
-    // Build multipart payload
     const formData = new FormData();
     formData.append("file", file);
 
-    // data part → JSON
     formData.append(
         "data",
         new Blob(
@@ -44,22 +40,17 @@ async function handleFileSelected(input) {
     try {
         const res = await fetch(gatewayurl + "/files/upload", {
             method: "POST",
-            headers: {
-                "Authorization": "Bearer " + jwtToken
-            },
+            headers: {"Authorization": "Bearer " + jwtToken},
             body: formData
         });
 
-        if (!res.ok) {
-            throw new Error("Upload failed");
-        }
+        if (!res.ok) { throw new Error("Upload failed"); }
 
         const fileResponse = await res.json();
         console.log("Upload success:", fileResponse);
 
-        // 🔹 Build chat message using file response
         const fileMsg = {
-            msgid: fileResponse.fileid,         // 
+            msgid: fileResponse.fileid,         
             text: fileResponse.name,             // file name
             from: username,
             room: currentRoom,
@@ -81,6 +72,42 @@ async function handleFileSelected(input) {
         input.value = "";
     }
 }
+
+async function downloadFile(fileId, filename) {
+    if (!fileId || !jwtToken) {
+        alert("You are not authorized to download this file");
+        return;
+    }
+
+    try {
+        const res = await fetch(gatewayurl + "/files/download?fileid=" + encodeURIComponent(fileId),{
+            method: "GET",
+            headers: {"Authorization": "Bearer " + jwtToken}
+        });
+
+        if (!res.ok) { throw new Error("Download failed"); }
+
+        const blob = await res.blob();
+
+        // Create temporary download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+
+        a.href = url;
+        a.download = filename || "download";
+        document.body.appendChild(a);
+        a.click();
+
+        // Cleanup
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to download file");
+    }
+}
+
 
 
 async function storeToken() {
@@ -260,7 +287,8 @@ async function setRoom() {
                         from: entry.from,
                         text: entry.text,
                         sentTime: entry.sentTime,
-                        msgread: entry.msgread
+                        msgread: entry.msgread,
+                        isfile: entry.isfile
                     }, false);
                     if (entry.from !== username) {
                         stompClient.send("/app/chat.read", {}, JSON.stringify({msgId: entry.msgid}));
@@ -354,6 +382,13 @@ async function showMessage(message, local) {
     wrapper.classList.add("message-bubble");
     wrapper.setAttribute("data-id", message.msgid); // UNIQUE IDENTIFIER
 
+    if (message.isfile === true) {
+    wrapper.classList.add("isfile");
+    wrapper.style.cursor = "pointer"; //enables pointer change when hovering over
+    wrapper.addEventListener("click", function () {
+        downloadFile(message.msgid, message.text);
+    });
+}
     let sender = message.from === username ? message.from + " (You)" : message.from;
 
     let timeString = local
@@ -365,7 +400,11 @@ async function showMessage(message, local) {
 
     wrapper.innerHTML = `
         <div class="message-header">${sender}</div>
-        <div class="message-text">${message.text}</div>
+        <div class="message-text">
+            ${message.isfile ? `<span class="file-icon">📎</span>` : ""}
+            ${message.text}
+        </div>
+
 
         <div class="message-footer">
             <span class="time-left">${timeString}</span>

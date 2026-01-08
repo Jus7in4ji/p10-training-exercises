@@ -240,3 +240,22 @@ h2 {
 .attach-button:hover {
     background-color: #45a049;
 }
+
+/* Subtle difference for file messages */
+.message-bubble.isfile {
+    background-color: #eef6ff;        /* slightly bluish */
+    border: 1px solid #c5dbff;
+}
+
+/* Small file icon + emphasis */
+.message-bubble.isfile .message-text {
+    font-weight: 600;
+}
+
+.message-bubble.isfile .file-icon {
+    margin-right: 6px;
+}
+
+.message-bubble.isfile:hover {
+    background-color: #e3efff;
+}
