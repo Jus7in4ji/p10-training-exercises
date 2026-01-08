@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "UserChatMicroservice",
+            "request": "launch",
+            "mainClass": "com.justinaji.chatapp_userchats.UserChatMicroservice",
+            "projectName": "chatapp_userchats"
+        },
+        {
+            "type": "java",
+            "name": "MessageMicroservice",
+            "request": "launch",
+            "mainClass": "com.justinaji.chatapp_messages.MessageMicroservice",
+            "projectName": "chatapp_messages"
+        },
+        {
+            "type": "java",
             "name": "KafkaconsumerApplication",
             "request": "launch",
             "mainClass": "com.justinaji.kafkaconsumer.KafkaconsumerApplication",
