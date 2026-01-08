@@ -5,6 +5,84 @@ var activeSubscriptions = [];
 var username = null;
 const gatewayurl = "http://localhost:8080"
 
+function openFilePicker() {
+    document.getElementById("file-input").click();
+}
+
+async function handleFileSelected(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Validate login & room
+    if (!username || !currentRoom) {
+        alert("You cannot upload files. login and connect to a chat to do so");
+        input.value = ""; // reset
+        return;
+    }
+
+    console.log("Selected file:", file);
+
+    // Optional: show file name in message box
+    document.getElementById("message").value = `[${file.name}]`;
+
+    // Build multipart payload
+    const formData = new FormData();
+    formData.append("file", file);
+
+    // data part → JSON
+    formData.append(
+        "data",
+        new Blob(
+            [JSON.stringify({
+                sender: username,
+                chatid: currentRoom
+            })],
+            { type: "application/json" }
+        )
+    );
+
+    try {
+        const res = await fetch(gatewayurl + "/files/upload", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + jwtToken
+            },
+            body: formData
+        });
+
+        if (!res.ok) {
+            throw new Error("Upload failed");
+        }
+
+        const fileResponse = await res.json();
+        console.log("Upload success:", fileResponse);
+
+        // 🔹 Build chat message using file response
+        const fileMsg = {
+            msgid: fileResponse.fileid,         // 
+            text: fileResponse.name,             // file name
+            from: username,
+            room: currentRoom,
+            msgread: false,
+            sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            isfile: true
+        };
+
+        stompClient.send("/app/chat.sendMessage",{},JSON.stringify(fileMsg));
+
+        // Clear message input
+        document.getElementById("message").value = "";
+
+    } catch (err) {
+        console.error(err);
+        alert("File upload failed");
+    } finally {
+        // Reset input so same file can be selected again
+        input.value = "";
+    }
+}
+
+
 async function storeToken() {
     jwtToken = document.getElementById("jwt-token").value.trim();
     username = null;
@@ -81,15 +159,15 @@ async function subscribeToRoom(roomName) {
 
     // Subscribe and store subscription handle
     let subscription = stompClient.subscribe("/topic/" + roomName, function(response) {
-    var message = JSON.parse(response.body);
-    console.log("new message received: "+message.text);
-    showMessage(message, true); // first display the message
+        var message = JSON.parse(response.body);
+        console.log("new message received: "+message.text);
+        showMessage(message, true); // first display the message
 
-    // THEN call read function if incoming message
-    if (message.from !== username) {
-        stompClient.send("/app/chat.read", {}, JSON.stringify({msgId: message.msgid}));
-    }
-});
+        // THEN call read function if incoming message
+        if (message.from !== username) {
+            stompClient.send("/app/chat.read", {}, JSON.stringify({msgId: message.msgid}));
+        }
+    });
 
 
     let readSub = stompClient.subscribe("/topic/read", function(message) {
@@ -258,7 +336,8 @@ async function sendMessage() {
         from: username,
         room: currentRoom,
         msgread : false,
-        sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone
+        sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        isfile: false
     };
 
     // Send

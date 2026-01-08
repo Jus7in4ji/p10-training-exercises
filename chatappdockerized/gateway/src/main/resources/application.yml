@@ -43,5 +43,9 @@ spring:
           predicates:
             - Path=/msg/**
 
+        - id: chatapp_messages
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES_1_URI:http://localhost:8081}
+          predicates:
+            - Path=/files/**
 jwt:
   secret: ${JWT_SECRET:xfjlcyD4pLcXF011QjeJPyEKdnxxTSUq9AJ2AcqC0+o=}

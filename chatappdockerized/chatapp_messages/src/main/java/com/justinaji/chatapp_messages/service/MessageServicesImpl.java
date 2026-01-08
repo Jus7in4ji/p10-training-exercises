@@ -2,7 +2,10 @@ package com.justinaji.chatapp_messages.service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -13,8 +16,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.justinaji.chatapp_messages.dto.WSmessage;
 import com.justinaji.chatapp_messages.model.chats;
+import com.justinaji.chatapp_messages.model.media;
 import com.justinaji.chatapp_messages.model.messages;
 import com.justinaji.chatapp_messages.model.users;
+import com.justinaji.chatapp_messages.repository.MediaRepo;
 import com.justinaji.chatapp_messages.repository.MessageRepo;
 
 @Service
@@ -26,8 +31,10 @@ public class MessageServicesImpl implements MesageServices{
     Logger logger = LoggerFactory.getLogger(MessageServicesImpl.class);
 
     private final MessageRepo messageRepo;
-    public MessageServicesImpl( MessageRepo messageRepo) {
+    private final MediaRepo mediaRepo;
+    public MessageServicesImpl( MessageRepo messageRepo, MediaRepo mediaRepo) {
         this.messageRepo = messageRepo;
+        this.mediaRepo = mediaRepo;
     }
 
     @Override
@@ -42,7 +49,6 @@ public class MessageServicesImpl implements MesageServices{
             .block();
         if (targetchat == null) throw new RuntimeException("Chat ID not found!");
 
-
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(targetchat);   
         
         chatMessages.forEach(msg -> {
@@ -50,12 +56,41 @@ public class MessageServicesImpl implements MesageServices{
                     msg.getM_id(),
                     msg.getSender().getName() ,
                     CommonMethods.decryptMessage(msg.getMessage(), targetchat.getChat_key()),
-                    CommonMethods.formatTimestamp(msg.getSentTime(), timezone),
+                    msg.getSentTime().toString(),
                     null,
-                    msg.isMsgread()
+                    msg.isMsgread(),
+                    false
                 );
                 history.add(dto);
             });
+        
+        List<media> chatMedia = mediaRepo.findByChatidOrderBySentTimeAsc(targetchat.getC_id());
+        chatMedia.forEach(file->{
+            WSmessage dto = new WSmessage(
+                    file.getFileid(),
+                    file.getSender() ,
+                    file.getName(),
+                    file.getSentTime().toString(),
+                    null,
+                    file.isMsgread(),
+                    true
+                );
+                history.add(dto);
+        });
+
+        history.sort(Comparator.comparing(WSmessage::getSentTime));
+
+        DateTimeFormatter dbFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+        history.forEach(m -> {
+        LocalDateTime ldt = LocalDateTime.parse(m.getSentTime(), dbFormat);
+
+        m.setSentTime(
+            CommonMethods.formatTimestamp(
+                Timestamp.valueOf(ldt),
+                timezone
+            )
+        );
+    });
 
         return history;
     }
@@ -88,8 +123,15 @@ public class MessageServicesImpl implements MesageServices{
     }
 
     public void setread(String messageid){
-        messages m = messageRepo.findById(messageid).orElseThrow(() -> new RuntimeException("message not found: "));
-        m.setMsgread(true);
-        messageRepo.save(m);
+        if (messageRepo.existsById(messageid)){
+            messages m = messageRepo.findById(messageid).orElseThrow(() -> new RuntimeException("message not found: "));
+            m.setMsgread(true);
+            messageRepo.save(m);
+        }
+        else{
+            media m = mediaRepo.findById(messageid).orElseThrow(() -> new RuntimeException("message not found: "));
+            m.setMsgread(true);
+            mediaRepo.save(m);
+        }
     }
 }

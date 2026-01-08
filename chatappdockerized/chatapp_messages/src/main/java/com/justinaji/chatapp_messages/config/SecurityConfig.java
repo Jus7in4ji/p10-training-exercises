@@ -34,7 +34,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(request-> request
                 .requestMatchers(
                     // websocket related requests
-                    "/chat.html", "/chat/**", "/chat", "/chat/info",  "/topic/**", "/app/**",
+                    "/chat.html", "/chat/**", "/chat", "/chat/info",  "/topic/**", "/app/**","/files/**",
                     // Static resources
                     "/css/**", "/js/**", "/images/**", "/static/**", "/webjars/**")
                 .permitAll()

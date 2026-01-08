@@ -23,6 +23,7 @@ import com.justinaji.chatapp_messages.dto.WSmessage;
 import com.justinaji.chatapp_messages.model.chats;
 import com.justinaji.chatapp_messages.model.messages;
 import com.justinaji.chatapp_messages.model.users;
+import com.justinaji.chatapp_messages.repository.MediaRepo;
 import com.justinaji.chatapp_messages.repository.MessageRepo;
 
 import reactor.core.publisher.Mono;
@@ -32,6 +33,9 @@ class MessageServicesImplTest {
 
     @Mock
     private MessageRepo messageRepo;
+
+    @Mock
+    private MediaRepo mediaRepo;
 
     @Mock
     private WebClient webClient;
@@ -50,7 +54,7 @@ class MessageServicesImplTest {
 
     @BeforeEach
     void setup() {
-        messageServices = new MessageServicesImpl(messageRepo);
+        messageServices = new MessageServicesImpl(messageRepo,mediaRepo);
         ReflectionTestUtils.setField(messageServices, "webClient", webClient);
     }
 

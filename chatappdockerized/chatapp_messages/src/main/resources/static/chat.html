@@ -42,6 +42,17 @@
 </div>
     <div id="chat-box" class="chat-box"></div>
     <div class="input-container">
+        <button class="attach-button" onclick="openFilePicker()" title="Attach file">
+            +
+        </button>
+
+        <!-- Hidden file input -->
+        <input 
+            type="file" 
+            id="file-input" 
+            style="display: none;" 
+            onchange="handleFileSelected(this)"
+        />
         <input type="text" id="message" class="message-input" placeholder="Enter your message here..." />
         <button id="send-button" class="send-button" onclick="sendMessage()">Send</button>
     </div>

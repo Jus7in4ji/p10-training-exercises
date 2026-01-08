@@ -14,6 +14,7 @@ public class WSmessage {
     private String sentTime; 
     private String room;
     private boolean msgread;
+    private boolean isfile;
 }
 
 

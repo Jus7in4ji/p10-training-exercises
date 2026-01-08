@@ -222,3 +222,21 @@ h2 {
     font-size: 15px;
 }
 
+.attach-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    font-size: 22px;
+    cursor: pointer;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.attach-button:hover {
+    background-color: #45a049;
+}
