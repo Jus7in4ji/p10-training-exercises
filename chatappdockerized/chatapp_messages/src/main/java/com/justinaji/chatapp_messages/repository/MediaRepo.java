@@ -11,6 +11,5 @@ import com.justinaji.chatapp_messages.model.media;
 public interface MediaRepo extends JpaRepository<media, String> {
     List<media> findBySender(String sender); 
     List<media> findByChatid(String chatid);
-    List<media> findByChatidOrderBySentTimeAsc(String chatid);
 
 }

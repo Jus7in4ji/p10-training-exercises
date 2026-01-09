@@ -19,7 +19,7 @@ public class KafkaProducerConfig {
 
         @Bean
         public NewTopic MediaTopic(){
-            return new NewTopic("MediaTopic", 3, (short)1);
+            return new NewTopic("MediaTopic0", 3, (short)1);
         }
         @Bean
         public NewTopic Readtopic() {

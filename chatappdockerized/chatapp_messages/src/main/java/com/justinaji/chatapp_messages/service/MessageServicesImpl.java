@@ -3,7 +3,10 @@ package com.justinaji.chatapp_messages.service;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -12,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
@@ -28,24 +32,29 @@ import com.justinaji.chatapp_messages.repository.MessageRepo;
 @Service
 public class MessageServicesImpl implements MesageServices{
 
-    @Autowired
-    private WebClient webClient;
-
     Logger logger = LoggerFactory.getLogger(MessageServicesImpl.class);
 
+    private final WebClient userChatsWebClient;
+    private final WebClient MediaWebClient;
     private final MessageRepo messageRepo;
     private final MediaRepo mediaRepo;
-    public MessageServicesImpl( MessageRepo messageRepo, MediaRepo mediaRepo) {
-        this.messageRepo = messageRepo;
-        this.mediaRepo = mediaRepo;
-    }
+    public MessageServicesImpl( 
+        @Qualifier("userChatsWebClient") WebClient userChatsWebClient,
+        @Qualifier("MediaWebClient") WebClient MediaWebClient, 
+        MessageRepo messageRepo, 
+        MediaRepo mediaRepo) {
+            this.userChatsWebClient = userChatsWebClient;
+            this.MediaWebClient = MediaWebClient;
+            this.messageRepo = messageRepo;
+            this.mediaRepo = mediaRepo;
+        }
 
     @Override
     public List<WSmessage> getchathistory(String username , String chatid, String timezone){
         if (username == null || username.trim().isEmpty())return null;
         List<WSmessage> history = new ArrayList<>();
 
-        chats targetchat = webClient.get()
+        chats targetchat = userChatsWebClient.get()
             .uri("/userchat/getchat?chatid=" + chatid) 
             .retrieve()
             .bodyToMono(chats.class)
@@ -67,13 +76,20 @@ public class MessageServicesImpl implements MesageServices{
                 history.add(dto);
             });
         
-        List<media> chatMedia = mediaRepo.findByChatidOrderBySentTimeAsc(targetchat.getC_id());
+        List<media> chatMedia = MediaWebClient.get()
+            .uri("/media/getchatmedia?chatid=" + chatid)
+            .retrieve()
+            .bodyToFlux(media.class)
+            .collectList()
+            .block();
+        if (chatMedia == null) throw new RuntimeException("Chat ID not found!");
+
         chatMedia.forEach(file->{
             WSmessage dto = new WSmessage(
                     file.getFileid(),
                     file.getSender() ,
                     file.getName(),
-                    file.getSentTime().toString(),
+                    file.getSenttime().toString(),
                     null,
                     file.isMsgread(),
                     true
@@ -85,15 +101,15 @@ public class MessageServicesImpl implements MesageServices{
 
         DateTimeFormatter dbFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
         history.forEach(m -> {
-        LocalDateTime ldt = LocalDateTime.parse(m.getSentTime(), dbFormat);
+            LocalDateTime ldt = parseDbTimestamp(m.getSentTime());
 
-        m.setSentTime(
-            CommonMethods.formatTimestamp(
-                Timestamp.valueOf(ldt),
-                timezone
-            )
-        );
-    });
+            m.setSentTime(
+                CommonMethods.formatTimestamp(
+                    Timestamp.valueOf(ldt),
+                    timezone
+                )
+            );
+        });
 
         return history;
     }
@@ -104,14 +120,14 @@ public class MessageServicesImpl implements MesageServices{
         do { messageId = CommonMethods.getAlphaNumericString(); } // unique chat id
         while (messageRepo.existsById(messageId));
 
-        users sender = webClient.get()
+        users sender = userChatsWebClient.get()
             .uri("/userchat/getuser?username=" + username)
             .retrieve()
             .bodyToMono(users.class)
             .block();
         if (sender == null) throw new RuntimeException("user not found!");
 
-        chats chat = webClient.get()
+        chats chat = userChatsWebClient.get()
             .uri("/userchat/getchat?chatid=" + chatid)  
             .retrieve()
             .bodyToMono(chats.class)
@@ -141,7 +157,7 @@ public class MessageServicesImpl implements MesageServices{
 
     @Autowired
     private KafkaTemplate<String,Object> template;
-    
+
     public void SetFileRead(String fileid){
         CompletableFuture<SendResult<String, Object>> future = template.send("fileread", fileid);
         future.whenComplete((result,ex)->{
@@ -154,4 +170,33 @@ public class MessageServicesImpl implements MesageServices{
             
         });
     }
+
+private static final DateTimeFormatter LEGACY_TS_FORMATTER =
+        new DateTimeFormatterBuilder()
+                .appendPattern("yyyy-MM-dd HH:mm:ss")
+                .optionalStart()
+                .appendFraction(ChronoField.MILLI_OF_SECOND, 1, 3, true)
+                .optionalEnd()
+                .toFormatter();
+
+private LocalDateTime parseDbTimestamp(String ts) {
+    try {
+        if (ts.contains("T") && (ts.contains("+") || ts.endsWith("Z"))) {
+            return OffsetDateTime.parse(ts).toLocalDateTime();
+        }
+        if (ts.contains("T")) {
+            return LocalDateTime.parse(ts);
+        }
+
+        return LocalDateTime.parse(ts, LEGACY_TS_FORMATTER);
+
+    } catch (Exception e) {
+        throw new RuntimeException("Unable to parse timestamp: " + ts, e);
+    }
+}
+
+
+
+
+
 }

@@ -13,7 +13,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeExchange(exchanges -> exchanges
-                .pathMatchers("/auth/**").permitAll()   // publicly allowed
+                .pathMatchers("/auth/**","/media/**").permitAll()   // publicly allowed
                 .anyExchange().permitAll()              // handled manually by filter
             );
         return http.build();

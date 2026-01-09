@@ -19,7 +19,7 @@ http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/ka
 				<kafka:bootstrap-server value="localhost:9092" />
 			</kafka:bootstrap-servers>
 			<kafka:topic-patterns >
-				<kafka:topic-pattern value="MediaTopic" />
+				<kafka:topic-pattern value="MediaTopic0" />
 			</kafka:topic-patterns>
 		</kafka:consumer-plaintext-connection>
 	</kafka:consumer-config>
@@ -41,20 +41,35 @@ http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/ka
 		</scheduler>
 		<db:execute-script doc:name="Create table " doc:id="91af5cfe-3cdc-41cd-820d-e4dc00c4cfb4" config-ref="Database_Config">
 			<db:sql ><![CDATA[CREATE TABLE IF NOT EXISTS media (
-  fileid Varchar(8) PRIMARY KEY,
-  filetype VARCHAR(10),
-  name VARCHAR(20),
-  chatid VARCHAR(20),
-  sender VARCHAR(20),
+  fileid Varchar(255) PRIMARY KEY,
+  filetype VARCHAR(255),
+  name VARCHAR(255),
+  chatid VARCHAR(255),
+  sender VARCHAR(255),
   path TEXT,
-  sent_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  senttime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   msgread BOOLEAN
 );
 ]]></db:sql>
 		</db:execute-script>
 	</flow>
+	<flow name="GetFile" doc:id="1aa1641c-be0e-42b1-8460-a1f346b3525f" >
+		<http:listener doc:name="Listener" doc:id="5ae387ae-cc80-4e35-9630-a1691f3fea88" config-ref="HTTP_Listener_config_87" path="/media/getfile"/>
+		<db:select doc:name="Find File by ID" doc:id="1559048a-bf32-4c0d-8e89-9ad2c68feaf0" config-ref="Database_Config" >
+			<db:sql ><![CDATA[Select * from media where fileid = :id ;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[id: attributes.queryParams.id]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="24d0a2b0-6e83-44e2-8114-e27228a32ac1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload [0]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 	<flow name="GetAllMedia" doc:id="a4cb33bb-4b0c-4e52-bdcb-8e6a18dc6925" >
-		<http:listener doc:name="Listener" doc:id="ef05466b-875f-494a-86c0-e8b199a11898" path="/getmedia" config-ref="HTTP_Listener_config_87"/>
+		<http:listener doc:name="Listener" doc:id="ef05466b-875f-494a-86c0-e8b199a11898" path="/media/getmedia" config-ref="HTTP_Listener_config_87"/>
 		<db:select doc:name="Select ALL" doc:id="497be08d-01e1-4bbc-9371-299885801bac" config-ref="Database_Config">
 			<db:sql ><![CDATA[select * from media;]]></db:sql>
 		</db:select>
@@ -68,7 +83,7 @@ payload]]></ee:set-payload>
 		</ee:transform>
 	</flow>
 	<flow name="ListofIDs" doc:id="88d2434f-8927-403d-9974-445335e4bb6d" >
-		<http:listener doc:name="Listener" doc:id="22917396-8c4a-4615-b249-61dab358f104" config-ref="HTTP_Listener_config_87" path="/idlist"/>
+		<http:listener doc:name="Listener" doc:id="22917396-8c4a-4615-b249-61dab358f104" config-ref="HTTP_Listener_config_87" path="/media/idlist"/>
 		<db:select doc:name="Fetch ID" doc:id="57520acf-6eae-4924-adb7-5a4fd829d762" config-ref="Database_Config">
 			<db:sql ><![CDATA[Select fileid from media;]]></db:sql>
 		</db:select>
@@ -77,7 +92,7 @@ payload]]></ee:set-payload>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload map $.fileid]]></ee:set-payload>
+payload ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
@@ -148,7 +163,7 @@ output application/java
 		<logger level="INFO" doc:name="Logger" doc:id="f3f846d9-1b75-4478-a7ce-3ebe3b87e39d" message='#["set to read "]'/>
 	</flow>
 	<flow name="InsertDataQuery" doc:id="116b2e51-2f6b-4547-820e-396fc3d7d68e" >
-		<set-variable value="#[{	id: payload.id,&#10;    name: payload.name,&#10;    ftype:payload.filetype,&#10;    user:payload.sender,&#10;    chat:payload.chatid,&#10;    path:payload.path,&#10;}]" doc:name="Set Variable" doc:id="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" variableName="NewFile"/>
+		<set-variable value="#[{	id: payload.id,&#10;    name: payload.name,&#10;    ftype:payload.filetype,&#10;    user:payload.sender,&#10;    chat:payload.chat,&#10;    path:payload.path,&#10;}]" doc:name="Set Variable" doc:id="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" variableName="NewFile"/>
 		<db:insert doc:name="Insert file" doc:id="5ec7988e-3509-4838-9f9e-47697272b882" config-ref="Database_Config">
 			<db:sql ><![CDATA[insert into media (fileid,filetype,name,path,chatid,sender,msgread) values(:id,:ftype,:name,:path,:chatid,:sender,:msgread);]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
@@ -161,6 +176,11 @@ output application/java
 	msgread:false
 }]]]></db:input-parameters>
 		</db:insert>
-		<logger level="INFO" doc:name="Logger" doc:id="0bab9b4e-0856-45ac-9da3-dde63ffb2bf1" message='#["Inserted into table : " ++ vars.NewFile ++" successfully"]'/>
+		<logger level="INFO" doc:name="Logger" doc:id="0bab9b4e-0856-45ac-9da3-dde63ffb2bf1" message='#["Inserted into table : $(vars.NewFile.name) successfully"]'/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4aad4c20-9f80-4fc4-89fc-d56fb0bae3fc" type="DB:QUERY_EXECUTION">
+				<set-payload value='#["duplicate entry found"]' doc:name="Set Payload" doc:id="ac887151-3e34-49e9-bc6d-372eed538295" />
+			</on-error-continue>
+		</error-handler>
 	</flow>
 </mule>

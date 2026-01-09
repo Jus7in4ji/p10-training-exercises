@@ -29,7 +29,7 @@ public class media {
     private String chatid;
 
     @Column(columnDefinition = "TIMESTAMP")
-    private Timestamp sentTime;
+    private Timestamp senttime;
 
     private boolean msgread = false;
 }

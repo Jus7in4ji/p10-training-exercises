@@ -3,7 +3,9 @@ package com.justinaji.chatapp_messages.controller;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.justinaji.chatapp_messages.dto.FileDownloadDto;
 import com.justinaji.chatapp_messages.dto.Filedata;
 import com.justinaji.chatapp_messages.model.media;
@@ -27,10 +31,12 @@ import com.justinaji.chatapp_messages.service.FileHandlerServices;
 @RequestMapping("/files")
 public class FileController {
 
+    private final WebClient MediaWebClient;
     private final FileHandlerServices fileHandlerServices;
 
-    public FileController(FileHandlerServices fileHandlerServices) {
+    public FileController(@Qualifier("MediaWebClient") WebClient MediaWebClient, FileHandlerServices fileHandlerServices) {
         this.fileHandlerServices = fileHandlerServices;
+        this.MediaWebClient = MediaWebClient;
     }
 
     @PostMapping("/upload")
@@ -64,5 +70,22 @@ public class FileController {
                 .body(fileData.getBytes());
     }
     
+    @GetMapping("/test")
+    public ResponseEntity<?> getMethodName(@RequestParam String chatid) {
+        System.out.println("passing chatid: "+chatid);
+        List<String> ids = MediaWebClient.get()
+        .uri("/media/idlist")
+        .accept(MediaType.APPLICATION_JSON)
+        .retrieve()
+        .bodyToFlux(JsonNode.class)
+        .map(node -> node.get("fileid").asText())
+        .collectList()
+        .block();
+;
 
+        if (ids == null) throw new RuntimeException("Chat ID not found!");
+        
+        return ResponseEntity.status(HttpStatus.OK).body(ids.contains(chatid));
+    }
+    
 }
