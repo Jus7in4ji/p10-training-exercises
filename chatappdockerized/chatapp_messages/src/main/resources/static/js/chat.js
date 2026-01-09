@@ -191,7 +191,7 @@ async function subscribeToRoom(roomName) {
         showMessage(message, true); // first display the message
 
         // THEN call read function if incoming message
-        if (message.from !== username) {
+        if ((message.from !== username) && (message.msgread==false)){
             stompClient.send("/app/chat.read", {}, JSON.stringify({msgId: message.msgid}));
         }
     });
@@ -290,7 +290,7 @@ async function setRoom() {
                         msgread: entry.msgread,
                         isfile: entry.isfile
                     }, false);
-                    if (entry.from !== username) {
+                    if ((entry.from !== username) && (entry.msgread==false)) {
                         stompClient.send("/app/chat.read", {}, JSON.stringify({msgId: entry.msgid}));
                     }
                 });

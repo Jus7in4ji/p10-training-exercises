@@ -7,10 +7,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -131,7 +134,24 @@ public class MessageServicesImpl implements MesageServices{
         else{
             media m = mediaRepo.findById(messageid).orElseThrow(() -> new RuntimeException("message not found: "));
             m.setMsgread(true);
+            SetFileRead(messageid);
             mediaRepo.save(m);
         }
+    }
+
+    @Autowired
+    private KafkaTemplate<String,Object> template;
+    
+    public void SetFileRead(String fileid){
+        CompletableFuture<SendResult<String, Object>> future = template.send("fileread", fileid);
+        future.whenComplete((result,ex)->{
+            if (ex ==null) logger.info(
+                "Sent Message [ "+ fileid+
+                "] with offset ["+result.getRecordMetadata().offset()+ 
+                "] to partition [" + result.getRecordMetadata().partition()+"]");
+            
+            else System.out.println("Unable to Set to read ("+fileid+") due to : "+ex.getMessage());
+            
+        });
     }
 }
