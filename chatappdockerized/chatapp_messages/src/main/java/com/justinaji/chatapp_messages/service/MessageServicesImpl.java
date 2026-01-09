@@ -3,10 +3,7 @@ package com.justinaji.chatapp_messages.service;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -26,7 +23,6 @@ import com.justinaji.chatapp_messages.model.chats;
 import com.justinaji.chatapp_messages.model.media;
 import com.justinaji.chatapp_messages.model.messages;
 import com.justinaji.chatapp_messages.model.users;
-import com.justinaji.chatapp_messages.repository.MediaRepo;
 import com.justinaji.chatapp_messages.repository.MessageRepo;
 
 @Service
@@ -37,16 +33,13 @@ public class MessageServicesImpl implements MesageServices{
     private final WebClient userChatsWebClient;
     private final WebClient MediaWebClient;
     private final MessageRepo messageRepo;
-    private final MediaRepo mediaRepo;
     public MessageServicesImpl( 
         @Qualifier("userChatsWebClient") WebClient userChatsWebClient,
         @Qualifier("MediaWebClient") WebClient MediaWebClient, 
-        MessageRepo messageRepo, 
-        MediaRepo mediaRepo) {
+        MessageRepo messageRepo) {
             this.userChatsWebClient = userChatsWebClient;
             this.MediaWebClient = MediaWebClient;
             this.messageRepo = messageRepo;
-            this.mediaRepo = mediaRepo;
         }
 
     @Override
@@ -101,14 +94,19 @@ public class MessageServicesImpl implements MesageServices{
 
         DateTimeFormatter dbFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
         history.forEach(m -> {
-            LocalDateTime ldt = parseDbTimestamp(m.getSentTime());
-
-            m.setSentTime(
+            try {
+                LocalDateTime ldt = LocalDateTime.parse(m.getSentTime(),dbFormat);
+                logger.info("no error for "+m.getSentTime());
+                m.setSentTime(
                 CommonMethods.formatTimestamp(
                     Timestamp.valueOf(ldt),
                     timezone
                 )
             );
+
+            } catch (Exception e) {
+                logger.info("exception occured for "+m.getSentTime());
+            }
         });
 
         return history;
@@ -147,12 +145,8 @@ public class MessageServicesImpl implements MesageServices{
             m.setMsgread(true);
             messageRepo.save(m);
         }
-        else{
-            media m = mediaRepo.findById(messageid).orElseThrow(() -> new RuntimeException("message not found: "));
-            m.setMsgread(true);
-            SetFileRead(messageid);
-            mediaRepo.save(m);
-        }
+        else SetFileRead(messageid);
+        
     }
 
     @Autowired
@@ -170,33 +164,6 @@ public class MessageServicesImpl implements MesageServices{
             
         });
     }
-
-private static final DateTimeFormatter LEGACY_TS_FORMATTER =
-        new DateTimeFormatterBuilder()
-                .appendPattern("yyyy-MM-dd HH:mm:ss")
-                .optionalStart()
-                .appendFraction(ChronoField.MILLI_OF_SECOND, 1, 3, true)
-                .optionalEnd()
-                .toFormatter();
-
-private LocalDateTime parseDbTimestamp(String ts) {
-    try {
-        if (ts.contains("T") && (ts.contains("+") || ts.endsWith("Z"))) {
-            return OffsetDateTime.parse(ts).toLocalDateTime();
-        }
-        if (ts.contains("T")) {
-            return LocalDateTime.parse(ts);
-        }
-
-        return LocalDateTime.parse(ts, LEGACY_TS_FORMATTER);
-
-    } catch (Exception e) {
-        throw new RuntimeException("Unable to parse timestamp: " + ts, e);
-    }
-}
-
-
-
 
 
 }

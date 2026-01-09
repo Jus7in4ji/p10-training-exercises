@@ -25,13 +25,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.justinaji.chatapp_messages.dto.FileDownloadDto;
 import com.justinaji.chatapp_messages.model.media;
-import com.justinaji.chatapp_messages.repository.MediaRepo;
 
 
 @Service
 public class FileHandlerServices {
-
-    private final MediaRepo mediaRepo;
 
     @Value("${storage.path}")
     private String storagePath;
@@ -40,7 +37,7 @@ public class FileHandlerServices {
 
     private final WebClient MediaWebClient;
 
-    public FileHandlerServices(@Qualifier("MediaWebClient") WebClient MediaWebClient, MediaRepo mediaRepo){ this.mediaRepo = mediaRepo;        this.MediaWebClient = MediaWebClient;
+    public FileHandlerServices(@Qualifier("MediaWebClient") WebClient MediaWebClient){ this.MediaWebClient = MediaWebClient;
 }
 
     public media UploadFile(MultipartFile file,String sender,String chatid) throws IOException{
@@ -58,7 +55,6 @@ public class FileHandlerServices {
         do { Fileid = CommonMethods.getAlphaNumericString(); } // unique chat id
         while (ids.contains(ids));
         media newFile = new media(Fileid, filepath, sender, file.getOriginalFilename(), file.getContentType(), chatid, Timestamp.from(Instant.now()), false);
-        mediaRepo.save(newFile);
         SendMediatoTopic(newFile);
 
         Path dir = Paths.get(storagePath);
