@@ -13,10 +13,24 @@ async function handleFileSelected(input) {
     const file = input.files[0];
     if (!file) return;
 
-    // Validate login & room
-    if (!username || !currentRoom) {
-        alert("You cannot upload files. login and connect to a chat to do so");
+    const res = await fetch(gatewayurl+"/userchat/isactive", {
+        method: "GET",
+        headers: {
+            "Accept": "application/json",
+            "Authorization": "Bearer " + jwtToken
+        }
+    });
+
+    const data = await res.json();
+    username = data.username;
+    active = data.active;
+
+    if (!username||!stompClient || !stompClient.connected|| active!= "true"||!currentRoom) {
+        const chatBox = document.getElementById("chat-box").innerHTML = "";
+        jwtToken = null;
+        unsubscribeAll();
         input.value = ""; // reset
+        alert("Message was not sent!\n You are disconnected. make sure you are connected to the internet ");
         return;
     }
 

@@ -17,7 +17,6 @@ public class media {
     @Id
     private String fileid;
 
-    @Column(columnDefinition = "TEXT")
     private String path;
 
     private String sender;
@@ -28,8 +27,7 @@ public class media {
 
     private String chatid;
 
-    @Column(columnDefinition = "TIMESTAMP")
-    private Timestamp senttime;
+    private String senttime;
 
     private boolean msgread = false;
 }

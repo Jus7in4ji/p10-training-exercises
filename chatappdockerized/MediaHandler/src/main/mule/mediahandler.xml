@@ -134,12 +134,13 @@ var body = read(payload, "application/json")
   path: body.path,
   chat: body.chatid,
   sender: body.sender,
-  msgread: body.msgread
+  msgread: body.msgread,
+  senttime:body.senttime
 }
 ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="Insert into table" doc:id="c62ddeb3-f8e1-4a00-8650-fb57204d9e69" name="InsertDataQuery"/>
+		<flow-ref doc:name="Insert into table(InsertDataQuery)" doc:id="c62ddeb3-f8e1-4a00-8650-fb57204d9e69" name="InsertDataQuery"/>
 	</flow>
 	<flow name="mediahandlerFlow" doc:id="4b31fb98-24d4-4388-bb85-32095036a5d1" >
 		<kafka:message-listener doc:name="Message listener" doc:id="5594ab9c-c0c3-4111-b72d-92ced16ae20a" config-ref="ReadConsumer"/>
@@ -163,9 +164,9 @@ output application/java
 		<logger level="INFO" doc:name="Logger" doc:id="f3f846d9-1b75-4478-a7ce-3ebe3b87e39d" message='#["set to read "]'/>
 	</flow>
 	<flow name="InsertDataQuery" doc:id="116b2e51-2f6b-4547-820e-396fc3d7d68e" >
-		<set-variable value="#[{	id: payload.id,&#10;    name: payload.name,&#10;    ftype:payload.filetype,&#10;    user:payload.sender,&#10;    chat:payload.chat,&#10;    path:payload.path,&#10;}]" doc:name="Set Variable" doc:id="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" variableName="NewFile"/>
+		<set-variable value="#[{	id: payload.id,&#10;    name: payload.name,&#10;    ftype:payload.filetype,&#10;    user:payload.sender,&#10;    chat:payload.chat,&#10;    path:payload.path,&#10;    senttime:payload.senttime&#10;}]" doc:name="Set Variable" doc:id="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" variableName="NewFile"/>
 		<db:insert doc:name="Insert file" doc:id="5ec7988e-3509-4838-9f9e-47697272b882" config-ref="Database_Config">
-			<db:sql ><![CDATA[insert into media (fileid,filetype,name,path,chatid,sender,msgread) values(:id,:ftype,:name,:path,:chatid,:sender,:msgread);]]></db:sql>
+			<db:sql ><![CDATA[insert into media (fileid,filetype,name,path,chatid,sender,msgread,senttime) values(:id,:ftype,:name,:path,:chatid,:sender,:msgread,:senttime);]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
 	id:vars.NewFile.id,
 	ftype:vars.NewFile.ftype,
@@ -173,7 +174,8 @@ output application/java
 	path: vars.NewFile.path,
 	chatid: vars.NewFile.chat,
 	sender: vars.NewFile.user,
-	msgread:false
+	msgread:false,
+	senttime: vars.NewFile.senttime
 }]]]></db:input-parameters>
 		</db:insert>
 		<logger level="INFO" doc:name="Logger" doc:id="0bab9b4e-0856-45ac-9da3-dde63ffb2bf1" message='#["Inserted into table : $(vars.NewFile.name) successfully"]'/>

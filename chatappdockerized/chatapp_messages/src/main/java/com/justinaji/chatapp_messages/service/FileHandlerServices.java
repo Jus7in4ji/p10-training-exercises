@@ -8,16 +8,12 @@ import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -35,27 +31,31 @@ public class FileHandlerServices {
 
     Logger logger = LoggerFactory.getLogger(MessageServicesImpl.class);
 
+    private final KafkaProducerServices kafkaProducerServices;
     private final WebClient MediaWebClient;
 
-    public FileHandlerServices(@Qualifier("MediaWebClient") WebClient MediaWebClient){ this.MediaWebClient = MediaWebClient;
-}
+    public FileHandlerServices(
+        @Qualifier("MediaWebClient") WebClient MediaWebClient,
+        KafkaProducerServices kafkaProducerServices){ 
+            this.MediaWebClient = MediaWebClient;
+            this.kafkaProducerServices = kafkaProducerServices;}
 
     public media UploadFile(MultipartFile file,String sender,String chatid) throws IOException{
         
         String filepath = storagePath + file.getOriginalFilename();
         String Fileid;
         List<String> ids = MediaWebClient.get()
-        .uri("/media/idlist")
-        .accept(MediaType.APPLICATION_JSON)
-        .retrieve()
-        .bodyToFlux(JsonNode.class)
-        .map(node -> node.get("fileid").asText())
-        .collectList()
-        .block();
-        do { Fileid = CommonMethods.getAlphaNumericString(); } // unique chat id
-        while (ids.contains(ids));
-        media newFile = new media(Fileid, filepath, sender, file.getOriginalFilename(), file.getContentType(), chatid, Timestamp.from(Instant.now()), false);
-        SendMediatoTopic(newFile);
+            .uri("/media/idlist")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .bodyToFlux(JsonNode.class)
+            .map(node -> node.get("fileid").asText())
+            .collectList().block();
+            
+        do { Fileid = CommonMethods.getAlphaNumericString(); } // generateunique id
+        while (ids.contains(Fileid));
+        media newFile = new media(Fileid, filepath, sender, file.getOriginalFilename(), file.getContentType(), chatid, Timestamp.from(Instant.now()).toString(), false);
+        kafkaProducerServices.SendMediatoTopic(newFile);
 
         Path dir = Paths.get(storagePath);
         Files.createDirectories(dir); 
@@ -75,23 +75,9 @@ public class FileHandlerServices {
         String filepath = mediaFile.getPath();
         byte[] fileBytes = Files.readAllBytes(Paths.get(filepath));
 
+        
+        logger.info("downloaded file ["+mediaFile.getName()+"]");
         return new FileDownloadDto( fileBytes, mediaFile.getFiletype(), mediaFile.getName());
-    }
-
-    @Autowired
-    private KafkaTemplate<String,Object> template;
-
-    public void SendMediatoTopic(media file){
-        CompletableFuture<SendResult<String, Object>> future = template.send("MediaTopic0",file.getFiletype(), file);
-        future.whenComplete((result,ex)->{
-            if (ex ==null) logger.info(
-                "Sent Message [ "+ file.toString() +
-                "] with offset ["+result.getRecordMetadata().offset()+ 
-                "] to partition [" + result.getRecordMetadata().partition()+"]");
-            
-            else System.out.println("Unable to Send Message("+file.getName()+") due to : "+ex.getMessage());
-            
-        });
     }
     
 }

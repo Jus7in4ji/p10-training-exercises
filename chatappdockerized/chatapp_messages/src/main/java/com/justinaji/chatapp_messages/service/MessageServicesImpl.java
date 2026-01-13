@@ -7,14 +7,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -29,14 +25,18 @@ import com.justinaji.chatapp_messages.repository.MessageRepo;
 public class MessageServicesImpl implements MesageServices{
 
     Logger logger = LoggerFactory.getLogger(MessageServicesImpl.class);
-
+    
+    private final KafkaProducerServices kafkaProducerServices;
     private final WebClient userChatsWebClient;
     private final WebClient MediaWebClient;
     private final MessageRepo messageRepo;
+
     public MessageServicesImpl( 
         @Qualifier("userChatsWebClient") WebClient userChatsWebClient,
-        @Qualifier("MediaWebClient") WebClient MediaWebClient, 
+        @Qualifier("MediaWebClient") WebClient MediaWebClient,
+        KafkaProducerServices kafkaProducerServices, 
         MessageRepo messageRepo) {
+            this.kafkaProducerServices = kafkaProducerServices;
             this.userChatsWebClient = userChatsWebClient;
             this.MediaWebClient = MediaWebClient;
             this.messageRepo = messageRepo;
@@ -52,61 +52,50 @@ public class MessageServicesImpl implements MesageServices{
             .retrieve()
             .bodyToMono(chats.class)
             .block();
-        if (targetchat == null) throw new RuntimeException("Chat ID not found!");
+        if (targetchat == null) throw new RuntimeException("Chat not found!");
 
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(targetchat);   
         
         chatMessages.forEach(msg -> {
-                WSmessage dto = new WSmessage(
-                    msg.getM_id(),
-                    msg.getSender().getName() ,
-                    CommonMethods.decryptMessage(msg.getMessage(), targetchat.getChat_key()),
-                    msg.getSentTime().toString(),
-                    null,
-                    msg.isMsgread(),
-                    false
-                );
-                history.add(dto);
-            });
+            WSmessage dto = new WSmessage(
+                msg.getM_id(),
+                msg.getSender().getName() ,
+                CommonMethods.decryptMessage(msg.getMessage(), targetchat.getChat_key()),
+                msg.getSentTime().toString(),
+                null,
+                msg.isMsgread(),
+                false
+            );
+            history.add(dto);
+        });
         
         List<media> chatMedia = MediaWebClient.get()
             .uri("/media/getchatmedia?chatid=" + chatid)
             .retrieve()
             .bodyToFlux(media.class)
-            .collectList()
-            .block();
-        if (chatMedia == null) throw new RuntimeException("Chat ID not found!");
+            .collectList().block();
+        if (chatMedia == null) throw new RuntimeException("files not found!");
 
         chatMedia.forEach(file->{
             WSmessage dto = new WSmessage(
-                    file.getFileid(),
-                    file.getSender() ,
-                    file.getName(),
-                    file.getSenttime().toString(),
-                    null,
-                    file.isMsgread(),
-                    true
-                );
-                history.add(dto);
+                file.getFileid(),
+                file.getSender() ,
+                file.getName(),
+                file.getSenttime().substring(0, 21).replace("T", " "),
+                null,
+                file.isMsgread(),
+                true
+            );
+            history.add(dto);
         });
 
         history.sort(Comparator.comparing(WSmessage::getSentTime));
 
         DateTimeFormatter dbFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
         history.forEach(m -> {
-            try {
-                LocalDateTime ldt = LocalDateTime.parse(m.getSentTime(),dbFormat);
-                logger.info("no error for "+m.getSentTime());
-                m.setSentTime(
-                CommonMethods.formatTimestamp(
-                    Timestamp.valueOf(ldt),
-                    timezone
-                )
-            );
-
-            } catch (Exception e) {
-                logger.info("exception occured for "+m.getSentTime());
-            }
+            LocalDateTime ldt = LocalDateTime.parse(m.getSentTime(),dbFormat);
+            logger.info("no error for "+m.getSentTime()+".");
+            m.setSentTime(CommonMethods.formatTimestamp(Timestamp.valueOf(ldt), timezone));
         });
 
         return history;
@@ -126,16 +115,15 @@ public class MessageServicesImpl implements MesageServices{
         if (sender == null) throw new RuntimeException("user not found!");
 
         chats chat = userChatsWebClient.get()
-            .uri("/userchat/getchat?chatid=" + chatid)  
-            .retrieve()
+            .uri("/userchat/getchat?chatid=" + chatid).retrieve()
             .bodyToMono(chats.class)
             .block();        
         if (chat == null) throw new RuntimeException("Chat ID not found!");
         
         messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, Timestamp.from(Instant.now()), false);  
         messageRepo.save(newmsg);
-        logger.info("message sent : "+username+" -->  chat("+chatid+"). ");
 
+        logger.info("message sent : "+username+" -->  chat("+chatid+"). ");
         return messageId;
     }
 
@@ -145,25 +133,7 @@ public class MessageServicesImpl implements MesageServices{
             m.setMsgread(true);
             messageRepo.save(m);
         }
-        else SetFileRead(messageid);
+        else kafkaProducerServices.SetFileRead(messageid);
         
     }
-
-    @Autowired
-    private KafkaTemplate<String,Object> template;
-
-    public void SetFileRead(String fileid){
-        CompletableFuture<SendResult<String, Object>> future = template.send("fileread", fileid);
-        future.whenComplete((result,ex)->{
-            if (ex ==null) logger.info(
-                "Sent Message [ "+ fileid+
-                "] with offset ["+result.getRecordMetadata().offset()+ 
-                "] to partition [" + result.getRecordMetadata().partition()+"]");
-            
-            else System.out.println("Unable to Set to read ("+fileid+") due to : "+ex.getMessage());
-            
-        });
-    }
-
-
 }

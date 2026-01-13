@@ -42,8 +42,8 @@ public class FileController {
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFile(@RequestPart("file") MultipartFile file, @RequestPart("data") Filedata filedata) throws IOException {
         if (file.isEmpty())  return ResponseEntity.badRequest().body("File is empty");
+
         media upload = fileHandlerServices.UploadFile(file, filedata.getSender(), filedata.getChatid());
-        
         return ResponseEntity.status(HttpStatus.OK).body(upload);
     }
     
@@ -59,32 +59,29 @@ public class FileController {
             mediaType = MediaType.APPLICATION_OCTET_STREAM;
         }
         String encodedFilename = URLEncoder.encode(
-                fileData.getFilename(),
-                StandardCharsets.UTF_8
+            fileData.getFilename(),
+            StandardCharsets.UTF_8
         ).replace("+", "%20");
 
         return ResponseEntity.ok()
-                .contentType(mediaType)
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        disposition +"; filename=\"" + encodedFilename + "\"")
-                .body(fileData.getBytes());
+            .contentType(mediaType)
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                disposition +"; filename=\"" + encodedFilename + "\"")
+            .body(fileData.getBytes());
     }
     
     @GetMapping("/test")
     public ResponseEntity<?> getMethodName(@RequestParam String chatid) {
         System.out.println("passing chatid: "+chatid);
         List<String> ids = MediaWebClient.get()
-        .uri("/media/idlist")
-        .accept(MediaType.APPLICATION_JSON)
-        .retrieve()
-        .bodyToFlux(JsonNode.class)
-        .map(node -> node.get("fileid").asText())
-        .collectList()
-        .block();
-;
+            .uri("/media/idlist")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .bodyToFlux(JsonNode.class)
+            .map(node -> node.get("fileid").asText())
+            .collectList().block();
 
         if (ids == null) throw new RuntimeException("Chat ID not found!");
-        
         return ResponseEntity.status(HttpStatus.OK).body(ids.contains(chatid));
     }
     

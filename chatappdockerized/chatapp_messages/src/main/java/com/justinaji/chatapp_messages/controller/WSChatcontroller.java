@@ -38,9 +38,7 @@ public class WSChatcontroller {
         }
         else {
             logger.error("no room passed");
-        }
-        
-        
+        }        
     }
 
     @MessageMapping("/chat.read")
