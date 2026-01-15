@@ -1,31 +1,91 @@
 package com.justinaji.chatapp_messages.controller;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import com.justinaji.chatapp_messages.dto.TempMsg;
 import com.justinaji.chatapp_messages.dto.WSmessage;
+import com.justinaji.chatapp_messages.service.CommonMethods;
+import com.justinaji.chatapp_messages.service.KafkaProducerServices;
 import com.justinaji.chatapp_messages.service.MessageServicesImpl;
 
 import io.swagger.v3.oas.annotations.Hidden;
 
 @Hidden
 @RestController
-@RequestMapping("/msg")
 public class Js2JavaRequestController {
-    
+    private final WebClient TempMsgWebClient;
+    private final SimpMessagingTemplate messagingTemplate;
     private final MessageServicesImpl msgservice;
-    public Js2JavaRequestController(MessageServicesImpl msgservice){
-        this.msgservice = msgservice;
-    }
+
+    private final KafkaProducerServices kafkaProducerServices;
+    public Js2JavaRequestController(
+        MessageServicesImpl msgservice, 
+        KafkaProducerServices kafkaProducerServices,
+        SimpMessagingTemplate messagingTemplate,
+        WebClient TempMsgWebClient){
+            this.msgservice = msgservice;
+            this.TempMsgWebClient = TempMsgWebClient;
+            this.messagingTemplate = messagingTemplate;
+            this.kafkaProducerServices = kafkaProducerServices;
+        }
    
-    @PostMapping("/gethistory")
+    @PostMapping("/msg/gethistory")
     public List<WSmessage> RetrieveChatHistory(@RequestBody Map<String, String> payload) {   
         return msgservice.getchathistory(payload.get("user"), payload.get("chatid"), payload.get("timezone"));
     }
 
+    @PostMapping("/temp/sendtemp")
+    public void StoreinH2DB(@RequestBody TempMsg temp) {
+        kafkaProducerServices.StoreTempmsg(temp);
+    }
+    
+    @GetMapping("/gettemp")
+    public Map<String, String> GetValidTempMsgs(@RequestBody String sendername) {
+        HashMap<String, String> result = new HashMap<>();
+        String details = "Messages retrieved and sent successfully";
+        try {
+            //retrieve messages from in memory db 
+            List<TempMsg> temps = TempMsgWebClient.get()
+                    .uri("/temp/returnchats?sender="+sendername)
+                    .retrieve()
+                    .bodyToFlux(TempMsg.class)
+                    .collectList().block();
+            if (temps == null) throw new RuntimeException("Temp messages not found!");
+
+            DateTimeFormatter dbFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+            temps.forEach(msg->{
+                String room , text, Timestampstring, ts;
+                text = msg.getMessage();
+                room = msg.getChatid();
+                
+                ts = msg.getSenttime().toString().substring(0, 21).replace("T", " ");
+                LocalDateTime ldt = LocalDateTime.parse(ts,dbFormat);
+                Timestampstring = CommonMethods.formatTimestamp(Timestamp.valueOf(ldt),"IST");
+                
+                WSmessage wsm = new WSmessage(null, sendername, text, Timestampstring, room, false, false);
+                //add to db
+                wsm.setMsgid(msgservice.Sendmessage(text, sendername, room, msg.getSenttime()));
+                //send via websocket
+                messagingTemplate.convertAndSend("/topic/" + room, wsm);
+            }); 
+        } catch (Exception e) {
+            details = e.getMessage();
+        }
+        result.put("Status","Success");
+        result.put("Details",details);
+        return result;
+    }
 }

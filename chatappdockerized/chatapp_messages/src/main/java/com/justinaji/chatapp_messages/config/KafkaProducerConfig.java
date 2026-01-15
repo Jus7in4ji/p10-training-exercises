@@ -25,6 +25,10 @@ public class KafkaProducerConfig {
         public NewTopic Readtopic() {
             return new NewTopic("fileread", 2, (short) 1);
         }
+        @Bean
+        public NewTopic TempmsgTopic(){
+            return new NewTopic("tempmsg0", 3,(short)1);
+        }
 
         @Bean
         public Map<String,Object> mediaconfig(){

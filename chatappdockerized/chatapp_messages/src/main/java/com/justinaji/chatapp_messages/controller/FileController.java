@@ -3,10 +3,6 @@ package com.justinaji.chatapp_messages.controller;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -24,11 +20,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.justinaji.chatapp_messages.dto.FileDownloadDto;
 import com.justinaji.chatapp_messages.dto.Filedata;
-import com.justinaji.chatapp_messages.dto.TempMsg;
 import com.justinaji.chatapp_messages.model.media;
-import com.justinaji.chatapp_messages.repository.MessageRepo;
-import com.justinaji.chatapp_messages.service.CommonMethods;
 import com.justinaji.chatapp_messages.service.FileHandlerServices;
+import com.justinaji.chatapp_messages.service.KafkaProducerServices;
 
 
 
@@ -36,17 +30,17 @@ import com.justinaji.chatapp_messages.service.FileHandlerServices;
 @RequestMapping("/files")
 public class FileController {
     
-    private final MessageRepo messageRepo;
+    private final KafkaProducerServices kafkaProducerServices;
     private final WebClient TempMsgWebClient;
     private final FileHandlerServices fileHandlerServices;
 
     public FileController(
         @Qualifier("TempMsgWebClient") WebClient TempMsgWebClient, 
         FileHandlerServices fileHandlerServices,
-        MessageRepo messageRepo) {
+        KafkaProducerServices kafkaProducerServices) {
         this.fileHandlerServices = fileHandlerServices;
         this.TempMsgWebClient = TempMsgWebClient;
-        this.messageRepo = messageRepo;
+        this.kafkaProducerServices = kafkaProducerServices;
     }
 
     @PostMapping("/upload")
@@ -78,25 +72,6 @@ public class FileController {
             .header(HttpHeaders.CONTENT_DISPOSITION,
                 disposition +"; filename=\"" + encodedFilename + "\"")
             .body(fileData.getBytes());
-    }
-    
-    @GetMapping("/test")
-    public ResponseEntity<?> getMethodName(@RequestParam String chatid) {
-        System.out.println("passing chatid: "+chatid);
-        List<TempMsg> temps = TempMsgWebClient.get()
-            .uri("/temp/getall")
-            .retrieve()
-            .bodyToFlux(TempMsg.class)
-            .collectList().block();
-        if (temps == null) throw new RuntimeException("Temp messages not found!");
-        DateTimeFormatter dbFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
-        temps.forEach(msg->{
-            String ts = msg.getSenttime().toString().substring(0, 21).replace("T", " ");
-            
-            LocalDateTime ldt = LocalDateTime.parse(ts,dbFormat);
-            msg.setFormattedtime(CommonMethods.formatTimestamp(Timestamp.valueOf(ldt),"IST"));
-        });
-        return ResponseEntity.status(HttpStatus.OK).body(temps);
     }
     
 }

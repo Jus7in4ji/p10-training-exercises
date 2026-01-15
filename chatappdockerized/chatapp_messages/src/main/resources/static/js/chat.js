@@ -352,6 +352,17 @@ async function sendMessage() {
     // Do NOT send empty message
     if (messageContent.length === 0) return;
 
+    // Build message object
+    var msg = {
+        text: messageContent,
+        from: username,
+        room: currentRoom,
+        msgread : false,
+        sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        isfile: false,
+        unsent:true
+    };
+
     const res = await fetch(gatewayurl+"/userchat/isactive", {
         method: "GET",
         headers: {
@@ -365,22 +376,25 @@ async function sendMessage() {
     active = data.active;
 
     if (!username||!stompClient || !stompClient.connected|| active!= "true") {
-        const chatBox = document.getElementById("chat-box").innerHTML = "";
+        //const chatBox = document.getElementById("chat-box").innerHTML = "";
+        const res = await fetch(gatewayurl + "/temp/sendtemp", {
+            method: "POST",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"},
+            body: JSON.stringify({
+                sender:username,
+                chatid:currentRoom,
+                message: messageContent,
+
+            })
+        });
+        showMessage(msg,true);
         jwtToken = null;
         unsubscribeAll();
-        alert("Message was not sent!\n You are disconnected. make sure you are connected to the internet ");
+        alert("You are offline. Please try logging in again. ");
         return;
     }
-
-    // Build message object
-    var msg = {
-        text: messageContent,
-        from: username,
-        room: currentRoom,
-        msgread : false,
-        sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        isfile: false
-    };
 
     // Send
     stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(msg));
@@ -410,7 +424,7 @@ async function showMessage(message, local) {
         : message.sentTime;
 
     const tickColor = message.msgread ? "#008000" : "#000000"; 
-    const tickIcon = `<span class="tick" style="color:${tickColor};">✔</span>`;
+    const tickIcon = `<span class="tick" style="color:${tickColor};">✔✔</span>`;
 
     wrapper.innerHTML = `
         <div class="message-header">${sender}</div>

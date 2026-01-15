@@ -54,7 +54,7 @@ spring:
             - Path=/media/**
 
         - id: temp_messages
-          uri: ${SPRING_CLOUD_GATEWAY_ROUTES_3_URI:http://localhost:8086}
+          uri: ${SPRING_CLOUD_GATEWAY_ROUTES_1_URI:http://localhost:8081}
           predicates:
             - Path=/temp/**
 jwt:

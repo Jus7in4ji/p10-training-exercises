@@ -68,26 +68,28 @@ public class MessageServicesImpl implements MesageServices{
             );
             history.add(dto);
         });
-        
-        List<media> chatMedia = MediaWebClient.get()
-            .uri("/media/getchatmedia?chatid=" + chatid)
-            .retrieve()
-            .bodyToFlux(media.class)
-            .collectList().block();
-        if (chatMedia == null) throw new RuntimeException("files not found!");
+        try {
+            List<media> chatMedia = MediaWebClient.get()
+                .uri("/media/getchatmedia?chatid=" + chatid)
+                .retrieve()
+                .bodyToFlux(media.class)
+                .collectList().block();
+            if (chatMedia == null) throw new RuntimeException("files not found!");
 
-        chatMedia.forEach(file->{
-            WSmessage dto = new WSmessage(
-                file.getFileid(),
-                file.getSender() ,
-                file.getName(),
-                file.getSenttime().substring(0, 21).replace("T", " "),
-                null,
-                file.isMsgread(),
-                true
-            );
-            history.add(dto);
-        });
+            chatMedia.forEach(file->{
+                WSmessage dto = new WSmessage(
+                    file.getFileid(),
+                    file.getSender() ,
+                    file.getName(),
+                    file.getSenttime().substring(0, 21).replace("T", " "),
+                    null,
+                    file.isMsgread(),
+                    true
+                );
+                history.add(dto);
+            });
+        } catch (Exception e) {
+        }
 
         history.sort(Comparator.comparing(WSmessage::getSentTime));
 
@@ -102,7 +104,7 @@ public class MessageServicesImpl implements MesageServices{
     }
 
     @Override
-    public String Sendmessage(String text, String username, String chatid){
+    public String Sendmessage(String text, String username, String chatid,Timestamp ts){
         String messageId;
         do { messageId = CommonMethods.getAlphaNumericString(); } // unique chat id
         while (messageRepo.existsById(messageId));
@@ -120,7 +122,8 @@ public class MessageServicesImpl implements MesageServices{
             .block();        
         if (chat == null) throw new RuntimeException("Chat ID not found!");
         
-        messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, Timestamp.from(Instant.now()), false);  
+        if (ts == null)ts =  Timestamp.from(Instant.now());
+        messages newmsg = new messages(messageId, CommonMethods.encryptMessage(text, chat.getChat_key()), sender, chat, ts, false);  
         messageRepo.save(newmsg);
 
         logger.info("message sent : "+username+" -->  chat("+chatid+"). ");

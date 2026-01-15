@@ -1,23 +1,18 @@
 package com.justinaji.gateway.security;
 
-import org.hibernate.validator.internal.util.logging.LoggerFactory;
-import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.server.ServerWebExchange;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
-
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.core.Ordered;
-import org.springframework.web.server.ResponseStatusException;
-
 import reactor.core.publisher.Mono;
 
 
@@ -33,7 +28,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String path = exchange.getRequest().getURI().getPath();
 
         // Skip auth endpoints 
-        if (path.startsWith("/auth")) {
+        if ((path.startsWith("/auth"))||(path.startsWith("/temp"))) {
             return chain.filter(exchange);
         }
 

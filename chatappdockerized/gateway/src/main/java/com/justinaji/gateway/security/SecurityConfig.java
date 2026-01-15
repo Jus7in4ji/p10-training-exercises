@@ -10,11 +10,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeExchange(exchanges -> exchanges
-                .pathMatchers("/auth/**","/media/**").permitAll()   // publicly allowed
-                .anyExchange().permitAll()              // handled manually by filter
+        http.csrf(csrf -> csrf.disable())
+            .authorizeExchange(exchanges -> exchanges
+            .pathMatchers("/auth/**","/media/**","/temp/**").permitAll()   // publicly allowed
+            .anyExchange().permitAll()              // handled manually by filter
             );
         return http.build();
     }
