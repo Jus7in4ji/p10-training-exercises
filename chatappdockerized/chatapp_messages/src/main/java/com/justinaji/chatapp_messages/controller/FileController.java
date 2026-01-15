@@ -3,6 +3,9 @@ package com.justinaji.chatapp_messages.controller;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,10 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.justinaji.chatapp_messages.dto.FileDownloadDto;
 import com.justinaji.chatapp_messages.dto.Filedata;
+import com.justinaji.chatapp_messages.dto.TempMsg;
 import com.justinaji.chatapp_messages.model.media;
+import com.justinaji.chatapp_messages.repository.MessageRepo;
+import com.justinaji.chatapp_messages.service.CommonMethods;
 import com.justinaji.chatapp_messages.service.FileHandlerServices;
 
 
@@ -30,13 +35,18 @@ import com.justinaji.chatapp_messages.service.FileHandlerServices;
 @RestController
 @RequestMapping("/files")
 public class FileController {
-
-    private final WebClient MediaWebClient;
+    
+    private final MessageRepo messageRepo;
+    private final WebClient TempMsgWebClient;
     private final FileHandlerServices fileHandlerServices;
 
-    public FileController(@Qualifier("MediaWebClient") WebClient MediaWebClient, FileHandlerServices fileHandlerServices) {
+    public FileController(
+        @Qualifier("TempMsgWebClient") WebClient TempMsgWebClient, 
+        FileHandlerServices fileHandlerServices,
+        MessageRepo messageRepo) {
         this.fileHandlerServices = fileHandlerServices;
-        this.MediaWebClient = MediaWebClient;
+        this.TempMsgWebClient = TempMsgWebClient;
+        this.messageRepo = messageRepo;
     }
 
     @PostMapping("/upload")
@@ -73,16 +83,20 @@ public class FileController {
     @GetMapping("/test")
     public ResponseEntity<?> getMethodName(@RequestParam String chatid) {
         System.out.println("passing chatid: "+chatid);
-        List<String> ids = MediaWebClient.get()
-            .uri("/media/idlist")
-            .accept(MediaType.APPLICATION_JSON)
+        List<TempMsg> temps = TempMsgWebClient.get()
+            .uri("/temp/getall")
             .retrieve()
-            .bodyToFlux(JsonNode.class)
-            .map(node -> node.get("fileid").asText())
+            .bodyToFlux(TempMsg.class)
             .collectList().block();
-
-        if (ids == null) throw new RuntimeException("Chat ID not found!");
-        return ResponseEntity.status(HttpStatus.OK).body(ids.contains(chatid));
+        if (temps == null) throw new RuntimeException("Temp messages not found!");
+        DateTimeFormatter dbFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+        temps.forEach(msg->{
+            String ts = msg.getSenttime().toString().substring(0, 21).replace("T", " ");
+            
+            LocalDateTime ldt = LocalDateTime.parse(ts,dbFormat);
+            msg.setFormattedtime(CommonMethods.formatTimestamp(Timestamp.valueOf(ldt),"IST"));
+        });
+        return ResponseEntity.status(HttpStatus.OK).body(temps);
     }
     
 }
