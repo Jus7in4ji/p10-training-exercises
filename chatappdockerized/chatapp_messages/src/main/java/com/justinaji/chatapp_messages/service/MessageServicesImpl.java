@@ -96,7 +96,6 @@ public class MessageServicesImpl implements MesageServices{
         DateTimeFormatter dbFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
         history.forEach(m -> {
             LocalDateTime ldt = LocalDateTime.parse(m.getSentTime(),dbFormat);
-            logger.info("no error for "+m.getSentTime()+".");
             m.setSentTime(CommonMethods.formatTimestamp(Timestamp.valueOf(ldt), timezone));
         });
 

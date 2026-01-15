@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,13 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import com.justinaji.chatapp_messages.dto.FileDownloadDto;
 import com.justinaji.chatapp_messages.dto.Filedata;
 import com.justinaji.chatapp_messages.model.media;
 import com.justinaji.chatapp_messages.service.FileHandlerServices;
-import com.justinaji.chatapp_messages.service.KafkaProducerServices;
 
 
 
@@ -30,17 +27,10 @@ import com.justinaji.chatapp_messages.service.KafkaProducerServices;
 @RequestMapping("/files")
 public class FileController {
     
-    private final KafkaProducerServices kafkaProducerServices;
-    private final WebClient TempMsgWebClient;
     private final FileHandlerServices fileHandlerServices;
 
-    public FileController(
-        @Qualifier("TempMsgWebClient") WebClient TempMsgWebClient, 
-        FileHandlerServices fileHandlerServices,
-        KafkaProducerServices kafkaProducerServices) {
+    public FileController(FileHandlerServices fileHandlerServices) {
         this.fileHandlerServices = fileHandlerServices;
-        this.TempMsgWebClient = TempMsgWebClient;
-        this.kafkaProducerServices = kafkaProducerServices;
     }
 
     @PostMapping("/upload")
@@ -55,7 +45,7 @@ public class FileController {
     public ResponseEntity<byte[]> downloadFile(@RequestParam String fileid,@RequestParam(required = false, defaultValue = "false") boolean inline) throws IOException {
 
         FileDownloadDto fileData = fileHandlerServices.DownloadFile(fileid);
-        String disposition = inline ? "inline" : "attachment";
+        String disposition = inline ? "inline" : "attachment"; //toggle to decide if file is 2 b viewed or downloaded
         MediaType mediaType;
         try {
             mediaType = MediaType.parseMediaType(fileData.getFiletype());

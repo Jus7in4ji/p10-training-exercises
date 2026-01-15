@@ -105,10 +105,10 @@ public class CommonMethods {
 
         if (givenyear.equals(currentyear)) {
             return givendate.equals(today)
-                ? zdt.format(DateTimeFormatter.ofPattern("hh:mm:ss a"))
-                : zdt.format(DateTimeFormatter.ofPattern("dd/MM | hh:mm:ss a"));
+                ? zdt.format(DateTimeFormatter.ofPattern("hh:mm a"))
+                : zdt.format(DateTimeFormatter.ofPattern("dd/MM | hh:mm a"));
         } else {
-            return zdt.format(DateTimeFormatter.ofPattern("dd/MM/yy | hh:mm:ss a"));
+            return zdt.format(DateTimeFormatter.ofPattern("dd/MM/yy | hh:mm a"));
         }
     }
 

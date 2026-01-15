@@ -159,6 +159,18 @@ async function storeToken() {
 
     document.getElementById("logged-user").innerText = username;
     localStorage.setItem("username", username);
+
+    const oldchats = await fetch(gatewayurl + "/msg/gettemp?sendername="+username, {
+        method: "GET",
+        headers: {
+            "Accept": "application/json",
+            "Authorization": "Bearer " + jwtToken
+        }
+    });
+
+    const report = await oldchats.json();
+    console.log("Status: " + report.Status + "\n Details: " + report.Details);
+
     alert("Token set .\nLogged in as: " + username);
 
     document.getElementById("jwt-token").value = "";
@@ -352,17 +364,6 @@ async function sendMessage() {
     // Do NOT send empty message
     if (messageContent.length === 0) return;
 
-    // Build message object
-    var msg = {
-        text: messageContent,
-        from: username,
-        room: currentRoom,
-        msgread : false,
-        sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        isfile: false,
-        unsent:true
-    };
-
     const res = await fetch(gatewayurl+"/userchat/isactive", {
         method: "GET",
         headers: {
@@ -375,8 +376,19 @@ async function sendMessage() {
     username = data.username;
     active = data.active;
 
+      // Build message object
+    var msg = {
+        text: messageContent,
+        from: username,
+        room: currentRoom,
+        msgread : false,
+        sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        isfile: false,
+        unsent:true
+    };
+
+    document.getElementById("message").value = "";
     if (!username||!stompClient || !stompClient.connected|| active!= "true") {
-        //const chatBox = document.getElementById("chat-box").innerHTML = "";
         const res = await fetch(gatewayurl + "/temp/sendtemp", {
             method: "POST",
             headers: {
@@ -399,7 +411,6 @@ async function sendMessage() {
     // Send
     stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(msg));
 
-    document.getElementById("message").value = "";
 }
 
 // DISPLAY MESSAGE
@@ -420,11 +431,15 @@ async function showMessage(message, local) {
     let sender = message.from === username ? message.from + " (You)" : message.from;
 
     let timeString = local
-        ? new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:true })
+        ? new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit", hour12:true })
         : message.sentTime;
-
-    const tickColor = message.msgread ? "#008000" : "#000000"; 
-    const tickIcon = `<span class="tick" style="color:${tickColor};">✔✔</span>`;
+    let tickIcon;   
+    if(message.unsent==true){
+        tickIcon = `<span class="tick" style="color:#000000;">✔</span>`;}
+    else{
+        const tickColor = message.msgread ? "#008000" : "#000000"; 
+        tickIcon = `<span class="tick" style="color:${tickColor};">✔✔</span>`;
+    }
 
     wrapper.innerHTML = `
         <div class="message-header">${sender}</div>
@@ -432,7 +447,6 @@ async function showMessage(message, local) {
             ${message.isfile ? `<span class="file-icon">📎</span>` : ""}
             ${message.text}
         </div>
-
 
         <div class="message-footer">
             <span class="time-left">${timeString}</span>

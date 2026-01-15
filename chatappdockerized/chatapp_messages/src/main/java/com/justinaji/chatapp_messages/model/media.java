@@ -1,8 +1,5 @@
 package com.justinaji.chatapp_messages.model;
 
-import java.sql.Timestamp;
-
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;

@@ -11,7 +11,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -52,8 +52,8 @@ public class Js2JavaRequestController {
         kafkaProducerServices.StoreTempmsg(temp);
     }
     
-    @GetMapping("/gettemp")
-    public Map<String, String> GetValidTempMsgs(@RequestBody String sendername) {
+    @GetMapping("/msg/gettemp")
+    public Map<String, String> GetValidTempMsgs(@RequestParam String sendername) {
         HashMap<String, String> result = new HashMap<>();
         String details = "Messages retrieved and sent successfully";
         try {
@@ -67,17 +67,18 @@ public class Js2JavaRequestController {
 
             DateTimeFormatter dbFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
             temps.forEach(msg->{
-                String room , text, Timestampstring, ts;
+                String room , text, TS;
                 text = msg.getMessage();
                 room = msg.getChatid();
                 
-                ts = msg.getSenttime().toString().substring(0, 21).replace("T", " ");
-                LocalDateTime ldt = LocalDateTime.parse(ts,dbFormat);
-                Timestampstring = CommonMethods.formatTimestamp(Timestamp.valueOf(ldt),"IST");
-                
-                WSmessage wsm = new WSmessage(null, sendername, text, Timestampstring, room, false, false);
+                TS = msg.getFormattedtime().substring(0, 21).replace("T", " ");
+                LocalDateTime ldt = LocalDateTime.parse(TS,dbFormat);
+                //convert timestamp to displayable string
+                TS = CommonMethods.formatTimestamp(Timestamp.valueOf(ldt));
+
+                WSmessage wsm = new WSmessage(null, sendername, text, TS, room, false, false);
                 //add to db
-                wsm.setMsgid(msgservice.Sendmessage(text, sendername, room, msg.getSenttime()));
+                wsm.setMsgid(msgservice.Sendmessage(text, sendername, room, Timestamp.valueOf(ldt)));
                 //send via websocket
                 messagingTemplate.convertAndSend("/topic/" + room, wsm);
             }); 
