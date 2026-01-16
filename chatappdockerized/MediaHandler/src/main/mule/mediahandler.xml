@@ -33,14 +33,40 @@ http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/ka
 			</kafka:topic-patterns>
 		</kafka:consumer-plaintext-connection>
 	</kafka:consumer-config>
+	<kafka:producer-config name="Apache_Kafka_Producer_configuration" doc:name="Apache Kafka Producer configuration" doc:id="b3c4af29-b986-43bf-91a5-b024dc21a3b5" >
+		<kafka:producer-plaintext-connection >
+			<kafka:bootstrap-servers >
+				<kafka:bootstrap-server value="localhost:9092" />
+			</kafka:bootstrap-servers>
+		</kafka:producer-plaintext-connection>
+	</kafka:producer-config>
+	<db:config name="Database_ConfigH2" doc:name="Database Config" doc:id="0460582a-1f6a-4fc9-a3ad-ad6f822fb758" >
+		<db:generic-connection url="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1" driverClassName="org.h2.Driver" user="sa" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config_86" doc:name="HTTP Listener config" doc:id="32e14e02-8d77-45f5-b682-e148edf28888" >
+		<http:listener-connection host="0.0.0.0" port="8086" />
+	</http:listener-config>
+	<kafka:consumer-config name="tempmsg0" doc:name="Apache Kafka Consumer configuration" doc:id="fc588539-1c4f-4de2-9201-ead3cf5dc180" >
+		<kafka:consumer-plaintext-connection >
+			<kafka:bootstrap-servers >
+				<kafka:bootstrap-server value="localhost:9092" />
+			</kafka:bootstrap-servers>
+			<kafka:topic-patterns >
+				<kafka:topic-pattern value="tempmsg0" />
+			</kafka:topic-patterns>
+		</kafka:consumer-plaintext-connection>
+	</kafka:consumer-config>
 	<flow name="InitializeTable" doc:id="06290756-b3e0-41ac-ac12-cc0c6c9be4ab" >
 		<scheduler doc:name="Scheduler" doc:id="dbea50e2-d331-407f-b44d-e1503d91222f">
 			<scheduling-strategy>
 				<fixed-frequency frequency="1" timeUnit="DAYS"/>
 			</scheduling-strategy>
 		</scheduler>
-		<db:execute-script doc:name="Create table " doc:id="91af5cfe-3cdc-41cd-820d-e4dc00c4cfb4" config-ref="Database_Config">
-			<db:sql ><![CDATA[CREATE TABLE IF NOT EXISTS media (
+		<flow-ref doc:name="initialize Tables" doc:id="20b11239-a400-45a7-98d4-94b62f042e6d" name="MakeTable"/>
+	</flow>
+	<flow name="MakeTable" doc:id="e2abc2d9-f1cd-4f55-b484-01ffead4c417" >
+		<db:execute-script doc:name="Initialize table Media" doc:id="91af5cfe-3cdc-41cd-820d-e4dc00c4cfb4" config-ref="Database_Config">
+			<db:sql><![CDATA[CREATE TABLE IF NOT EXISTS media (
   fileid Varchar(255) PRIMARY KEY,
   filetype VARCHAR(255),
   name VARCHAR(255),
@@ -52,35 +78,17 @@ http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/ka
 );
 ]]></db:sql>
 		</db:execute-script>
-	</flow>
-	<flow name="GetFile" doc:id="1aa1641c-be0e-42b1-8460-a1f346b3525f" >
-		<http:listener doc:name="Listener" doc:id="5ae387ae-cc80-4e35-9630-a1691f3fea88" config-ref="HTTP_Listener_config_87" path="/media/getfile"/>
-		<db:select doc:name="Find File by ID" doc:id="1559048a-bf32-4c0d-8e89-9ad2c68feaf0" config-ref="Database_Config" >
-			<db:sql ><![CDATA[Select * from media where fileid = :id ;]]></db:sql>
-			<db:input-parameters ><![CDATA[#[id: attributes.queryParams.id]]]></db:input-parameters>
-		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="24d0a2b0-6e83-44e2-8114-e27228a32ac1" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-payload [0]]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-	</flow>
-	<flow name="GetAllMedia" doc:id="a4cb33bb-4b0c-4e52-bdcb-8e6a18dc6925" >
-		<http:listener doc:name="Listener" doc:id="ef05466b-875f-494a-86c0-e8b199a11898" path="/media/getmedia" config-ref="HTTP_Listener_config_87"/>
-		<db:select doc:name="Select ALL" doc:id="497be08d-01e1-4bbc-9371-299885801bac" config-ref="Database_Config">
-			<db:sql ><![CDATA[select * from media;]]></db:sql>
-		</db:select>
-		<ee:transform doc:name="Display payload" doc:id="8f5956a5-aceb-42b9-9780-e81472033ba2" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-payload]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+		<db:execute-script doc:name="Initialize table temp_messages" doc:id="a905228a-ef16-4223-b6e6-9e79b5e1c332" config-ref="Database_ConfigH2" >
+			<db:sql ><![CDATA[CREATE TABLE IF NOT EXISTS temp_messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sender VARCHAR(255),
+  chatid VARCHAR(255),
+  message CLOB,
+  senttime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+]]></db:sql>
+		</db:execute-script>
+		<logger level="INFO" doc:name="Logger" doc:id="ae7604ca-20ca-4d9c-a03a-ffbb86e837cc" message='#["Table media , temp_messages created"]' />
 	</flow>
 	<flow name="ListofIDs" doc:id="88d2434f-8927-403d-9974-445335e4bb6d" >
 		<http:listener doc:name="Listener" doc:id="22917396-8c4a-4615-b249-61dab358f104" config-ref="HTTP_Listener_config_87" path="/media/idlist"/>
@@ -97,13 +105,13 @@ payload ]]></ee:set-payload>
 		</ee:transform>
 	</flow>
 	<flow name="Insertdata" doc:id="d7e4dbaa-8df4-48ec-919b-9573442ca2d0" >
-		<http:listener doc:name="Data insert API" doc:id="dc1843c0-bc95-4f9f-90fb-ea629b1739cb" config-ref="HTTP_Listener_config_87" path="/addmedia" allowedMethods="POST"/>
-		<flow-ref doc:name="Flow Reference" doc:id="93e5e330-7e04-4fed-96ba-4ac06c8f4498" name="InsertDataQuery"/>
+		<http:listener doc:name="Data insert API" doc:id="dc1843c0-bc95-4f9f-90fb-ea629b1739cb" config-ref="HTTP_Listener_config_87" path="/media/addmedia" allowedMethods="POST"/>
+		<flow-ref doc:name="insert into table Media" doc:id="93e5e330-7e04-4fed-96ba-4ac06c8f4498" name="InsertDataQuery"/>
 	</flow>
 	<flow name="FindByChatID" doc:id="f0c20cd2-1261-40d6-b257-d1b8d518652f" >
 		<http:listener doc:name="FindByChat" doc:id="2f0a176a-96b5-4756-ad64-90d3a528ba3f" config-ref="HTTP_Listener_config_87" path="/media/getchatmedia"/>
 		<set-variable value="#[attributes.queryParams.chatid]" doc:name="Save Chatid" doc:id="66805642-1d51-46cf-8b49-33afac74ba8e" variableName="chatid" />
-		<flow-ref doc:name="Flow Reference" doc:id="56bf2be2-fb11-4681-ba5a-3aa086e03694" name="RetrieveByChat"/>
+		<flow-ref doc:name="Subflow RetrieveByChat" doc:id="56bf2be2-fb11-4681-ba5a-3aa086e03694" name="RetrieveByChat"/>
 	</flow>
 	<flow name="RetrieveByChat" doc:id="3b77ec9f-4254-4a42-9962-19142d08b990" >
 		<db:select doc:name="Find all media in given chat" doc:id="670ca77d-0af1-4292-a353-8150d56b3118" config-ref="Database_Config">
@@ -178,11 +186,154 @@ output application/java
 	senttime: vars.NewFile.senttime
 }]]]></db:input-parameters>
 		</db:insert>
+		<kafka:publish doc:name="Publish" doc:id="001eda20-f56f-4f62-99d9-4d17090fa8de" config-ref="Apache_Kafka_Producer_configuration" topic="fileack">
+			<kafka:message ><![CDATA[#[vars.NewFile.name]]]></kafka:message>
+		</kafka:publish>
 		<logger level="INFO" doc:name="Logger" doc:id="0bab9b4e-0856-45ac-9da3-dde63ffb2bf1" message='#["Inserted into table : $(vars.NewFile.name) successfully"]'/>
-		<error-handler >
+		<error-handler>
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4aad4c20-9f80-4fc4-89fc-d56fb0bae3fc" type="DB:QUERY_EXECUTION">
 				<set-payload value='#["duplicate entry found"]' doc:name="Set Payload" doc:id="ac887151-3e34-49e9-bc6d-372eed538295" />
 			</on-error-continue>
 		</error-handler>
+	</flow>
+	<flow name="TestInputs" doc:id="724e107e-3635-4bb3-93e8-205ecf96e2fd" >
+		<http:listener doc:name="Listener" doc:id="adacab91-d0c2-4056-a50b-a69222575b54" config-ref="HTTP_Listener_config_86" path="/temp/testdata" />
+		<db:insert doc:name="Current TS" doc:id="bde8d851-b5ba-406b-ba06-49e57db2e07f" config-ref="Database_ConfigH2">
+			<db:sql><![CDATA[INSERT INTO temp_messages (sender, chatid, message, senttime)
+VALUES ('sendername', 'chatname', 'Current message', CURRENT_TIMESTAMP);
+]]></db:sql>
+		</db:insert>
+		<db:insert doc:name="Current TS-2" doc:id="c4e36a42-b313-4015-be18-539b213357a1" config-ref="Database_ConfigH2">
+			<db:sql><![CDATA[INSERT INTO temp_messages (sender, chatid, message, senttime)
+VALUES (
+  'sendername',
+  'chatname',
+  'Older Message',
+  DATEADD('MINUTE', -20, CURRENT_TIMESTAMP)
+);
+]]></db:sql>
+		</db:insert>
+		<set-payload value='Inserted a message "Current message" with current timestamp and a message "Older Message" with timstamp 20 minutes behind current time ' doc:name="Set Payload" doc:id="ff15a80b-1e7b-445b-a9a9-5d1714555fff" />
+	</flow>
+	<flow name="InsertDataAPI" doc:id="3b7163e3-a836-4380-b430-a14bbe52e388" >
+		<http:listener doc:name="Listener" doc:id="835dc5bc-1ca6-4823-8631-f02bc4f10834" config-ref="HTTP_Listener_config_86" path="/temp/message" />
+		<flow-ref doc:name="DB insert Subflow" doc:id="65376d2a-27c1-4d82-a04a-4a3abf112a2a" name="InsertData" />
+	</flow>
+	<flow name="InsertData" doc:id="cd5ee150-1e09-4541-b556-001d2730d960" >
+		<db:insert doc:name="Insert into table " doc:id="996896d6-7269-4cdc-9981-d163d87cbe3e" config-ref="Database_ConfigH2" >
+			<db:sql ><![CDATA[INSERT INTO temp_messages(sender, chatid, message,senttime)
+VALUES (:sender,:chatid,:message,:senttime);
+]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{	
+    sender: payload.sender,
+    chatid:payload.chatid,
+    message:payload.message,
+    senttime: payload.senttime
+}]]]></db:input-parameters>
+		</db:insert>
+		<set-payload value='#["Data inserted successfully"]' doc:name="Set Payload" doc:id="974b7a47-0be2-4247-ad65-0c3754189c33" />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f72e624f-b69f-4261-b7df-f33ff231eb83" >
+				<logger level="ERROR" doc:name="Logger" doc:id="fbf82f2c-c414-43dd-8731-24da446fc562" message="#[output text/plain --- error.description]" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="InsertDataKafkaMessage" doc:id="51529ecd-451c-4403-9356-5ad72470cf1a" >
+		<kafka:message-listener doc:name="Message listener" doc:id="6d143703-861a-45d6-bbec-d650ef6772bf" config-ref="tempmsg0"/>
+		<ee:transform doc:name="Convert binary to Application/java" doc:id="b83783da-46ac-4619-a0ea-8fbc9c1de95b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+var body = read(payload, "application/json")
+---
+{
+  chatid: body.chatid,
+  sender: body.sender,
+  message: body.message,
+  senttime:body.formattedtime
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="DB insert Subflow" doc:id="3f38e1f6-7f00-4da2-a9b8-4f618a1e45f4" name="InsertData" />
+	</flow>
+	<flow name="RetrieveMessages" doc:id="71bb2b66-50f9-4719-aaf9-ea6cf65925c5" >
+		<http:listener doc:name="Listener" doc:id="82dc7b20-4f94-438c-a953-5d866021e014" config-ref="HTTP_Listener_config_86" path="/temp/getall" >
+			<non-repeatable-stream />
+		</http:listener>
+		<db:select doc:name="Select all messages" doc:id="ef4f6e45-dc16-47a1-9174-946fc012cf10" config-ref="Database_ConfigH2" >
+			<db:sql ><![CDATA[select * from temp_messages;]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="-&gt;JSON" doc:id="da1a9fba-c543-4294-be93-76ea85d0d17b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+  id: $.ID,
+  sender: $.SENDER,
+  chatid: $.CHATID,
+  message: $.MESSAGE,
+  senttime: $.SENTTIME
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="ReturnRecentMessagesFromUser" doc:id="c6484d48-25ec-427c-8440-a7b773b69554" >
+		<http:listener doc:name="Listener" doc:id="0c6c61f9-7fbd-43ca-b68d-3d9169c86c67" config-ref="HTTP_Listener_config_86" path="/temp/returnchats" />
+		<set-variable value="#[attributes.queryParams.sender]" doc:name="Set Variable" doc:id="2386853c-2e9c-412a-b0ae-eb9db474171b" variableName="Sender" />
+		<db:select doc:name="Find all under 15 min messages" doc:id="2ffabacb-22c3-43f6-b8f0-6f5f6a983c88" config-ref="Database_ConfigH2" >
+			<db:sql ><![CDATA[SELECT *
+FROM temp_messages
+WHERE sender = :sender
+  AND senttime >= DATEADD('MINUTE', -15, CURRENT_TIMESTAMP);
+]]></db:sql>
+			<db:input-parameters ><![CDATA[#[sender: vars.Sender]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Convert to Json" doc:id="35bb2a05-0f58-4432-b335-81de73cc977c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[payload]" doc:name="Save returnable messages" doc:id="26e187b5-751a-4c51-a416-d3e167ebbb61" variableName="results" />
+		<db:delete doc:name="Clear out all User Messages" doc:id="ffbf96f3-3d49-46c3-9af2-598b53763a93" config-ref="Database_ConfigH2" >
+			<db:sql ><![CDATA[Delete from temp_messages where sender = :sender ;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[sender :vars.Sender]]]></db:input-parameters>
+		</db:delete>
+		<set-payload value="#[vars.results]" doc:name="Return Messages" doc:id="173649a0-5c79-4b0d-83a3-88de4055a734" />
+		<ee:transform doc:name="-&gt;JSON" doc:id="cf80bfc0-a3bc-4bfb-943c-4d678e85fc93" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.results map {
+  id: $.ID,
+  sender: $.SENDER,
+  chatid: $.CHATID,
+  message: $.MESSAGE,
+  formattedtime: $.SENTTIME
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="GetAllFromUser" doc:id="99c08716-347d-41f4-92d1-c90d67726bfb" >
+		<http:listener doc:name="Listener" doc:id="ec7d6179-b870-4ba6-96cb-097526982158" config-ref="HTTP_Listener_config_86" path="/temp/getchats" />
+		<db:select doc:name="Find all messages by a user" doc:id="70c01e0f-7e6a-4992-af31-7e8c174b1573" config-ref="Database_ConfigH2" >
+			<db:sql ><![CDATA[Select * from temp_messages where sender = :sender ;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[sender: attributes.queryParams.sender]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="-&gt;JSON" doc:id="74e2e11f-01db-4537-a87d-3147596bf92a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 	</flow>
 </mule>
