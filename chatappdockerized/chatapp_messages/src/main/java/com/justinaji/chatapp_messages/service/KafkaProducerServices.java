@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
@@ -25,11 +26,7 @@ public class KafkaProducerServices {
     public void SendMediatoTopic(media file){
         CompletableFuture<SendResult<String, Object>> future = template.send("MediaTopic0",file.getFiletype(), file);
         future.whenComplete((result,ex)->{
-            if (ex ==null) logger.info(
-                "Sent Message [ "+ file.toString() +
-                "] with offset ["+result.getRecordMetadata().offset()+ 
-                "] to partition [" + result.getRecordMetadata().partition()+"]");
-            
+            if (ex ==null) logger.info("Sent File details [ "+ file.getName() +"]");
             else System.out.println("Unable to Send Message("+file.getName()+") due to : "+ex.getMessage());
             
         });
@@ -38,11 +35,7 @@ public class KafkaProducerServices {
     public void SetFileRead(String fileid){
         CompletableFuture<SendResult<String, Object>> future = template.send("fileread", fileid);
         future.whenComplete((result,ex)->{
-            if (ex ==null) logger.info(
-                "Sent Message [ "+ fileid+
-                "] with offset ["+result.getRecordMetadata().offset()+ 
-                "] to partition [" + result.getRecordMetadata().partition()+"]");
-            
+            if (ex ==null) logger.info( "Sent request to set file [ "+ fileid+"] as read ");
             else System.out.println("Unable to Set to read ("+fileid+") due to : "+ex.getMessage());
             
         });
@@ -60,5 +53,10 @@ public class KafkaProducerServices {
             else System.out.println("Unable to Send Message("+temp.getMessage()+") due to : "+ex.getMessage());
             
         });
+    }
+
+    @KafkaListener(topics = "fileack", groupId= "consumer-group")
+    public void consume(String filename){
+        logger.info("file ["+ filename+"] received by consumer");
     }
 }

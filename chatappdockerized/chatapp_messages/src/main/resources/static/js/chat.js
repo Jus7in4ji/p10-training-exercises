@@ -3,6 +3,7 @@ var jwtToken = null;
 var currentRoom = null; // default room
 var activeSubscriptions = [];
 var username = null;
+var sendername = null;
 const gatewayurl = "http://localhost:8080"
 
 function openFilePicker() {
@@ -159,18 +160,21 @@ async function storeToken() {
 
     document.getElementById("logged-user").innerText = username;
     localStorage.setItem("username", username);
-
-    const oldchats = await fetch(gatewayurl + "/msg/gettemp?sendername="+username, {
-        method: "GET",
-        headers: {
-            "Accept": "application/json",
-            "Authorization": "Bearer " + jwtToken
-        }
-    });
+    try{
+        const oldchats = await fetch(gatewayurl + "/msg/gettemp?sendername="+username, {
+            method: "GET",
+            headers: {
+                "Accept": "application/json",
+                "Authorization": "Bearer " + jwtToken
+            }
+        });
 
     const report = await oldchats.json();
     console.log("Status: " + report.Status + "\n Details: " + report.Details);
-
+    }
+    catch (err){
+        console.error("failed to fetch temporary messages: "+err);
+    }
     alert("Token set .\nLogged in as: " + username);
 
     document.getElementById("jwt-token").value = "";
@@ -351,7 +355,7 @@ function markMessageAsRead(msgId) {
 // SEND MESSAGE
 async function sendMessage() {
     var messageContent = document.getElementById("message").value.trim();
-
+    if (username){ sendername = username;}
     // Do NOT send without token
     if (!username || username.trim().length === 0) {
         alert("Please enter a valid Token before sending messages.");
@@ -395,7 +399,7 @@ async function sendMessage() {
                 "Accept": "application/json",
                 "Content-Type": "application/json"},
             body: JSON.stringify({
-                sender:username,
+                sender:sendername,
                 chatid:currentRoom,
                 message: messageContent,
 
