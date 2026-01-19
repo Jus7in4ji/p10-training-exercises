@@ -113,6 +113,21 @@ payload ]]></ee:set-payload>
 		<set-variable value="#[attributes.queryParams.chatid]" doc:name="Save Chatid" doc:id="66805642-1d51-46cf-8b49-33afac74ba8e" variableName="chatid" />
 		<flow-ref doc:name="Subflow RetrieveByChat" doc:id="56bf2be2-fb11-4681-ba5a-3aa086e03694" name="RetrieveByChat"/>
 	</flow>
+	<flow name="GetFiledetails" doc:id="b32dd0ab-eece-4a7e-93a5-58016bab9241" >
+		<http:listener doc:name="Listener" doc:id="ec0a0e9f-5ee8-4908-956a-0ecf89b185f4" config-ref="HTTP_Listener_config_87" path="/media/getfile"/>
+		<db:select doc:name="Get File details" doc:id="a885af29-d6ba-4e59-980d-2e38f82f0cee" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from media where fileid = :id ;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[id: attributes.queryParams.id]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Convert list&lt;media&gt; to media object" doc:id="8e7a5c0b-32b8-4e26-b898-2f0c33e1d05f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload[0]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 	<flow name="RetrieveByChat" doc:id="3b77ec9f-4254-4a42-9962-19142d08b990" >
 		<db:select doc:name="Find all media in given chat" doc:id="670ca77d-0af1-4292-a353-8150d56b3118" config-ref="Database_Config">
 			<db:sql ><![CDATA[Select * from media where chatid = :chatid ;]]></db:sql>
@@ -185,6 +200,7 @@ output application/java
 	msgread:false,
 	senttime: vars.NewFile.senttime
 }]]]></db:input-parameters>
+			<db:auto-generated-keys-column-indexes />
 		</db:insert>
 		<kafka:publish doc:name="Publish" doc:id="001eda20-f56f-4f62-99d9-4d17090fa8de" config-ref="Apache_Kafka_Producer_configuration" topic="fileack">
 			<kafka:message ><![CDATA[#[vars.NewFile.name]]]></kafka:message>

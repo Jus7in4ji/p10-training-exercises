@@ -57,6 +57,6 @@ public class KafkaProducerServices {
 
     @KafkaListener(topics = "fileack", groupId= "consumer-group")
     public void consume(String filename){
-        logger.info("file ["+ filename+"] received by consumer");
+        logger.info("file ["+ filename+"] received.");
     }
 }
