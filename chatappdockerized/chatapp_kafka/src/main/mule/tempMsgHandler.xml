@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:kafka="http://www.mulesoft.org/schema/mule/kafka" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/kafka/current/mule-kafka.xsd">
+	<flow name="tempMsgHandlerFlow" doc:id="d12df8ad-0467-4034-a306-52202e9390dc" >
+		<scheduler doc:name="Scheduler" doc:id="3d532041-cfae-4827-9bbf-e5e2faa010e9" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="1" timeUnit="DAYS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<db:execute-script doc:name="Initialize table temp_messages" doc:id="38248f6c-d14d-453d-9d70-0041d601b7de" config-ref="Database_ConfigH2" >
+			<db:sql ><![CDATA[CREATE TABLE IF NOT EXISTS temp_messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sender VARCHAR(255),
+  chatid VARCHAR(255),
+  message CLOB,
+  senttime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+]]></db:sql>
+		</db:execute-script>
+		<logger level="INFO" doc:name="Logger" doc:id="7c7c70b1-07a7-455d-9a13-e720326cdd3a" message='#["Table temp_messages (H2) created"]'/>
+	</flow>
+	<flow name="TestInputs" doc:id="676cb594-78eb-429d-88cc-31cc5ea85ad7">
+		<http:listener doc:name="Listener" doc:id="1636773e-e9da-415a-9b5a-ae853115edd9" config-ref="HTTP_Listener_config_86" path="/temp/testdata" />
+		<db:insert doc:name="Current TS" doc:id="e85747da-4244-46b0-ae06-139c39f6b4f6" config-ref="Database_ConfigH2">
+			<db:sql><![CDATA[INSERT INTO temp_messages (sender, chatid, message, senttime)
+VALUES ('sendername', 'chatname', 'Current message', CURRENT_TIMESTAMP);
+]]></db:sql>
+		</db:insert>
+		<db:insert doc:name="Current TS- 20 mins" doc:id="527b1a0a-9de6-4a95-ac10-ef0c4deee200" config-ref="Database_ConfigH2">
+			<db:sql><![CDATA[INSERT INTO temp_messages (sender, chatid, message, senttime)
+VALUES (
+  'sendername',
+  'chatname',
+  'Older Message',
+  DATEADD('MINUTE', -20, CURRENT_TIMESTAMP)
+);
+]]></db:sql>
+		</db:insert>
+		<set-payload value='Inserted a message "Current message" with current timestamp and a message "Older Message" with timstamp 20 minutes behind current time ' doc:name="Set Payload" doc:id="db5f2db5-f8fc-474a-b332-a4deb21f53cf" />
+	</flow>
+	<flow name="InsertDataAPI" doc:id="a5e00d02-8e58-4002-84d4-0e8453c0946f">
+		<http:listener doc:name="Listener" doc:id="059c37fc-3377-48b9-9801-3336af825dd8" config-ref="HTTP_Listener_config_86" path="/temp/message" />
+		<flow-ref doc:name="DB insert Subflow" doc:id="7bdf5ef6-074a-4835-9b53-90b3e5d2aeae" name="InsertData" />
+	</flow>
+	<flow name="InsertDataKafkaMessage" doc:id="563ce396-c32d-45ad-b6a4-a530a865f6b5">
+		<kafka:message-listener doc:name="Message listener" doc:id="f9f1afdd-613f-42fa-91a1-b93a46d87409" config-ref="tempmsg0" />
+		<ee:transform doc:name="Convert binary to Application/java" doc:id="a1d7a298-420c-4741-8e28-e667e0c0a852">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var body = read(payload, "application/json")
+---
+{
+  chatid: body.chatid,
+  sender: body.sender,
+  message: body.message,
+  senttime:body.formattedtime
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="DB insert Subflow" doc:id="ca79959c-dfbf-427a-8c58-1ca5597f9bce" name="InsertData" />
+	</flow>
+	<flow name="InsertData" doc:id="da8c276c-2730-4454-9e13-c1a35e37538a">
+		<db:insert doc:name="Insert into table " doc:id="299197c3-9838-4fdb-8ba7-8415236e0ce8" config-ref="Database_ConfigH2">
+			<db:sql><![CDATA[INSERT INTO temp_messages(sender, chatid, message,senttime)
+VALUES (:sender,:chatid,:message,:senttime);
+]]></db:sql>
+			<db:input-parameters><![CDATA[#[{	
+    sender: payload.sender,
+    chatid:payload.chatid,
+    message:payload.message,
+    senttime: payload.senttime
+}]]]></db:input-parameters>
+		</db:insert>
+		<set-payload value='#["Data inserted successfully"]' doc:name="Set Payload" doc:id="93f553e3-8241-4a10-b7a1-a2cbeba8419b" />
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="567e2a9f-d417-4b71-ba7f-a50b4194f6d0">
+				<logger level="ERROR" doc:name="Logger" doc:id="146a6dbb-438d-4acb-ad05-b47efcd57886" message="#[output text/plain --- error.description]" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="ReturnRecentMessagesFromUser" doc:id="fab50c52-8d7f-454b-8e8d-404fa653c67a">
+		<http:listener doc:name="Listener" doc:id="360731af-f190-4931-9aef-b7eb2d56614d" config-ref="HTTP_Listener_config_86" path="/temp/returnchats" />
+		<set-variable value="#[attributes.queryParams.sender]" doc:name="Set Variable" doc:id="0a2b9a74-bd2d-4290-8c9e-7a97e60b2f87" variableName="Sender" />
+		<db:select doc:name="Find all under 15 min messages" doc:id="20627a4e-b809-420c-8a4b-528c27cc6689" config-ref="Database_ConfigH2">
+			<db:sql><![CDATA[SELECT *
+FROM temp_messages
+WHERE sender = :sender
+  AND senttime >= DATEADD('MINUTE', -15, CURRENT_TIMESTAMP);
+]]></db:sql>
+			<db:input-parameters><![CDATA[#[sender: vars.Sender]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Convert to Json" doc:id="e66aa670-27ad-4193-8541-176394850d77">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[payload]" doc:name="Save returnable messages" doc:id="9843446b-fa6c-449d-8b99-00e72ae255ea" variableName="results" />
+		<db:delete doc:name="Clear out all User Messages" doc:id="978aa0bd-05d0-42ee-9d03-7119e3abe875" config-ref="Database_ConfigH2">
+			<db:sql><![CDATA[Delete from temp_messages where sender = :sender ;]]></db:sql>
+			<db:input-parameters><![CDATA[#[sender :vars.Sender]]]></db:input-parameters>
+		</db:delete>
+		<set-payload value="#[vars.results]" doc:name="Return Messages" doc:id="67893ab8-4e15-4671-be52-f2bbf4d47aca" />
+		<ee:transform doc:name="-&gt;JSON" doc:id="0a689338-1fec-4c11-872c-897d98e53124">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+vars.results map {
+  id: $.ID,
+  sender: $.SENDER,
+  chatid: $.CHATID,
+  message: $.MESSAGE,
+  formattedtime: $.SENTTIME
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="GetAllFromUser" doc:id="7bb7551c-9c35-4305-b05d-9e677a5aaf31" >
+		<http:listener doc:name="Listener" doc:id="b94153f2-d95a-47ad-8d38-2f36548e8cc0" config-ref="HTTP_Listener_config_86" path="/temp/getchats" />
+		<db:select doc:name="Find all messages by a user" doc:id="19f7f294-29d3-41ab-b045-77435867fa73" config-ref="Database_ConfigH2" >
+			<db:sql ><![CDATA[Select * from temp_messages where sender = :sender ;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[sender: attributes.queryParams.sender]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="-&gt;JSON" doc:id="ae2dd129-b604-4714-b086-a8d97e1f1e2d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

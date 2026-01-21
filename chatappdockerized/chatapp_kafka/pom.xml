@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.mycompany</groupId>
-	<artifactId>mediahandler</artifactId>
+	<artifactId>chatapp_kafka</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
 
-	<name>mediahandler</name>
+	<name>chatapp_kafka</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -66,17 +66,6 @@
 					</coverage>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.10.1</version>
-				<configuration>
-					<compilerArgs>
-						<args>-parameters</args>
-					</compilerArgs>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
@@ -89,19 +78,27 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
-			<artifactId>mule-db-connector</artifactId>
-			<version>1.14.17</version>
+			<artifactId>mule-sockets-connector</artifactId>
+			<version>1.2.7</version>
 			<classifier>mule-plugin</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>42.7.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.mulesoft.connectors</groupId>
 			<artifactId>mule-kafka-connector</artifactId>
 			<version>4.12.1</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.munit</groupId>
+			<artifactId>munit-tools</artifactId>
+			<version>3.6.2</version>
+			<classifier>mule-plugin</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.connectors</groupId>
+			<artifactId>mule-db-connector</artifactId>
+			<version>1.14.17</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
@@ -112,22 +109,20 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.mulesoft.munit</groupId>
-			<artifactId>munit-tools</artifactId>
-			<version>3.6.2</version>
-			<classifier>mule-plugin</classifier>
-			<scope>test</scope>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.7.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>2.2.224</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.weave</groupId>
 			<artifactId>assertions</artifactId>
 			<version>1.2.1</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>2.2.224</version>
 		</dependency>
 	</dependencies>
 
