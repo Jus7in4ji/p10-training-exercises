@@ -160,6 +160,7 @@ async function storeToken() {
 
     document.getElementById("logged-user").innerText = username;
     localStorage.setItem("username", username);
+    sendername = username;
     try{
         const oldchats = await fetch(gatewayurl + "/msg/gettemp?sendername="+username, {
             method: "GET",
@@ -175,7 +176,7 @@ async function storeToken() {
     catch (err){
         console.error("failed to fetch temporary messages: "+err);
     }
-    alert("Token set .\nLogged in as: " + username);
+    console.log("Token set .\nLogged in as: " + username);
 
     document.getElementById("jwt-token").value = "";
 }
@@ -185,6 +186,7 @@ function logoutUser() {
     localStorage.removeItem("username");
     jwtToken = null;
     username = null;
+    sendername = null;
 
     unsubscribeAll();
 
@@ -355,12 +357,7 @@ function markMessageAsRead(msgId) {
 // SEND MESSAGE
 async function sendMessage() {
     var messageContent = document.getElementById("message").value.trim();
-    if (username){ sendername = username;}
-    // Do NOT send without token
-    if (!username || username.trim().length === 0) {
-        alert("Please enter a valid Token before sending messages.");
-        return;
-    }
+    
     if(!currentRoom){
         alert("You are not connected to any chats.");
         return
@@ -383,7 +380,7 @@ async function sendMessage() {
       // Build message object
     var msg = {
         text: messageContent,
-        from: username,
+        from: sendername,
         room: currentRoom,
         msgread : false,
         sentTime: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -432,7 +429,7 @@ async function showMessage(message, local) {
         downloadFile(message.msgid, message.text);
     });
 }
-    let sender = message.from === username ? message.from + " (You)" : message.from;
+    let sender = message.from === sendername ? message.from + " (You)" : message.from;
 
     let timeString = local
         ? new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit", hour12:true })
