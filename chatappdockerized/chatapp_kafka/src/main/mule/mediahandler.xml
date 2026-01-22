@@ -56,6 +56,13 @@ http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/ka
 			</kafka:topic-patterns>
 		</kafka:consumer-plaintext-connection>
 	</kafka:consumer-config>
+	<kafka:producer-config name="retryQ" doc:name="Apache Kafka Producer configuration" doc:id="efe6ce16-219f-470f-8e21-4816245642d5" >
+		<kafka:producer-plaintext-connection >
+			<kafka:bootstrap-servers >
+				<kafka:bootstrap-server value="localhost:9092" />
+			</kafka:bootstrap-servers>
+		</kafka:producer-plaintext-connection>
+	</kafka:producer-config>
 	<flow name="InitializeTable" doc:id="06290756-b3e0-41ac-ac12-cc0c6c9be4ab" >
 		<scheduler doc:name="Scheduler" doc:id="dbea50e2-d331-407f-b44d-e1503d91222f">
 			<scheduling-strategy>
@@ -65,13 +72,13 @@ http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/ka
 		<db:execute-script doc:name="Initialize table Media" doc:id="91af5cfe-3cdc-41cd-820d-e4dc00c4cfb4" config-ref="Database_Config">
 			<db:sql><![CDATA[CREATE TABLE IF NOT EXISTS media (
   fileid Varchar(255) PRIMARY KEY,
-  filetype VARCHAR(255),
-  name VARCHAR(255),
-  chatid VARCHAR(255),
-  sender VARCHAR(255),
-  path TEXT,
+  filetype VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  chatid VARCHAR(255) NOT NULL,
+  sender VARCHAR(255) NOT NULL,
+  path TEXT NOT NULL,
   senttime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  msgread BOOLEAN
+  msgread BOOLEAN DEFAULT FALSE
 );
 ]]></db:sql>
 		</db:execute-script>
@@ -138,14 +145,14 @@ output application/java
 var body = read(payload, "application/json")
 ---
 {
-  id: body.fileid,
-  filetype: body.filetype,
-  name: body.name,
-  path: body.path,
-  chat: body.chatid,
-  sender: body.sender,
-  msgread: body.msgread,
-  senttime:body.senttime
+  id: body.fileid default null,
+  filetype: body.filetype default null,
+  name: body.name default null,
+  path: body.path default null,
+  chat: body.chatid default null,
+  sender: body.sender default null,
+  msgread: body.msgread default null,
+  senttime:body.senttime default null
 }
 ]]></ee:set-payload>
 			</ee:message>
@@ -174,18 +181,18 @@ output application/java
 		<logger level="INFO" doc:name="Logger" doc:id="f3f846d9-1b75-4478-a7ce-3ebe3b87e39d" message='#["set to read "]'/>
 	</flow>
 	<flow name="InsertDataQuery" doc:id="116b2e51-2f6b-4547-820e-396fc3d7d68e" >
-		<set-variable value="#[{	id: payload.id,&#10;    name: payload.name,&#10;    ftype:payload.filetype,&#10;    user:payload.sender,&#10;    chat:payload.chat,&#10;    path:payload.path,&#10;    senttime:payload.senttime&#10;}]" doc:name="Set Variable" doc:id="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" variableName="NewFile"/>
+		<set-variable value="#[{	fileid: payload.id,&#10;    name: payload.name,&#10;    filetype:payload.filetype,&#10;    sender:payload.sender,&#10;    chatid:payload.chat,&#10;    path:payload.path,&#10;    senttime:payload.senttime&#10;}]" doc:name="Set Variable" doc:id="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" variableName="NewFile"/>
 		<db:insert doc:name="Insert file" doc:id="5ec7988e-3509-4838-9f9e-47697272b882" config-ref="Database_Config">
 			<db:sql ><![CDATA[insert into media (fileid,filetype,name,path,chatid,sender,msgread,senttime) values(:id,:ftype,:name,:path,:chatid,:sender,:msgread,:senttime);]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
-	id:vars.NewFile.id,
-	ftype:vars.NewFile.ftype,
+	id:vars.NewFile.fileid,
+	ftype:vars.NewFile.filetype,
 	name: vars.NewFile.name,
 	path: vars.NewFile.path,
-	chatid: vars.NewFile.chat,
-	sender: vars.NewFile.user,
+	chatid: vars.NewFile.chatid,
+	sender: vars.NewFile.sender,
 	msgread:false,
-	senttime: vars.NewFile.senttime
+	senttime: vars.NewFile.senttime  default (now() as String { format: "yyyy-MM-dd HH:mm:ss.SSSSSS" })
 }]]]></db:input-parameters>
 			<db:auto-generated-keys-column-indexes />
 		</db:insert>
@@ -194,11 +201,29 @@ output application/java
 		</kafka:publish>
 		<logger level="INFO" doc:name="Logger" doc:id="0bab9b4e-0856-45ac-9da3-dde63ffb2bf1" message='#["Inserted into table : $(vars.NewFile.name) successfully"]'/>
 		<error-handler>
-			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4aad4c20-9f80-4fc4-89fc-d56fb0bae3fc" type="ANY">
-				<kafka:publish doc:name="Send to DLQ" doc:id="20a54307-8c79-4801-a278-61bf49eb1fdd" config-ref="Apache_Kafka_Producer_configuration" topic="DLQfiles">
-					<kafka:message ><![CDATA[#[vars.NewFile]]]></kafka:message>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4aad4c20-9f80-4fc4-89fc-d56fb0bae3fc" type="DB:QUERY_EXECUTION">
+				<db:select doc:name="Select" doc:id="5a3b6024-7130-45a9-9548-979633f1141d" config-ref="Database_Config">
+					<db:sql ><![CDATA[SELECT 1 FROM media WHERE fileid = :id AND path <> :path LIMIT 1;
+]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+id: vars.NewFile.fileid default "#",
+path: vars.NewFile.path
+}]]]></db:input-parameters>
+				</db:select>
+				<choice doc:name="Choice" doc:id="f750db90-eb1c-498f-ab2c-8b4bb9f32884" >
+					<when expression="isEmpty(payload)">
+						<kafka:publish doc:name="Send to DLQ" doc:id="20a54307-8c79-4801-a278-61bf49eb1fdd" config-ref="Apache_Kafka_Producer_configuration" topic="DLQfiles">
+					<kafka:message><![CDATA[#[vars.NewFile]]]></kafka:message>
 				</kafka:publish>
-				<set-payload value='#["error occured. transferring  $(vars.NewFile.name) to dlq "]' doc:name="Set Payload" doc:id="ac887151-3e34-49e9-bc6d-372eed538295" />
+						<set-payload value='#["error occured. transferring file to dlQ "]' doc:name="Set Payload" doc:id="ac887151-3e34-49e9-bc6d-372eed538295" />
+					</when>
+					<otherwise >
+						<kafka:publish doc:name="Send to RetryQ" doc:id="394088fb-738f-40bb-b7bf-9bbf638fb606" config-ref="retryQ" topic="newid">
+							<kafka:message ><![CDATA[#[vars.NewFile]]]></kafka:message>
+						</kafka:publish>
+						<set-payload value='#["error occured. transferring file to retryQ "]' doc:name="Set Payload" doc:id="a58a5591-35f2-45f4-afed-dcda21509fcd" />
+					</otherwise>
+				</choice>
 			</on-error-continue>
 		</error-handler>
 	</flow>

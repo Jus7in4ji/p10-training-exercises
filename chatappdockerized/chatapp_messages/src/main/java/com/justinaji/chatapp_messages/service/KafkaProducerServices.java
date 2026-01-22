@@ -1,6 +1,7 @@
 package com.justinaji.chatapp_messages.service;
 
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
@@ -12,6 +13,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.justinaji.chatapp_messages.dto.TempMsg;
 import com.justinaji.chatapp_messages.model.media;
 
@@ -37,7 +39,6 @@ public class KafkaProducerServices {
         future.whenComplete((result,ex)->{
             if (ex ==null) logger.info( "Sent request to set file [ "+ fileid+"] as read ");
             else System.out.println("Unable to Set to read ("+fileid+") due to : "+ex.getMessage());
-            
         });
     }
 
@@ -58,5 +59,26 @@ public class KafkaProducerServices {
     @KafkaListener(topics = "fileack", groupId= "consumer-group")
     public void consume(String filename){
         logger.info("file ["+ filename+"] received.");
+    }
+
+    @KafkaListener(topics = "newid", groupId= "consumer-group")
+    public void consume2(String payload) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        media file = mapper.readValue(payload, media.class);
+        
+        if(file.getSenttime()!=null){
+            Instant sentInstant = Instant.parse(file.getSenttime());
+            Instant now = Instant.now();
+
+            if (Duration.between(sentInstant, now).getSeconds() > 5) {
+                logger.info("File is older than 5 seconds");
+                
+            }
+        }
+        else file.setSenttime(Timestamp.from(Instant.now()).toString());
+        file.setFileid("hijk");
+
+        logger.info("set new fileid for file ["+file.getName()+"]");
+        SendMediatoTopic(file);
     }
 }
