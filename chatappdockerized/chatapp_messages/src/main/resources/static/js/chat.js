@@ -285,8 +285,8 @@ async function setRoom() {
     });
 
     const data = await res.json();
-
-    alert("Status: " + data.Status + "\nRoom: " + data.Room);
+    if(data.Status != "Success"){
+    alert("Status: " + data.Status + "\nRoom: " + data.Room);}
 
     // Backend gives the true chat id:
     currentRoom = data.roomid;

@@ -41,9 +41,12 @@ public class FileHandlerServices {
             this.kafkaProducerServices = kafkaProducerServices;}
 
     public media UploadFile(MultipartFile file,String sender,String chatid) throws IOException{
+        String filename, filepath , Fileid;
         
-        String filepath = storagePath + file.getOriginalFilename();
-        String Fileid;
+        filename = file.getOriginalFilename();
+        int lastDot = filename.lastIndexOf('.');
+        filepath = storagePath + filename.substring(0, lastDot) +"_"+ CommonMethods.getAlphaNumericString()+"."+filename.substring(lastDot + 1) ;
+
         List<String> ids = MediaWebClient.get()
             .uri("/media/idlist")
             .accept(MediaType.APPLICATION_JSON)
@@ -54,7 +57,7 @@ public class FileHandlerServices {
             
         do { Fileid = CommonMethods.getAlphaNumericString(); } // generateunique id
         while (ids.contains(Fileid));
-        media newFile = new media(Fileid, filepath, sender, file.getOriginalFilename(), file.getContentType(), chatid, Timestamp.from(Instant.now()).toString(), false);
+        media newFile = new media(Fileid, filepath, sender, filename, file.getContentType(), chatid, Timestamp.from(Instant.now()).toString(), false);
         kafkaProducerServices.SendMediatoTopic(newFile);
 
         Path dir = Paths.get(storagePath);
