@@ -56,6 +56,14 @@ public class KafkaProducerServices {
         });
     }
 
+    public void sendtoParkQ(media file){
+        CompletableFuture<SendResult<String, Object>> future = template.send("filesparkQ",file.getFiletype(), file);
+        future.whenComplete((result,ex)->{
+            if (ex ==null) logger.info("Sent File details [ "+ file.getName() +"] to parkQ");
+            else System.out.println("Unable to Send Message("+file.getName()+") due to : "+ex.getMessage());
+            
+        });
+    }
     @KafkaListener(topics = "fileack", groupId= "consumer-group")
     public void consume(String filename){
         logger.info("file ["+ filename+"] received.");
@@ -66,17 +74,22 @@ public class KafkaProducerServices {
         ObjectMapper mapper = new ObjectMapper();
         media file = mapper.readValue(payload, media.class);
         
-        if(file.getSenttime()!=null){
-            Instant sentInstant = Instant.parse(file.getSenttime());
+        if(file.getSenttime() != null) {
             Instant now = Instant.now();
-
-            if (Duration.between(sentInstant, now).getSeconds() > 5) {
-                logger.info("File is older than 5 seconds");
-                
+            
+            // Parse the Timestamp string back to Instant
+            Timestamp sentTimestamp = Timestamp.valueOf(file.getSenttime());
+            Instant sentInstant = sentTimestamp.toInstant();
+            
+            if (Duration.between(sentInstant, now).getSeconds() > 3) {
+                logger.info("File is older than 3 seconds");
+                sendtoParkQ(file);
+                return;
             }
-        }
+        } 
         else file.setSenttime(Timestamp.from(Instant.now()).toString());
-        file.setFileid("hijk");
+
+        file.setFileid(CommonMethods.getAlphaNumericString());
 
         logger.info("set new fileid for file ["+file.getName()+"]");
         SendMediatoTopic(file);

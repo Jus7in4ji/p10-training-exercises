@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -41,22 +42,33 @@ public class FileHandlerServices {
             this.kafkaProducerServices = kafkaProducerServices;}
 
     public media UploadFile(MultipartFile file,String sender,String chatid) throws IOException{
-        String filename, filepath , Fileid;
-        
-        filename = file.getOriginalFilename();
-        int lastDot = filename.lastIndexOf('.');
-        filepath = storagePath + filename.substring(0, lastDot) +"_"+ CommonMethods.getAlphaNumericString()+"."+filename.substring(lastDot + 1) ;
+        String filename, filepath , Fileid, randomString;
 
-        List<String> ids = MediaWebClient.get()
+        List<String> ids = new ArrayList<>();
+        randomString = CommonMethods.getAlphaNumericString();
+        ids.add(randomString);
+
+        try {
+            List<String> used_ids = MediaWebClient.get()
             .uri("/media/idlist")
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .bodyToFlux(JsonNode.class)
             .map(node -> node.get("fileid").asText())
             .collectList().block();
-            
+
+            ids.addAll(used_ids);
+        } catch (Exception e) {
+            logger.error("Exception occured : "+ e.toString());
+        }
+       
         do { Fileid = CommonMethods.getAlphaNumericString(); } // generateunique id
         while (ids.contains(Fileid));
+
+        filename = file.getOriginalFilename();
+        int lastDot = filename.lastIndexOf('.');
+        filepath = storagePath + filename.substring(0, lastDot) +"_"+ randomString+"."+filename.substring(lastDot + 1) ;
+
         media newFile = new media(Fileid, filepath, sender, filename, file.getContentType(), chatid, Timestamp.from(Instant.now()).toString(), false);
         kafkaProducerServices.SendMediatoTopic(newFile);
 
