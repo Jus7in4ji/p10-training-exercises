@@ -182,9 +182,15 @@ output application/java
 	</flow>
 	<flow name="InsertDataQuery" doc:id="116b2e51-2f6b-4547-820e-396fc3d7d68e" >
 		<set-variable value="#[{	fileid: payload.id,&#10;    name: payload.name,&#10;    filetype:payload.filetype,&#10;    sender:payload.sender,&#10;    chatid:payload.chat,&#10;    path:payload.path,&#10;    senttime:payload.senttime&#10;}]" doc:name="Set Variable" doc:id="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" variableName="NewFile"/>
-		<db:insert doc:name="Insert file" doc:id="5ec7988e-3509-4838-9f9e-47697272b882" config-ref="Database_Config">
-			<db:sql ><![CDATA[insert into media (fileid,filetype,name,path,chatid,sender,msgread,senttime) values(:id,:ftype,:name,:path,:chatid,:sender,:msgread,:senttime);]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{
+		<db:select doc:name="Check if duplicate exists" doc:id="61b04d18-bec1-4e00-b370-099cf6e4166d" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT 1 FROM media WHERE fileid = :id limit 1;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[id:vars.NewFile.fileid]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="4d64fd38-55b6-4518-b6ba-5d3634e4e83d" >
+			<when expression="isEmpty(payload)">
+				<db:insert doc:name="Insert file" doc:id="5ec7988e-3509-4838-9f9e-47697272b882" config-ref="Database_Config">
+			<db:sql><![CDATA[insert into media (fileid,filetype,name,path,chatid,sender,msgread,senttime) values(:id,:ftype,:name,:path,:chatid,:sender,:msgread,:senttime);]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
 	id:vars.NewFile.fileid,
 	ftype:vars.NewFile.filetype,
 	name: vars.NewFile.name,
@@ -196,35 +202,50 @@ output application/java
 }]]]></db:input-parameters>
 			<db:auto-generated-keys-column-indexes />
 		</db:insert>
-		<kafka:publish doc:name="Publish" doc:id="001eda20-f56f-4f62-99d9-4d17090fa8de" config-ref="Apache_Kafka_Producer_configuration" topic="fileack">
-			<kafka:message ><![CDATA[#[vars.NewFile.name]]]></kafka:message>
+				<kafka:publish doc:name="send ack back to spring " doc:id="001eda20-f56f-4f62-99d9-4d17090fa8de" config-ref="Apache_Kafka_Producer_configuration" topic="fileack">
+			<kafka:message><![CDATA[#[vars.NewFile.name]]]></kafka:message>
 		</kafka:publish>
-		<logger level="INFO" doc:name="Logger" doc:id="0bab9b4e-0856-45ac-9da3-dde63ffb2bf1" message='#["Inserted into table : $(vars.NewFile.name) successfully"]'/>
+				<logger level="INFO" doc:name="Logger" doc:id="0bab9b4e-0856-45ac-9da3-dde63ffb2bf1" message='#["Inserted into table : $(vars.NewFile.name) [$(vars.NewFile.fileid)] successfully"]' />
+				<set-payload value='#["file of id [$(vars.NewFile.fileid)] inserted successfully"]' doc:name="Set Payload" doc:id="afc5f11f-af03-471b-b5c2-14712ed14267" />
+			</when>
+			<otherwise >
+				<flow-ref doc:name="Handle duplicate" doc:id="b3a73e7d-4012-4518-aa2c-2d161dec5f2c" name="MediaDuplicateHandling"/>
+			</otherwise>
+		</choice>
 		<error-handler>
-			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4aad4c20-9f80-4fc4-89fc-d56fb0bae3fc" type="DB:QUERY_EXECUTION">
-				<db:select doc:name="Select" doc:id="5a3b6024-7130-45a9-9548-979633f1141d" config-ref="Database_Config">
-					<db:sql ><![CDATA[SELECT 1 FROM media WHERE fileid = :id AND path <> :path LIMIT 1;
-]]></db:sql>
-					<db:input-parameters ><![CDATA[#[{
-id: vars.NewFile.fileid default "#",
-path: vars.NewFile.path
-}]]]></db:input-parameters>
-				</db:select>
-				<choice doc:name="Choice" doc:id="f750db90-eb1c-498f-ab2c-8b4bb9f32884" >
-					<when expression="isEmpty(payload)">
-						<kafka:publish doc:name="Send to DLQ" doc:id="20a54307-8c79-4801-a278-61bf49eb1fdd" config-ref="Apache_Kafka_Producer_configuration" topic="DLQfiles">
-					<kafka:message><![CDATA[#[vars.NewFile]]]></kafka:message>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a647245c-850a-4a2f-871d-0eb46c8f41bf" type="DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, DB:QUERY_EXECUTION, KAFKA:INVALID_TOPIC_PARTITION, KAFKA:RETRY_EXHAUSTED, KAFKA:SECURITY, KAFKA:TIMEOUT, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED">
+				<kafka:publish doc:name="Send to ParkQ" doc:id="87ac6950-ca55-4e5b-b56e-6d1cea3d1f02" config-ref="Apache_Kafka_Producer_configuration" topic="filesparkQ" >
+					<kafka:message ><![CDATA[#[vars.NewFile]]]></kafka:message>
 				</kafka:publish>
-						<set-payload value='#["error occured. transferring file to dlQ "]' doc:name="Set Payload" doc:id="ac887151-3e34-49e9-bc6d-372eed538295" />
-					</when>
-					<otherwise >
-						<kafka:publish doc:name="Send to RetryQ" doc:id="394088fb-738f-40bb-b7bf-9bbf638fb606" config-ref="retryQ" topic="newid">
-							<kafka:message ><![CDATA[#[vars.NewFile]]]></kafka:message>
-						</kafka:publish>
-						<set-payload value='#["error occured. transferring file to retryQ "]' doc:name="Set Payload" doc:id="a58a5591-35f2-45f4-afed-dcda21509fcd" />
-					</otherwise>
-				</choice>
+				<logger level="INFO" doc:name="Logger" doc:id="98f534ca-5ca1-4a8a-ba9f-f8cc2c06f8af" message='#["sent file $(vars.NewFile.name) to ParkQ"]' />
+				<set-payload value='#["error occured. transferring file to parkQ "]' doc:name="Set Payload" doc:id="777ff25d-436c-494c-a8b8-07704e2526d6" />
 			</on-error-continue>
 		</error-handler>
+	</flow>
+	<flow name="MediaDuplicateHandling" doc:id="b879544d-2e84-4995-908c-cd3ae26967bb" >
+		<db:select doc:name="Select" doc:id="9adc5630-beac-480c-8ca4-8e8d803940d2" config-ref="Database_Config" >
+			<db:sql ><![CDATA[SELECT 1 FROM media WHERE fileid = :id AND path <> :path LIMIT 1;
+]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+id: vars.NewFile.fileid,
+path: vars.NewFile.path
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="c6e7c966-236b-4be0-b182-098a61f58a18" >
+			<when expression="isEmpty(payload)" >
+				<kafka:publish doc:name="Send to ParkQ" doc:id="b2fac007-b710-4e5f-9fc8-7b8b45fd1a72" config-ref="Apache_Kafka_Producer_configuration" topic="filesparkQ" >
+					<kafka:message ><![CDATA[#[vars.NewFile]]]></kafka:message>
+				</kafka:publish>
+				<logger level="INFO" doc:name="Logger" doc:id="d0a45f54-9410-4056-9347-33388bd60f20" message='#["sent file $(vars.NewFile.name) to ParkQ"]'/>
+				<set-payload value='#["error occured. transferring file to parkQ "]' doc:name="Set Payload" doc:id="3f1df7b2-d0af-42aa-afd0-c87c2a6154ef" />
+			</when>
+			<otherwise >
+				<kafka:publish doc:name="Send to RetryQ" doc:id="1ec65864-a458-4dd0-a900-6f55e1637d88" config-ref="retryQ" topic="newid" >
+					<kafka:message ><![CDATA[#[vars.NewFile]]]></kafka:message>
+				</kafka:publish>
+				<logger level="INFO" doc:name="Logger" doc:id="e79e2c52-8001-4282-8955-465e8ae31da5" message='#["sent file $(vars.NewFile.name) to RetryQ"]'/>
+				<set-payload value='#["error occured. transferring file to retryQ "]' doc:name="Set Payload" doc:id="d6e5ae25-e8a5-4ee5-86b8-fb0cf8612f25" />
+			</otherwise>
+		</choice>
 	</flow>
 </mule>
