@@ -26,11 +26,12 @@ import io.swagger.v3.oas.annotations.Hidden;
 @Hidden
 @RestController
 public class Js2JavaRequestController {
+    
     private final WebClient TempMsgWebClient;
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageServicesImpl msgservice;
-
     private final KafkaProducerServices kafkaProducerServices;
+
     public Js2JavaRequestController(
         MessageServicesImpl msgservice, 
         KafkaProducerServices kafkaProducerServices,

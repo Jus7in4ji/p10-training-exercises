@@ -16,8 +16,8 @@ public class WSChatcontroller {
     Logger logger = LoggerFactory.getLogger(WSChatcontroller.class);
 
     private  final SimpMessagingTemplate messagingTemplate;
-
     private final MessageServicesImpl msgservice;
+
     public WSChatcontroller(MessageServicesImpl msgservice, SimpMessagingTemplate messagingTemplate){
         this.msgservice = msgservice;
         this.messagingTemplate = messagingTemplate;
@@ -32,14 +32,14 @@ public class WSChatcontroller {
         }
 
         String room = message.getRoom();
-        if (room!= null) {
-            //save in messages table if text message
-            if (!message.isIsfile()) message.setMsgid(msgservice.Sendmessage(message.getText(), username, room,null));
-            messagingTemplate.convertAndSend("/topic/" + room, message); // send only if roomid is valid
+        switch (room){
+            case null-> logger.error("no room passed");
+            default ->  {
+                //save in messages table if text message
+                if (!message.isIsfile()) message.setMsgid(msgservice.Sendmessage(message.getText(), username, room,null));
+                messagingTemplate.convertAndSend("/topic/" + room, message); // send only if roomid is valid
+            }
         }
-        else {
-            logger.error("no room passed");
-        }        
     }
 
     @MessageMapping("/chat.read")
