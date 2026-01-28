@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Spring4Test",
+            "request": "launch",
+            "mainClass": "com.justinaji.spring4jdk17test.Spring4Test",
+            "projectName": "spring4jdk17test"
+        },
+        {
+            "type": "java",
             "name": "UserChatMicroservice",
             "request": "launch",
             "mainClass": "com.justinaji.chatapp_userchats.UserChatMicroservice",

@@ -30,15 +30,18 @@ public class MessageServicesImpl implements MesageServices{
     private final WebClient userChatsWebClient;
     private final WebClient MediaWebClient;
     private final MessageRepo messageRepo;
+    private final RestClientTest restClientTest;
 
     public MessageServicesImpl( 
         @Qualifier("userChatsWebClient") WebClient userChatsWebClient,
         @Qualifier("MediaWebClient") WebClient MediaWebClient,
-        KafkaProducerServices kafkaProducerServices, 
+        KafkaProducerServices kafkaProducerServices,
+        RestClientTest restClientTest, 
         MessageRepo messageRepo) {
             this.kafkaProducerServices = kafkaProducerServices;
             this.userChatsWebClient = userChatsWebClient;
             this.MediaWebClient = MediaWebClient;
+            this.restClientTest = restClientTest;
             this.messageRepo = messageRepo;
         }
 
@@ -47,11 +50,7 @@ public class MessageServicesImpl implements MesageServices{
         if (username == null || username.trim().isEmpty())return null;
         List<WSmessage> history = new ArrayList<>();
 
-        chats targetchat = userChatsWebClient.get()
-            .uri("/userchat/getchat?chatid=" + chatid) 
-            .retrieve()
-            .bodyToMono(chats.class)
-            .block();
+        chats targetchat = restClientTest.getChat(chatid);
         if (targetchat == null) throw new RuntimeException("Chat not found!");
 
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(targetchat);   
@@ -108,17 +107,10 @@ public class MessageServicesImpl implements MesageServices{
         do { messageId = CommonMethods.getAlphaNumericString(); } // unique chat id
         while (messageRepo.existsById(messageId));
 
-        users sender = userChatsWebClient.get()
-            .uri("/userchat/getuser?username=" + username)
-            .retrieve()
-            .bodyToMono(users.class)
-            .block();
+        users sender = restClientTest.getUser(username);
         if (sender == null) throw new RuntimeException("user not found!");
 
-        chats chat = userChatsWebClient.get()
-            .uri("/userchat/getchat?chatid=" + chatid).retrieve()
-            .bodyToMono(chats.class)
-            .block();        
+        chats chat = restClientTest.getChat(chatid);        
         if (chat == null) throw new RuntimeException("Chat ID not found!");
         
         if (ts == null)ts =  Timestamp.from(Instant.now());
