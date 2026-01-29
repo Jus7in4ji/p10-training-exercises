@@ -10,10 +10,10 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
+import com.justinaji.chatapp_messages.RestClientAPIs.MediaDetails;
+import com.justinaji.chatapp_messages.RestClientAPIs.Userchat;
 import com.justinaji.chatapp_messages.dto.WSmessage;
 import com.justinaji.chatapp_messages.model.chats;
 import com.justinaji.chatapp_messages.model.media;
@@ -27,22 +27,19 @@ public class MessageServicesImpl implements MesageServices{
     Logger logger = LoggerFactory.getLogger(MessageServicesImpl.class);
     
     private final KafkaProducerServices kafkaProducerServices;
-    private final WebClient userChatsWebClient;
-    private final WebClient MediaWebClient;
+    private final MediaDetails MediaDetailsMS;
     private final MessageRepo messageRepo;
-    private final RestClientTest restClientTest;
+    private final Userchat UserchatMS;
 
     public MessageServicesImpl( 
-        @Qualifier("userChatsWebClient") WebClient userChatsWebClient,
-        @Qualifier("MediaWebClient") WebClient MediaWebClient,
         KafkaProducerServices kafkaProducerServices,
-        RestClientTest restClientTest, 
-        MessageRepo messageRepo) {
+        MediaDetails MediaDetailsMS,
+        MessageRepo messageRepo,
+        Userchat UserchatMS ) {
             this.kafkaProducerServices = kafkaProducerServices;
-            this.userChatsWebClient = userChatsWebClient;
-            this.MediaWebClient = MediaWebClient;
-            this.restClientTest = restClientTest;
+            this.MediaDetailsMS = MediaDetailsMS;
             this.messageRepo = messageRepo;
+            this.UserchatMS = UserchatMS;
         }
 
     @Override
@@ -50,7 +47,7 @@ public class MessageServicesImpl implements MesageServices{
         if (username == null || username.trim().isEmpty())return null;
         List<WSmessage> history = new ArrayList<>();
 
-        chats targetchat = restClientTest.getChat(chatid);
+        chats targetchat = UserchatMS.getChat(chatid);
         if (targetchat == null) throw new RuntimeException("Chat not found!");
 
         List<messages> chatMessages = messageRepo.findByChatOrderBySentTimeAsc(targetchat);   
@@ -68,11 +65,7 @@ public class MessageServicesImpl implements MesageServices{
             history.add(dto);
         });
         try {
-            List<media> chatMedia = MediaWebClient.get()
-                .uri("/media/getchatmedia?chatid=" + chatid)
-                .retrieve()
-                .bodyToFlux(media.class)
-                .collectList().block();
+            List<media> chatMedia = MediaDetailsMS.getMedia(chatid);
             if (chatMedia == null) throw new RuntimeException("files not found!");
 
             chatMedia.forEach(file->{
@@ -107,10 +100,10 @@ public class MessageServicesImpl implements MesageServices{
         do { messageId = CommonMethods.getAlphaNumericString(); } // unique chat id
         while (messageRepo.existsById(messageId));
 
-        users sender = restClientTest.getUser(username);
+        users sender = UserchatMS.getUser(username);
         if (sender == null) throw new RuntimeException("user not found!");
 
-        chats chat = restClientTest.getChat(chatid);        
+        chats chat = UserchatMS.getChat(chatid);        
         if (chat == null) throw new RuntimeException("Chat ID not found!");
         
         if (ts == null)ts =  Timestamp.from(Instant.now());

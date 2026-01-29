@@ -12,14 +12,11 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.justinaji.chatapp_messages.RestClientAPIs.MediaDetails;
 import com.justinaji.chatapp_messages.dto.FileDownloadDto;
 import com.justinaji.chatapp_messages.model.media;
 
@@ -33,13 +30,13 @@ public class FileHandlerServices {
     Logger logger = LoggerFactory.getLogger(MessageServicesImpl.class);
 
     private final KafkaProducerServices kafkaProducerServices;
-    private final WebClient MediaWebClient;
+    private final MediaDetails MediaDetailsMS;
 
     public FileHandlerServices(
-        @Qualifier("MediaWebClient") WebClient MediaWebClient,
-        KafkaProducerServices kafkaProducerServices){ 
-            this.MediaWebClient = MediaWebClient;
-            this.kafkaProducerServices = kafkaProducerServices;}
+        KafkaProducerServices kafkaProducerServices,
+        MediaDetails MediaDetailsMS){ 
+            this.kafkaProducerServices = kafkaProducerServices;
+            this.MediaDetailsMS = MediaDetailsMS;}
 
     public media UploadFile(MultipartFile file,String sender,String chatid) throws IOException{
         String filename, filepath , Fileid, randomString;
@@ -49,14 +46,7 @@ public class FileHandlerServices {
         ids.add(randomString);
 
         try {
-            List<String> used_ids = MediaWebClient.get()
-            .uri("/media/idlist")
-            .accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToFlux(JsonNode.class)
-            .map(node -> node.get("fileid").asText())
-            .collectList().block();
-
+            List<String> used_ids = MediaDetailsMS.ListofIds();
             ids.addAll(used_ids);
         } catch (Exception e) {
             logger.error("Exception occured : "+ e.toString());
@@ -80,11 +70,8 @@ public class FileHandlerServices {
     }
 
     public FileDownloadDto DownloadFile(String fileid) throws IOException {
-        media mediaFile = MediaWebClient.get()
-            .uri("/media/getfile?id=" + fileid)
-            .retrieve()
-            .bodyToMono(media.class)
-            .block();
+        
+        media mediaFile = MediaDetailsMS.getFile(fileid);
         if (mediaFile == null) throw new RuntimeException("file not found!");
 
         String filepath = mediaFile.getPath();

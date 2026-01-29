@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
 
+import com.justinaji.chatapp_messages.RestClientAPIs.TempMsgs;
 import com.justinaji.chatapp_messages.dto.TempMsg;
 import com.justinaji.chatapp_messages.dto.WSmessage;
 import com.justinaji.chatapp_messages.service.CommonMethods;
@@ -27,18 +27,18 @@ import io.swagger.v3.oas.annotations.Hidden;
 @RestController
 public class Js2JavaRequestController {
     
-    private final WebClient TempMsgWebClient;
+    private final TempMsgs tempMsgMS;
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageServicesImpl msgservice;
     private final KafkaProducerServices kafkaProducerServices;
 
     public Js2JavaRequestController(
+        TempMsgs tempMsgMS,
         MessageServicesImpl msgservice, 
         KafkaProducerServices kafkaProducerServices,
-        SimpMessagingTemplate messagingTemplate,
-        WebClient TempMsgWebClient){
+        SimpMessagingTemplate messagingTemplate){
+            this.tempMsgMS = tempMsgMS;
             this.msgservice = msgservice;
-            this.TempMsgWebClient = TempMsgWebClient;
             this.messagingTemplate = messagingTemplate;
             this.kafkaProducerServices = kafkaProducerServices;
         }
@@ -59,11 +59,7 @@ public class Js2JavaRequestController {
         String details = "Messages retrieved and sent successfully";
         try {
             //retrieve messages from in memory db 
-            List<TempMsg> temps = TempMsgWebClient.get()
-                    .uri("/temp/returnchats?sender="+sendername)
-                    .retrieve()
-                    .bodyToFlux(TempMsg.class)
-                    .collectList().block();
+            List<TempMsg> temps = tempMsgMS.getTempMessages(sendername);
             if (temps == null) throw new RuntimeException("Temp messages not found!");
 
             DateTimeFormatter dbFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");

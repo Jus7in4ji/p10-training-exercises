@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TempMsg {
-    private int id;
     private String sender, chatid, message;
     private Timestamp senttime;
     private String formattedtime;

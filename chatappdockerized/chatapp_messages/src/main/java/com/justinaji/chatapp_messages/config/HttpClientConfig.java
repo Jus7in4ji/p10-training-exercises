@@ -1,17 +1,20 @@
 package com.justinaji.chatapp_messages.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.support.RestClientAdapter;
-import org.springframework.web.service.invoker.HttpServiceProxyFactory;
+import org.springframework.web.service.registry.ImportHttpServices;
 
-import com.justinaji.chatapp_messages.service.RestClientTest;
+import com.justinaji.chatapp_messages.RestClientAPIs.MediaDetails;
+import com.justinaji.chatapp_messages.RestClientAPIs.TempMsgs;
+import com.justinaji.chatapp_messages.RestClientAPIs.Userchat;
 
 @Configuration
+@ImportHttpServices(Userchat.class)
+@ImportHttpServices(MediaDetails.class)
+@ImportHttpServices(TempMsgs.class)
 public class HttpClientConfig {
     
-    @Bean
+/*
+   @Bean
     public RestClientTest serChatsClient() {
         RestClient restClient = RestClient.builder()
             .baseUrl("http://your-service-url")
@@ -22,4 +25,5 @@ public class HttpClientConfig {
         
         return factory.createClient(RestClientTest.class);
     }
+*/
 }

@@ -346,10 +346,6 @@ function markMessageAsRead(msgId) {
         const tickElement = messageElement.querySelector(".tick");
         if (tickElement) {
             tickElement.style.color = "#008000"; // green tick
-            console.log("tick found");
-        }
-        else {
-            console.log("no tick found");
         }
     }
 }
