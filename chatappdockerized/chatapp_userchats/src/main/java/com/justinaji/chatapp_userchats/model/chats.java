@@ -15,7 +15,9 @@ import lombok.NoArgsConstructor;
 @Entity
 public class chats {
     @Id
-    private String c_id;
+    @Column(name = "c_id")
+    private String chatId;
+
     private String name;
     
     @ManyToOne

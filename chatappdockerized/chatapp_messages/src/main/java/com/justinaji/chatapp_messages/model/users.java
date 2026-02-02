@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 @Entity
 public class users {
     @Id
-    private String u_id;
+    @Column(name = "u_id")
+    private String userId;
 
     @Column(nullable = false)
     private String email;

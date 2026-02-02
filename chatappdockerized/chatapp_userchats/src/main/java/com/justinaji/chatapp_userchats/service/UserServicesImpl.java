@@ -6,13 +6,13 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.justinaji.chatapp_userchats.dto.SignUp;
 import com.justinaji.chatapp_userchats.exception.Username_taken;
 import com.justinaji.chatapp_userchats.model.Logs;
 import com.justinaji.chatapp_userchats.model.chats;
@@ -45,32 +45,39 @@ public class UserServicesImpl implements UserServices {
     }
 
 
-    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
+    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
     Logger logger = LoggerFactory.getLogger(UserServicesImpl.class);
 
     @Override
     @Transactional
-    public String RegisterUser(users user) {
+    public String RegisterUser(SignUp signUp) {
+        String name , email , password;
+        name = signUp.getUsername();
+        email = signUp.getEmail();
+        password = signUp.getPassword();
 
-        if (user.getEmail() == null || user.getEmail().isEmpty() ||
-            user.getPassword() == null || user.getPassword().isEmpty()) {
+        if (email == null || email.isEmpty() ||
+            signUp.getPassword() == null || signUp.getPassword().isEmpty()) {
             return "Email and password both must be filled";
         }
-        if (urepo.existsByEmail(user.getEmail())) return "User with the given email id already Exists";
-        if (chatRepo.existsByName(user.getName())|| urepo.existsByName(user.getName())) throw new Username_taken();
+        if (urepo.existsByEmail(email)) return "User with the given email id already Exists";
+        if (chatRepo.existsByName(name)|| urepo.existsByName(name)) throw new Username_taken();
 
         String randomId;
         do { randomId = CommonMethods.getAlphaNumericString(); } 
         while (urepo.existsById(randomId));
+        users user = new users();
 
-        user.setU_id(randomId);
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        user.setEmail(email);
+        user.setName(name);
+        user.setUserId(randomId);
+        user.setPassword(bCryptPasswordEncoder.encode(password));
         users savedUser = urepo.save(user);// save user w new id and encrypted password
 
         List<users> allUsers = urepo.findAll();
         allUsers.stream()
-            .filter(otherUser-> !otherUser.getU_id().equals(savedUser.getU_id()))
+            .filter(otherUser-> !otherUser.getUserId().equals(savedUser.getUserId()))
             .forEach(otherUser->{
         
                 String chatId;
@@ -78,7 +85,7 @@ public class UserServicesImpl implements UserServices {
                 while (chatRepo.existsById(chatId));
 
                 chats chat = new chats(); //new 1-1 chat 
-                chat.setC_id(chatId);
+                chat.setChatId(chatId);
                 chat.setChat_key(CommonMethods.generateKey());
                 chatRepo.save(chat);
 
@@ -97,10 +104,10 @@ public class UserServicesImpl implements UserServices {
         do { logid = CommonMethods.getAlphaNumericString(); } 
         while (logrepo.existsById(logid));
 
-        Logs l = new Logs(logid, "Sign up", "New User '"+user.getName()+"' has Signed up.", new Timestamp(System.currentTimeMillis()), user);
+        Logs l = new Logs(logid, "Sign up", "New User '"+name+"' has Signed up.", new Timestamp(System.currentTimeMillis()), user);
         logrepo.save(l);
-        logger.info("user "+user.getName()+" registered ");
-        return "New user '" + user.getEmail() + "' registered successfully";
+        logger.info("user "+name+" registered ");
+        return "New user '" + email + "' registered successfully";
     }
 
     @Override

@@ -3,8 +3,8 @@ package com.justinaji.chatapp_messages.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 @Entity
 public class chats {
     @Id
-    private String c_id;
+    @Column(name = "c_id")
+    private String chatId;
     private String name;
     
     @ManyToOne

@@ -91,7 +91,7 @@ public class ChatServicesImpl implements ChatServices {
 
     @Override
     public String getChats() {
-        String uid = CommonMethods.getCurrentUser().getU_id();  //to fetch userid 
+        String uid = CommonMethods.getCurrentUser().getUserId();  //to fetch userid 
         users u = urepo.findById(uid).orElseThrow(() -> new RuntimeException("User id not found: "));
         
         List<members> membershipList = memberRepo.findByMember(u); //find chats the user is part of 
@@ -108,7 +108,7 @@ public class ChatServicesImpl implements ChatServices {
                 List<members> twoUsers = memberRepo.findByChat(c);
                 users other = twoUsers.stream()
                         .map(memb -> memb.getMember())
-                        .filter(member -> !member.getU_id().equals(uid))
+                        .filter(member -> !member.getUserId().equals(uid))
                         .findFirst()
                         .orElse(null); 
 
@@ -284,7 +284,7 @@ public class ChatServicesImpl implements ChatServices {
                 if (loggedInMember == null) result.put("Status",  username+" is not a member of "+chatname+".");
                 else{
                     result.put("Status",  "Success");
-                    result.put("roomid", currentChat.getC_id());
+                    result.put("roomid", currentChat.getChatId());
                 }
             }
             else result.put("Status","No Chat of name "+chatname+" exists.");
@@ -307,7 +307,7 @@ public class ChatServicesImpl implements ChatServices {
                         .filter(mchat-> !mchat.isIsgroup())
                         .findFirst().orElse(null); 
                     result.put("Status",  "Success");
-                    result.put("roomid", privatechat.getC_id());
+                    result.put("roomid", privatechat.getChatId());
                     }
             }
             else result.put("Status","No User of name "+chatname+" exists.");

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class chats {
-    private String c_id;
+    private String chatId;
     private String name;
     
     private users createdBy;   
