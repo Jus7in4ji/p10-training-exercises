@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class Loginform {
+public sealed class Loginform permits SignUp{
     private String username;
     private String password;
 }

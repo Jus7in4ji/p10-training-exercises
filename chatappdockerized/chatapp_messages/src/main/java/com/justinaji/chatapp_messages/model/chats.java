@@ -17,6 +17,7 @@ public class chats {
     @Id
     @Column(name = "c_id")
     private String chatId;
+    
     private String name;
     
     @ManyToOne

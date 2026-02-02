@@ -1,12 +1,12 @@
 package com.justinaji.chatapp_userchats.controller;
 
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.justinaji.chatapp_userchats.dto.Loginform;
-import com.justinaji.chatapp_userchats.model.users;
+import com.justinaji.chatapp_userchats.dto.SignUp;
 import com.justinaji.chatapp_userchats.service.UserServicesImpl;
 
 
@@ -21,11 +21,13 @@ public class UserController {
     }
 
     @PostMapping("/SignUp")
-    public String signup( @RequestBody users user) {
-        return userservice.RegisterUser(user);
+    public String signup( @RequestBody SignUp signUp) {
+        return userservice.RegisterUser(signUp);
     }
+
     
-    @PostMapping("/login")
+
+    @PostMapping( "/login")
     public String login(@RequestBody Loginform user) {
         return userservice.login(user.getUsername(),user.getPassword());
     }
