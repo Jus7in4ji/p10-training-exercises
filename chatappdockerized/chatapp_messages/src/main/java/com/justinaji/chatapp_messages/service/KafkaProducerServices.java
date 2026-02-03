@@ -64,9 +64,9 @@ public class KafkaProducerServices {
             
         });
     }
-    @KafkaListener(topics = "fileack", groupId= "consumer-group")
+    @KafkaListener(topics = "fileack", groupId= "fileack-group")
     public void consume(String filename){
-        logger.info("file ["+ filename+"] received.");
+        logger.info("Receieved file: "+filename);
     }
 
     @KafkaListener(topics = "newid", groupId= "consumer-group")
