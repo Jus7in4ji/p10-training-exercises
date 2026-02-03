@@ -81,7 +81,7 @@ VALUES (:sender,:chatid,:message,:senttime);
 		</db:insert>
 		<set-payload value='#["Data inserted successfully"]' doc:name="Set Payload" doc:id="93f553e3-8241-4a10-b7a1-a2cbeba8419b" />
 		<error-handler>
-			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="567e2a9f-d417-4b71-ba7f-a50b4194f6d0">
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="567e2a9f-d417-4b71-ba7f-a50b4194f6d0" type="DB:CONNECTIVITY, DB:RETRY_EXHAUSTED">
 				<logger level="ERROR" doc:name="Logger" doc:id="146a6dbb-438d-4acb-ad05-b47efcd57886" message="#[output text/plain --- error.description]" />
 			</on-error-continue>
 		</error-handler>
