@@ -231,6 +231,7 @@ output application/java
 					<db:sql ><![CDATA[insert into delayed_acks (name) values(:name);]]></db:sql>
 					<db:input-parameters ><![CDATA[#[name : vars.NewFile.name]]]></db:input-parameters>
 				</db:insert>
+				<logger level="INFO" doc:name="Logger" doc:id="f4f8e183-1c96-4214-be1f-e054ec2ae306" message='#["Kafka error. delay in sending file ack"]'/>
 				<set-payload value='#["ack not sent . file sent to delayed_acks table"]' doc:name="Set Payload" doc:id="670ad0a7-06a3-486a-be8b-1bbb6d1bdc69" />
 			</on-error-continue>
 		</error-handler>
@@ -272,7 +273,7 @@ path: vars.NewFile.path
 		</db:select>
 		<choice doc:name="Choice" doc:id="c6e7c966-236b-4be0-b182-098a61f58a18" >
 			<when expression="isEmpty(payload)" >
-				<logger level="INFO" doc:name="Logger" doc:id="d0a45f54-9410-4056-9347-33388bd60f20" message='#["sent file $(vars.NewFile.name) to ParkQ"]'/>
+				<logger level="INFO" doc:name="Logger" doc:id="d0a45f54-9410-4056-9347-33388bd60f20" message='#["Found true duplicate $(vars.NewFile.name) . file ignored"]'/>
 				<set-payload value='#["True duplcate found  "]' doc:name="Set Payload" doc:id="3f1df7b2-d0af-42aa-afd0-c87c2a6154ef" />
 			</when>
 			<otherwise >
