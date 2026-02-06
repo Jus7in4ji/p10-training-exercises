@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<error-handler name="Error_Handler" doc:id="de1363ea-790d-454a-adc6-d36631bbf912" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f03cc504-6518-4d9c-9066-2909a167e993" type="FILE:ILLEGAL_PATH">
+			<set-payload value='#["There appears to be no file in the given path. Please make sure the filename is accurate"]' doc:name="Set Payload" doc:id="3eadccf3-e4a2-412d-968d-4a3da1935e93" />
+		</on-error-continue>
+	</error-handler>
+</mule>

@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
 	<http:listener-config name="fileops_88" doc:name="HTTP Listener config" doc:id="435975b4-0aad-48c9-b10b-290da332f64e" >
 		<http:listener-connection host="0.0.0.0" port="8088" />
 	</http:listener-config>
 	<file:config name="File_Config" doc:name="File Config" doc:id="aa0e3061-67bb-4030-9706-2f9463c2d73e" >
 		<file:connection workingDir="C:\Users\justi\Documents\Git projects\p10-training-exercises\chatappdockerized\storage\fileops" />
 	</file:config>
+	<configuration doc:name="Configuration" doc:id="58f177bd-8b7c-45e4-8633-cd1a694605d2" defaultErrorHandler-ref="Error_Handler" />
+	<http:listener-config name="HTTP_Listener_config_new" doc:name="HTTP Listener config" doc:id="976cd8ab-bbd1-4d8b-ac55-dfeddbd50efc" >
+		<http:listener-connection host="0.0.0.0" port="8089" />
+	</http:listener-config>
 	<flow name="FileREAD" doc:id="cbea3a6e-6325-4f23-86b4-5a68932855b0" >
-		<http:listener doc:name="Listener" doc:id="1e6e5e0e-01c8-4a0b-a0ac-604c5ad9e014" config-ref="fileops_88" path="/files/read" allowedMethods="GET" />
+		<http:listener doc:name="Listener" doc:id="1e6e5e0e-01c8-4a0b-a0ac-604c5ad9e014" config-ref="HTTP_Listener_config_new" path="/files/read" allowedMethods="GET" />
 		<set-variable value='#[attributes.queryParams.filename default "#"]' doc:name="Set Variable" doc:id="0b49e59e-8228-4875-98e8-c70994705f8c" variableName="filename"/>
 		<file:read doc:name="Read" doc:id="d2184de9-c1cb-40fe-8604-7dd6fc831eb1" config-ref="File_Config" path='#[vars.filename]'/>
 		<ee:transform doc:name="Transform Message" doc:id="f4e1a8bc-4b36-4749-993c-cd54ad93c368" >
@@ -25,14 +30,9 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<file:write doc:name="Write" doc:id="6299955b-5e13-4c71-be04-e992dcc50dd7" config-ref="File_Config" path="recentlyreadfile.txt"/>
-		<error-handler >
-			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="ee153705-f49f-4492-9fa4-4d60c7ead558" type="FILE:ILLEGAL_PATH">
-				<set-payload value='#["There appears to be no file in the given path. Please make sure the netered filename is accurate"]' doc:name="Set Payload" doc:id="1af75603-0bc6-41d7-b3c2-2238000df10b" />
-			</on-error-continue>
-		</error-handler>
 	</flow>
 	<flow name="FileWRITE" doc:id="7ef7bedd-ef7f-4820-a7bf-ebe772cedebb" >
-		<http:listener doc:name="Listener" doc:id="36afd092-a30b-40ed-99e3-7d29a9decd05" allowedMethods="POST" path="/files/write" config-ref="fileops_88"/>
+		<http:listener doc:name="Listener" doc:id="36afd092-a30b-40ed-99e3-7d29a9decd05" allowedMethods="POST" path="/files/write" config-ref="HTTP_Listener_config_new"/>
 		<set-variable value="#[%dw 2.0&#10;output application/java&#10;---&#10;{&#10;  name: attributes.queryParams.filename,&#10;  content: payload.content&#10;}]" doc:name="Set Variable" doc:id="b7f74e39-80ff-4eeb-ae08-93eea6fc7ebd" variableName="filewrite"/>
 		<file:write doc:name="Write" doc:id="f0294c67-7c78-4336-8082-b1309419c97a" config-ref="File_Config" path="#[vars.filewrite.name]">
 			<file:content ><![CDATA[#[vars.filewrite.content]]]></file:content>
@@ -40,18 +40,13 @@ payload]]></ee:set-payload>
 		<set-payload value='#["Content written to file $(vars.filewrite.name)"]' doc:name="Set Payload" doc:id="6d4a68de-8eb7-4176-9d53-d23e8b90b040" />
 	</flow>
 	<flow name="fileoperationstestFlow" doc:id="39378a7e-4270-48ba-bdae-103c0ed87cb0">
-		<http:listener doc:name="Listener" doc:id="028a788e-6ad3-4eba-85a7-0638f05ba8b8" config-ref="fileops_88" allowedMethods="DELETE" path="/files/delete"/>
+		<http:listener doc:name="Listener" doc:id="028a788e-6ad3-4eba-85a7-0638f05ba8b8" config-ref="HTTP_Listener_config_new" allowedMethods="DELETE" path="/files/delete"/>
 		<set-variable value='#[attributes.queryParams.filename default "#"]' doc:name="Set Variable" doc:id="9df04670-cd58-40ef-817d-2ea91e6f3b3d" variableName="filename"/>
 		<file:delete doc:name="Delete" doc:id="b7a5e9c7-fb61-43b3-9b7f-575713bde9f4" config-ref="File_Config" path="#[vars.filename]"/>
 		<set-payload value='#["$(vars.filename) deleted successfuly "]' doc:name="Set Payload" doc:id="f57ea902-fb25-4405-aa5b-26865a1f08e0" />
-		<error-handler >
-			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a55b661c-24ce-4d26-8d62-e7bbdcd61e64" type="FILE:ILLEGAL_PATH" >
-				<set-payload value='#["There appears to be no file in the given path. Please make sure the netered filename is accurate"]' doc:name="Set Payload" doc:id="f900dfff-fd43-41de-8bd3-97e45358000f" />
-			</on-error-continue>
-		</error-handler>
 	</flow>
 	<flow name="ListFiles" doc:id="fcc78d22-14af-42be-ac20-0c3a3e6834d9" >
-		<http:listener doc:name="Listener" doc:id="a4a6fbbd-299d-43ab-aca4-815c16fd8822" config-ref="fileops_88" path="/files/listall"/>
+		<http:listener doc:name="Listener" doc:id="a4a6fbbd-299d-43ab-aca4-815c16fd8822" config-ref="HTTP_Listener_config_new" path="/files/listall"/>
 		<file:list doc:name="List" doc:id="66e8707a-b2d1-46ad-93df-2dd030147338" config-ref="File_Config" directoryPath="."/>
 		<ee:transform doc:name="Transform Message" doc:id="d840c6a3-b33f-4fbe-96bd-43ead1a4e3d6" >
 			<ee:message >
@@ -66,14 +61,5 @@ payload map {
 ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-	</flow>
-	<flow name="LogUpdates" doc:id="875af8d3-49a3-43ff-8aae-ad6dad687e6f" >
-		<file:listener doc:name="On New or Updated File" doc:id="3d46dbbc-83de-476c-ae73-c54b145d0a80" config-ref="File_Config" watermarkMode="MODIFIED_TIMESTAMP">
-			<scheduling-strategy >
-				<fixed-frequency />
-			</scheduling-strategy>
-			<file:matcher filenamePattern="*.txt" />
-		</file:listener>
-		<logger level="INFO" doc:name="Logger" doc:id="3ba3ac62-54bc-478d-8694-f9c69d3a0822" message='#[%dw 2.0&#10;output application/java&#10;---&#10;attributes.fileName ++ ": " ++ payload]'/>
 	</flow>
 </mule>

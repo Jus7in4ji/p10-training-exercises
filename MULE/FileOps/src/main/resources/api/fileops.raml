@@ -1,0 +1,75 @@
+#%RAML 1.0
+title: File Operations API
+version: v1
+baseUri: /api
+mediaType: application/json
+
+/files:
+  /read:
+    get:
+      description: Read a file from the file system
+      queryParameters:
+        filename:
+          type: string
+          required: true
+          description: Name of the file to read
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                content: "file content here"
+        404:
+          body:
+            application/json:
+              example:
+                error: "File not found"
+
+  /write:
+    post:
+      description: Write content to a file
+      queryParameters:
+        filename:
+          type: string
+          required: true
+          description: Name of the file to write
+      body:
+        application/json:
+          example:
+            content: "Hello world"
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                message: "Content written to file test.txt"
+
+  /delete:
+    delete:
+      description: Delete a file
+      queryParameters:
+        filename:
+          type: string
+          required: true
+          description: Name of the file to delete
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                message: "file deleted successfully"
+
+  /listall:
+    get:
+      description: List all files in the directory
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                - name: "file1.txt"
+                  path: "./file1.txt"
+                  size: "120 bytes"
+                - name: "file2.txt"
+                  path: "./file2.txt"
+                  size: "300 bytes"

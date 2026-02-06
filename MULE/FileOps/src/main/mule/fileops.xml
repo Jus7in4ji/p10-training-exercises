@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+    <apikit:config name="fileops-config" api="fileops.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="fileops-main">
+        <http:listener path="/api/*" config-ref="fileops_88">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="fileops-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="fileops-console">
+        <http:listener path="/console/*" config-ref="fileops_88">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="fileops-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="READ_File">
+		<set-variable value='#[attributes.queryParams.filename default "#"]' doc:name="Set Variable" doc:id="c8a90583-b384-4d6c-9967-b877585bfeb2" variableName="filename" />
+		<file:read doc:id="d8ca54ce-d68f-4fc3-a3ef-082c73a794ec" config-ref="File_Config" path="#[vars.filename]" doc:name="Read from file" />
+		<ee:transform doc:name="Display contents" doc:id="53bdb253-5446-48aa-beb3-4c318e94068b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<file:write doc:id="6165a033-2598-440b-a01c-4c4f6bbdab5f" config-ref="File_Config" path="recentlyreadfile.txt" doc:name="Copy onto recentlyreadfile.txt" />
+    </flow>
+	<flow name="WRITE_File">
+		<set-variable value="#[%dw 2.0&#10;output application/java&#10;---&#10;{&#10;  name: attributes.queryParams.filename,&#10;  content: payload.content&#10;}]" doc:name="" doc:id="6618cb3b-99d6-4247-a1d8-7a837a80a862" variableName="filewrite" />
+		<file:write doc:id="3e40c2bc-aa6a-4621-8ff0-3681f39aad59" config-ref="File_Config" path="#[vars.filewrite.name]" doc:name="Write" >
+			<file:content ><![CDATA[#[vars.filewrite.content]]]></file:content>
+		</file:write>
+		<set-payload value='#["Content written to file $(vars.filewrite.name)"]' doc:name="Final output" doc:id="75108e47-0aae-4503-8643-4052619a8bd8" />
+    </flow>
+	<flow name="DELETE_File">
+		<set-variable value='#[attributes.queryParams.filename default "#"]' doc:name="Set Variable" doc:id="7c8b7bf5-bc7c-4b15-9f3e-084fcc2a6b02" variableName="filename" />
+		<file:delete doc:id="65d856af-39db-4e7c-9a71-cef319dc5dc6" config-ref="File_Config" path="#[vars.filename]" doc:name="Delete" />
+		<set-payload value='#["$(vars.filename) deleted successfuly "]' doc:name="Final output" doc:id="ff1fc2bf-b011-4348-afed-c9698acab44a" />
+    </flow>
+	<flow name="LIST_Files">
+		<file:list doc:id="4de5c320-5fa5-46bc-b197-dcddd8fb7d1d" config-ref="File_Config" directoryPath="." doc:name="List from home directory" />
+		<ee:transform doc:name="Extract name,path and size" doc:id="a48b7856-e9d3-462a-b669-cbd3e729fcda" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+  name: $.attributes.fileName,
+  path: $.attributes.path,
+  size: $.attributes.size default 0  ++ " bytes"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+	<flow name="LogUpdates" doc:id="82a5da88-8804-4c45-b23e-c2a9a0ece3e2" >
+		<file:listener doc:name="On New or Updated File" doc:id="25e7ac9d-1fa5-4433-baa9-72f316cc0dbf" config-ref="File_Config" watermarkMode="MODIFIED_TIMESTAMP" >
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+			<file:matcher filenamePattern="*.txt" />
+		</file:listener>
+		<logger level="INFO" doc:name="Log changes" doc:id="1392b966-5b8d-4bcd-93cd-40324d251f88" message='#[%dw 2.0&#10;output application/java&#10;---&#10;attributes.fileName ++ ": " ++ payload]' />
+	</flow>
+</mule>
