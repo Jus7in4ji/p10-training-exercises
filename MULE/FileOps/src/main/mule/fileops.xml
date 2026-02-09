@@ -121,7 +121,7 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="READ_File">
+    <flow name="get:\files\read">
 		<set-variable value='#[attributes.queryParams.filename default "#"]' doc:name="Set Variable" doc:id="c8a90583-b384-4d6c-9967-b877585bfeb2" variableName="filename" />
 		<file:read doc:id="d8ca54ce-d68f-4fc3-a3ef-082c73a794ec" config-ref="File_Config" path="#[vars.filename]" doc:name="Read from file" />
 		<ee:transform doc:name="Display contents" doc:id="53bdb253-5446-48aa-beb3-4c318e94068b" >
@@ -134,19 +134,19 @@ payload]]></ee:set-payload>
 		</ee:transform>
 		<file:write doc:id="6165a033-2598-440b-a01c-4c4f6bbdab5f" config-ref="File_Config" path="recentlyreadfile.txt" doc:name="Copy onto recentlyreadfile.txt" />
     </flow>
-	<flow name="WRITE_File">
+	<flow name="post:\files\write">
 		<set-variable value="#[%dw 2.0&#10;output application/java&#10;---&#10;{&#10;  name: attributes.queryParams.filename,&#10;  content: payload.content&#10;}]" doc:name="" doc:id="6618cb3b-99d6-4247-a1d8-7a837a80a862" variableName="filewrite" />
 		<file:write doc:id="3e40c2bc-aa6a-4621-8ff0-3681f39aad59" config-ref="File_Config" path="#[vars.filewrite.name]" doc:name="Write" >
 			<file:content ><![CDATA[#[vars.filewrite.content]]]></file:content>
 		</file:write>
 		<set-payload value='#["Content written to file $(vars.filewrite.name)"]' doc:name="Final output" doc:id="75108e47-0aae-4503-8643-4052619a8bd8" />
     </flow>
-	<flow name="DELETE_File">
+	<flow name="delete:\files\delete">
 		<set-variable value='#[attributes.queryParams.filename default "#"]' doc:name="Set Variable" doc:id="7c8b7bf5-bc7c-4b15-9f3e-084fcc2a6b02" variableName="filename" />
 		<file:delete doc:id="65d856af-39db-4e7c-9a71-cef319dc5dc6" config-ref="File_Config" path="#[vars.filename]" doc:name="Delete" />
 		<set-payload value='#["$(vars.filename) deleted successfuly "]' doc:name="Final output" doc:id="ff1fc2bf-b011-4348-afed-c9698acab44a" />
     </flow>
-	<flow name="LIST_Files">
+	<flow name="get:\files\listall">
 		<file:list doc:id="4de5c320-5fa5-46bc-b197-dcddd8fb7d1d" config-ref="File_Config" directoryPath="." doc:name="List from home directory" />
 		<ee:transform doc:name="Extract name,path and size" doc:id="a48b7856-e9d3-462a-b669-cbd3e729fcda" >
 			<ee:message >
