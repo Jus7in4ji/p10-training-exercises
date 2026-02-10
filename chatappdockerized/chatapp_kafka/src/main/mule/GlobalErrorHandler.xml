@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:kafka="http://www.mulesoft.org/schema/mule/kafka"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/kafka/current/mule-kafka.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<error-handler name="Error_Handler" doc:id="cd06d523-1961-4cfd-a04b-a91fc71533e7" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="Send to parkQ" doc:id="c045b05b-9da4-46f0-ba1d-db1adacef97d" type="DB:QUERY_EXECUTION" >
+			<kafka:publish doc:name="Send to ParkQ" doc:id="9692b4cb-3d00-46de-be06-dc12f883b89f" config-ref="Apache_Kafka_Producer_configuration" topic="filesparkQ" >
+				<kafka:message ><![CDATA[#[vars.NewFile]]]></kafka:message>
+			</kafka:publish>
+			<logger level="INFO" doc:name="Logger" doc:id="014f747d-a05e-4d2c-be47-e247d000e59a" message='#["sent file $(vars.NewFile.name) to ParkQ"]' />
+			<set-payload value='#["error occured. transferring file to parkQ "]' doc:name="Set Payload" doc:id="3fb95994-6109-4828-bb48-4cf4a72ed121" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="send acks to db" doc:id="439678fb-398f-4915-9c1c-56d9bfdc96ff" type="KAFKA:CONNECTIVITY, KAFKA:RETRY_EXHAUSTED, KAFKA:SECURITY, KAFKA:TIMEOUT" >
+			<db:insert doc:name="Send to delayed_acks table" doc:id="84545713-345e-4ffa-adae-9c881f12ae5e" config-ref="Database_Config" >
+				<db:sql ><![CDATA[insert into delayed_acks (name) values(:name);]]></db:sql>
+				<db:input-parameters ><![CDATA[#[name : vars.NewFile.name]]]></db:input-parameters>
+			</db:insert>
+			<logger level="INFO" doc:name="Logger" doc:id="b8e441ad-9eae-4b70-8192-2481fd99710f" message='#["Kafka error. delay in sending file ack"]' />
+			<set-payload value='#["ack not sent . file sent to delayed_acks table"]' doc:name="Set Payload" doc:id="afba5405-f502-4282-9b44-208e4015e728" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="Log Errors" doc:id="2bcfaae9-042a-4ac0-97be-b14993fe54e1" type="ANY">
+			<logger level="WARN" doc:name="Logger" doc:id="07a1771e-b47a-4abe-86c8-48861caac207" message='#["error handled and logged"]'/>
+		</on-error-continue>
+	</error-handler>
+</mule>

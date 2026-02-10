@@ -122,50 +122,6 @@ assert_expression_payload::main({payload: payload, attributes: attributes, vars:
 			</munit-tools:verify-call>
 		</munit:validation>
 	</munit:test>
-	<munit:test name="InsertDataKafkaMessage-test" doc:id="120cc781-b3c3-4b45-b74f-035259b9350b" >
-		<munit:behavior >
-			<munit-tools:spy doc:name="Spy Convert binary to Application/java" doc:id="28df61ca-fc51-4b36-813e-8b6212032315" processor="ee:transform">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="a1d7a298-420c-4741-8e28-e667e0c0a852" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-				<munit-tools:before-call >
-					<munit-tools:assert doc:name="Assert payload" doc:id="6bb30616-6b03-4458-9d9e-2c033893a245" message="The payload does not match">
-						<munit-tools:that ><![CDATA[#[%dw 2.0
-import InsertDataKafkaMessagetest::spy_assert_payload2
----
-spy_assert_payload2::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
-					</munit-tools:assert>
-				</munit-tools:before-call>
-				<munit-tools:after-call >
-					<munit-tools:assert doc:name="Assert payload" doc:id="21429a7b-328c-4053-b921-e5da18463e0c" message="The payload does not match">
-						<munit-tools:that ><![CDATA[#[%dw 2.0
-import InsertDataKafkaMessagetest::spy_assert_payload3
----
-spy_assert_payload3::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
-					</munit-tools:assert>
-				</munit-tools:after-call>
-			</munit-tools:spy>
-			<munit:set-event doc:name="Set Input" doc:id="60963db0-9d77-4886-995d-b2c7b643a024" >
-				<munit:payload value="#[readUrl('classpath://InsertDataKafkaMessagetest\set-event_payload1.dwl')]" encoding="UTF-8" />
-				<munit:attributes value="#[readUrl('classpath://InsertDataKafkaMessagetest\set-event_attributes1.dwl')]" />
-			</munit:set-event>
-		</munit:behavior>
-		<munit:execution >
-			<flow-ref doc:name="Flow-ref to InsertDataKafkaMessage" doc:id="f07e6e3d-15a1-459c-8b5b-7346616bd5f7" name="InsertDataKafkaMessage"/>
-		</munit:execution>
-		<munit:validation >
-			<munit-tools:verify-call doc:name="Verify DB insert Subflow" doc:id="50242218-3675-44d6-8985-7fbaaafd2cc7" processor="flow-ref" times="1">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="ca79959c-dfbf-427a-8c58-1ca5597f9bce" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-			</munit-tools:verify-call>
-			<munit-tools:verify-call doc:name="Verify Convert binary to Application/java" doc:id="c5ba0c0a-b0c4-4f2f-a2b8-2c69a02107ed" processor="ee:transform" times="1">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="a1d7a298-420c-4741-8e28-e667e0c0a852" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-			</munit-tools:verify-call>
-		</munit:validation>
-	</munit:test>
 	<munit:test name="GetAllFromUser-test" doc:id="574cb204-00fc-44f1-b3ec-e5e67291da1c" >
 		<munit:behavior >
 			<munit-tools:mock-when doc:name="Mock Find all messages by a user" doc:id="193b4853-1a6f-480e-a193-9ca6c126a43b" processor="db:select">
@@ -394,58 +350,6 @@ assert_expression_payload::main({payload: payload, attributes: attributes, vars:
 			<munit-tools:verify-call doc:name="Verify Logger" doc:id="1057cce2-5e14-466e-b107-e98e2a4adcee" processor="logger" times="1">
 				<munit-tools:with-attributes >
 					<munit-tools:with-attribute whereValue="7c7c70b1-07a7-455d-9a13-e720326cdd3a" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-			</munit-tools:verify-call>
-		</munit:validation>
-	</munit:test>
-	<munit:test name="InitializeTable-test" doc:id="078d9ff1-763a-4247-987d-e232f357e164" >
-		<munit:behavior >
-			<munit-tools:mock-when doc:name="Mock Initialize table Media" doc:id="b3203f3f-de33-4343-a032-e9e5d08866ec" processor="db:execute-script">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="91af5cfe-3cdc-41cd-820d-e4dc00c4cfb4" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-				<munit-tools:then-return >
-					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InitializeTabletest\mock_payload.dwl')]" mediaType="application/java" encoding="UTF-8" />
-				</munit-tools:then-return>
-			</munit-tools:mock-when>
-			<munit-tools:spy doc:name="Spy Logger" doc:id="7fc4140f-cb82-450a-9bf2-7f63b9b60c90" processor="logger">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="ae7604ca-20ca-4d9c-a03a-ffbb86e837cc" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-				<munit-tools:before-call >
-					<munit-tools:assert doc:name="Assert payload" doc:id="497d064c-86a6-4739-9a26-507311bc2422" message="The payload does not match">
-						<munit-tools:that ><![CDATA[#[%dw 2.0
-import InitializeTabletest::spy_assert_payload
----
-spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
-					</munit-tools:assert>
-				</munit-tools:before-call>
-				<munit-tools:after-call >
-					<munit-tools:assert doc:name="Assert payload" doc:id="44d6c862-7336-4f2e-98ee-dbb9198fc44a" message="The payload does not match">
-						<munit-tools:that ><![CDATA[#[%dw 2.0
-import InitializeTabletest::spy_assert_payload1
----
-spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
-					</munit-tools:assert>
-				</munit-tools:after-call>
-			</munit-tools:spy>
-			<munit:set-event doc:name="Set Input" doc:id="e1021590-1cb4-40f8-9087-93787a208a47" >
-				<munit:payload value="#[readUrl('classpath://InitializeTabletest\set-event_payload.dwl')]" />
-			</munit:set-event>
-		</munit:behavior>
-		<munit:execution >
-			<flow-ref doc:name="Flow-ref to InitializeTable" doc:id="e4b732a7-3a7c-4b5f-8918-8cfc0d2791b1" name="InitializeTable"/>
-		</munit:execution>
-		<munit:validation >
-			<munit-tools:assert doc:name="Assert payload" doc:id="4cbf87ab-78c7-49e2-923f-7b3b6f91c3a9" message="The payload does not match">
-				<munit-tools:that ><![CDATA[#[%dw 2.0
-import InitializeTabletest::assert_expression_payload
----
-assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
-			</munit-tools:assert>
-			<munit-tools:verify-call doc:name="Verify Logger" doc:id="4834f1ac-065b-4705-8a2b-6e264d915dfb" processor="logger" times="1">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="ae7604ca-20ca-4d9c-a03a-ffbb86e837cc" attributeName="doc:id" />
 				</munit-tools:with-attributes>
 			</munit-tools:verify-call>
 		</munit:validation>
@@ -749,84 +653,6 @@ assert_expression_payload::main({payload: payload, attributes: attributes, vars:
 			</munit-tools:verify-call>
 		</munit:validation>
 	</munit:test>
-	<munit:test name="InsertDataQuery-test" doc:id="753bc12b-54b8-4156-bea8-c2dbda3d8c58" >
-		<munit:behavior >
-			<munit-tools:mock-when doc:name="Mock Insert file" doc:id="5d5b8411-5c68-4255-a9dc-e7e1c5001ef6" processor="db:insert">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="5ec7988e-3509-4838-9f9e-47697272b882" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-				<munit-tools:then-return >
-					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InsertDataQuerytest\mock_payload2.dwl')]" mediaType="application/java" encoding="UTF-8" />
-					<munit-tools:variables >
-						<munit-tools:variable key="NewFile" value="#[output application/json --- readUrl('classpath://InsertDataQuerytest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
-					</munit-tools:variables>
-				</munit-tools:then-return>
-			</munit-tools:mock-when>
-			<munit-tools:mock-when doc:name="Mock Publish" doc:id="7c82496e-c7ea-4c20-9395-093a44e085c5" processor="kafka:publish">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="001eda20-f56f-4f62-99d9-4d17090fa8de" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-				<munit-tools:then-return >
-					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InsertDataQuerytest\mock_payload3.dwl')]" mediaType="application/java" encoding="UTF-8" />
-					<munit-tools:variables >
-						<munit-tools:variable key="NewFile" value="#[output application/json --- readUrl('classpath://InsertDataQuerytest\mock_variable_3.dwl')]" mediaType="application/json" encoding="UTF-8" />
-					</munit-tools:variables>
-				</munit-tools:then-return>
-			</munit-tools:mock-when>
-			<munit-tools:spy doc:name="Spy Set Variable" doc:id="0f499ad3-90a9-4a8f-96b1-6bb03c394020" processor="set-variable">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-				<munit-tools:before-call >
-					<munit-tools:assert doc:name="Assert payload" doc:id="472b65ca-0904-4edb-86b0-48ba1fbe40ce" message="The payload does not match">
-						<munit-tools:that ><![CDATA[#[%dw 2.0
-import InsertDataQuerytest::spy_assert_payload2
----
-spy_assert_payload2::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
-					</munit-tools:assert>
-				</munit-tools:before-call>
-				<munit-tools:after-call >
-					<munit-tools:assert doc:name="Assert payload" doc:id="59d23bd6-5b58-40d5-a4c0-8213af9815cb" message="The payload does not match">
-						<munit-tools:that ><![CDATA[#[%dw 2.0
-import InsertDataQuerytest::spy_assert_payload3
----
-spy_assert_payload3::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
-					</munit-tools:assert>
-					<munit-tools:assert doc:name="Assert variables" doc:id="64c334f1-6fa2-4a0a-b1f8-e8bc1f6b0c20" message="The variables do not match">
-						<munit-tools:that ><![CDATA[#[%dw 2.0
-import InsertDataQuerytest::spy_assert_variables1
----
-spy_assert_variables1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
-					</munit-tools:assert>
-				</munit-tools:after-call>
-			</munit-tools:spy>
-			<munit:set-event doc:name="Set Input" doc:id="3e97340b-360c-480a-a758-3a92d6df7600" >
-				<munit:payload value="#[output application/json --- readUrl('classpath://InsertDataQuerytest\set-event_payload1.dwl')]" encoding="UTF-8" mediaType="application/json" />
-				<munit:attributes value="#[readUrl('classpath://InsertDataQuerytest\set-event_attributes1.dwl')]" />
-			</munit:set-event>
-		</munit:behavior>
-		<munit:execution >
-			<flow-ref doc:name="Flow-ref to InsertDataQuery" doc:id="12fb4ee4-3121-4d3d-8ac0-aa605f99a182" name="InsertDataQuery"/>
-		</munit:execution>
-		<munit:validation >
-			<munit-tools:assert doc:name="Assert payload" doc:id="91c7c7cb-7ec1-4645-9930-58c1828e1e1c" message="The payload does not match">
-				<munit-tools:that ><![CDATA[#[%dw 2.0
-import InsertDataQuerytest::assert_expression_payload1
----
-assert_expression_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
-			</munit-tools:assert>
-			<munit-tools:verify-call doc:name="Verify Logger" doc:id="d2dcdf69-0cff-4d95-a5dd-370b6ef21dd5" processor="logger" times="1">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="0bab9b4e-0856-45ac-9da3-dde63ffb2bf1" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-			</munit-tools:verify-call>
-			<munit-tools:verify-call doc:name="Verify Set Variable" doc:id="c27449d4-6bf9-46b5-9aa4-0813915f0191" processor="set-variable" times="1">
-				<munit-tools:with-attributes >
-					<munit-tools:with-attribute whereValue="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" attributeName="doc:id" />
-				</munit-tools:with-attributes>
-			</munit-tools:verify-call>
-		</munit:validation>
-	</munit:test>
 	<munit:test name="Insertmediadata-test" doc:id="eca0cf64-5304-4646-8c16-a2b357b236e6" >
 		<munit:behavior >
 			<munit-tools:mock-when doc:name="Mock insert into table Media" doc:id="e9305b31-0442-4966-9b1c-b4eb7042e80e" processor="flow-ref">
@@ -882,6 +708,518 @@ import InsertDataAPItest::assert_expression_payload
 ---
 assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
 			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="InitializeTable-test" doc:id="6563e58f-54cf-48bd-939b-de0869ee1501" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Initialize table Media" doc:id="1d73166f-961c-4888-8181-c5f167b6f7e5" processor="db:execute-script">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="91af5cfe-3cdc-41cd-820d-e4dc00c4cfb4" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InitializeTabletest\mock_payload1.dwl')]" mediaType="application/java" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Execute script" doc:id="d54761ad-ad95-4882-816f-aa53081ab1cf" processor="db:execute-script">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a868b360-a46a-4de2-a55f-bb50c605e746" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InitializeTabletest\mock_payload2.dwl')]" mediaType="application/java" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="4298efcf-f94d-4094-a04c-e274c37d3934" >
+				<munit:payload value="#[readUrl('classpath://InitializeTabletest\set-event_payload1.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to InitializeTable" doc:id="46fdcb0c-dc7a-43a5-9b64-f0b32cbc2eae" name="InitializeTable"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="c3add7a3-6d82-4512-8185-365286046766" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import InitializeTabletest::assert_expression_payload1
+---
+assert_expression_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Logger" doc:id="842cc6ab-a435-4a40-8a66-443316412362" processor="logger" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ae7604ca-20ca-4d9c-a03a-ffbb86e837cc" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="HandleDelayedAcksPeriodically-test" doc:id="9e9bcdf0-2442-4719-8b18-fda3501f4caf" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Select" doc:id="f71f615f-0c6d-4d35-a6be-1dae6e9a0842" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="115159aa-e589-4d54-8028-c5a658cb2de2" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://HandleDelayedAcksPeriodicallytest\mock_payload.dwl')]" mediaType="application/java" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock send ack back to spring " doc:id="f9511f8b-cd9c-4f75-becd-29257572e25e" processor="kafka:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fea76f5c-9306-4123-89aa-912aebe2fac5" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://HandleDelayedAcksPeriodicallytest\mock_payload1.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="rootMessage" value="#[readUrl('classpath://HandleDelayedAcksPeriodicallytest\mock_variable_.dwl')]" />
+						<munit-tools:variable key="currentFile" value="#[output application/java --- readUrl('classpath://HandleDelayedAcksPeriodicallytest\mock_variable_1.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="counter" value="#[readUrl('classpath://HandleDelayedAcksPeriodicallytest\mock_variable_2.dwl')]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Delete" doc:id="ad4678b6-ca28-4590-a686-2de99d089031" processor="db:delete">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="3ec0450d-477c-4abc-9766-db460580bafb" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://HandleDelayedAcksPeriodicallytest\mock_payload2.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="rootMessage" value="#[readUrl('classpath://HandleDelayedAcksPeriodicallytest\mock_variable_3.dwl')]" />
+						<munit-tools:variable key="currentFile" value="#[output application/java --- readUrl('classpath://HandleDelayedAcksPeriodicallytest\mock_variable_4.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="counter" value="#[readUrl('classpath://HandleDelayedAcksPeriodicallytest\mock_variable_5.dwl')]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Set Variable" doc:id="86a297cb-9fa9-4ddc-9733-382bf343f751" processor="set-variable">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="99e8603c-54c0-41db-b8ad-c3b44de29fad" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="a4aa6623-9bbf-41ba-b73f-540396728f41" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import HandleDelayedAcksPeriodicallytest::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+					<munit-tools:assert doc:name="Assert variables" doc:id="e58c95d7-cca5-41fc-9564-41366c6990e6" message="The variables do not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import HandleDelayedAcksPeriodicallytest::spy_assert_variables
+---
+spy_assert_variables::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="028c969c-7da3-41e8-ac9b-fc7dd4635a49" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import HandleDelayedAcksPeriodicallytest::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+					<munit-tools:assert doc:name="Assert variables" doc:id="e3fbaa6e-bf1f-47b7-a302-e1b706c6d164" message="The variables do not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import HandleDelayedAcksPeriodicallytest::spy_assert_variables1
+---
+spy_assert_variables1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="a34607b5-f624-45aa-b6b4-8671e1a714b9" >
+				<munit:payload value="#[readUrl('classpath://HandleDelayedAcksPeriodicallytest\set-event_payload.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to HandleDelayedAcksPeriodically" doc:id="119a7dfd-29fe-4640-a5c1-7bcae4330a9d" name="HandleDelayedAcksPeriodically"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="47739bab-cfb9-4a3c-acbf-b40ed27ba1ba" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import HandleDelayedAcksPeriodicallytest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Logger" doc:id="5362c43f-f7ab-42fc-b8f3-7c4627fe4f36" processor="logger" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="517cd592-62b3-41ea-83cc-2508a7f0f2c4" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify Set Variable" doc:id="514796c2-f2ef-46bf-af95-03be39208eed" processor="set-variable" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="99e8603c-54c0-41db-b8ad-c3b44de29fad" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="InsertDataKafkaMessage-test" doc:id="c9b743b3-c0ba-48bf-bdd5-134f5a25e358" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock DB insert Subflow" doc:id="acf19d29-d093-42f7-8d20-3259543474d2" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ca79959c-dfbf-427a-8c58-1ca5597f9bce" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InsertDataKafkaMessagetest\mock_payload.dwl')]" mediaType="application/java" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Convert binary to Application/java" doc:id="bd8e4eab-313a-4a35-928d-025d5d4b952d" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a1d7a298-420c-4741-8e28-e667e0c0a852" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="fbef580b-a696-4685-89ae-9e22af6554fd" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataKafkaMessagetest::spy_assert_payload4
+---
+spy_assert_payload4::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="a39c45b7-f9ce-4f7d-b905-743456d2be9f" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataKafkaMessagetest::spy_assert_payload5
+---
+spy_assert_payload5::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="17b5e703-7184-4cf4-812e-e8c63a34ae3c" >
+				<munit:payload value="#[readUrl('classpath://InsertDataKafkaMessagetest\set-event_payload2.dwl')]" encoding="UTF-8" />
+				<munit:attributes value="#[readUrl('classpath://InsertDataKafkaMessagetest\set-event_attributes2.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to InsertDataKafkaMessage" doc:id="1543d796-8e40-4f6d-b669-e6fc70ba7034" name="InsertDataKafkaMessage"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="8c1ab4f0-3701-4bdf-bd18-e340565819a1" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataKafkaMessagetest::assert_expression_payload1
+---
+assert_expression_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Convert binary to Application/java" doc:id="5b2730ff-854f-4a9d-a2f3-c6eba78c0dbf" processor="ee:transform" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a1d7a298-420c-4741-8e28-e667e0c0a852" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="InsertDataQuery-test" doc:id="ca2d42a6-32b8-4c76-8985-89a87f0aa2bb" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Check if duplicate exists" doc:id="a2c521dc-4f2f-43d0-945e-a5768b0f152f" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="61b04d18-bec1-4e00-b370-099cf6e4166d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InsertDataQuerytest\mock_payload4.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="NewFile" value="#[output application/json --- readUrl('classpath://InsertDataQuerytest\mock_variable_4.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Insert file" doc:id="fe30c1bc-841b-4ce4-9080-2e1b21f337af" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="5ec7988e-3509-4838-9f9e-47697272b882" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InsertDataQuerytest\mock_payload5.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="NewFile" value="#[output application/json --- readUrl('classpath://InsertDataQuerytest\mock_variable_5.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock send ack back to spring " doc:id="cba05d4a-6fa0-4dc3-a46c-ce49111337a5" processor="kafka:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="001eda20-f56f-4f62-99d9-4d17090fa8de" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InsertDataQuerytest\mock_payload6.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="NewFile" value="#[output application/json --- readUrl('classpath://InsertDataQuerytest\mock_variable_6.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Set Variable" doc:id="7ec8ac28-467c-4b40-a7c1-e2fefec429b8" processor="set-variable">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="092391a3-f940-4a3d-b7a9-cc1b299601c1" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataQuerytest::spy_assert_payload4
+---
+spy_assert_payload4::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="d7890dda-b91a-4726-b471-13e3f169f1bf" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataQuerytest::spy_assert_payload5
+---
+spy_assert_payload5::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+					<munit-tools:assert doc:name="Assert variables" doc:id="d6fe4a31-a332-4270-a524-f56cb95e45c0" message="The variables do not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataQuerytest::spy_assert_variables2
+---
+spy_assert_variables2::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit-tools:spy doc:name="Spy Set Payload" doc:id="1dd8a2fc-f102-46ae-9031-00467cdf7db6" processor="set-payload">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="afc5f11f-af03-471b-b5c2-14712ed14267" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="a825ab90-f122-460b-92dc-72302dd93251" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataQuerytest::spy_assert_payload6
+---
+spy_assert_payload6::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="98a0c817-008a-4602-b9bb-2caff5af378a" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataQuerytest::spy_assert_payload7
+---
+spy_assert_payload7::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="25be5c16-bb84-4e98-9981-1ef3b1544249" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://InsertDataQuerytest\set-event_payload2.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://InsertDataQuerytest\set-event_attributes2.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to InsertDataQuery" doc:id="2432937f-9ed9-4d39-8dda-10f64e198923" name="InsertDataQuery"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="e2445224-67e9-44fe-ae89-bc146cd468f6" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataQuerytest::assert_expression_payload2
+---
+assert_expression_payload2::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Logger" doc:id="a3665416-43a8-43f7-8397-71ce4a2295de" processor="logger" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0bab9b4e-0856-45ac-9da3-dde63ffb2bf1" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify Set Variable" doc:id="a6b9d243-b27f-49d3-9aaa-e2ca036cdd0c" processor="set-variable" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify Set Payload" doc:id="0fe9e262-311c-4025-b105-a8915209721c" processor="set-payload" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="afc5f11f-af03-471b-b5c2-14712ed14267" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="InsertDataQuery-duplicate-test" doc:id="104db6ac-6144-4a28-a7ee-4f0ff1d4bdeb" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Check if duplicate exists" doc:id="7e24c5d5-ec5f-41ac-bf53-cf2a30eef535" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="61b04d18-bec1-4e00-b370-099cf6e4166d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InsertDataQueryduplicatetest\mock_payload2.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="NewFile" value="#[output application/json --- readUrl('classpath://InsertDataQueryduplicatetest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Handle duplicate" doc:id="3f64ea98-6703-45a5-aa72-6a00411a42f9" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="b3a73e7d-4012-4518-aa2c-2d161dec5f2c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://InsertDataQueryduplicatetest\mock_payload3.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="NewFile" value="#[output application/json --- readUrl('classpath://InsertDataQueryduplicatetest\mock_variable_3.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Set Variable" doc:id="9339751c-41d2-4bc1-93a2-67e9ac2bd887" processor="set-variable">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="68d129ad-70c0-42e4-bf46-6b47f55c015d" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataQueryduplicatetest::spy_assert_payload2
+---
+spy_assert_payload2::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="3414a11d-93bb-4ca9-b18a-1551a8a7038d" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataQueryduplicatetest::spy_assert_payload3
+---
+spy_assert_payload3::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+					<munit-tools:assert doc:name="Assert variables" doc:id="e9bf675d-c960-4f71-a392-d4c2d8227604" message="The variables do not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataQueryduplicatetest::spy_assert_variables1
+---
+spy_assert_variables1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="a7171c7b-4e17-43b4-8c04-80c529473738" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://InsertDataQueryduplicatetest\set-event_payload1.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://InsertDataQueryduplicatetest\set-event_attributes1.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to InsertDataQuery" doc:id="66882019-9302-4833-bb6b-9ece2f33befd" name="InsertDataQuery"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="14fbb4d2-5db9-4d17-90e5-ddfd44c414ed" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import InsertDataQueryduplicatetest::assert_expression_payload1
+---
+assert_expression_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Set Variable" doc:id="77831a5f-b77c-4ba7-9396-29f92705ac91" processor="set-variable" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ed4bd68d-ed43-4507-a6c9-150bf7e7bbd4" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="MediaDuplicateHandling-trueduplicate-test" doc:id="8a011f54-5b2e-4773-881a-9448722c72ef" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Select" doc:id="3b7fe978-9c3f-4177-9b76-b15817f2cf4c" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="9adc5630-beac-480c-8ca4-8e8d803940d2" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://MediaDuplicateHandlingtrueduplicatetest\mock_payload.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="NewFile" value="#[output application/json --- readUrl('classpath://MediaDuplicateHandlingtrueduplicatetest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Set Payload" doc:id="82064194-02d7-4f9b-8ef5-41b13180b091" processor="set-payload">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="3f1df7b2-d0af-42aa-afd0-c87c2a6154ef" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="5061093d-1535-48ae-b3af-71a2ab17ce1e" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import MediaDuplicateHandlingtrueduplicatetest::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="d76ccf9c-91e1-436d-987c-9d6cb2c01a99" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import MediaDuplicateHandlingtrueduplicatetest::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="7044bd8d-52d9-4f84-9b3a-d5a642a2585f" >
+				<munit:payload value="#[output application/java --- readUrl('classpath://MediaDuplicateHandlingtrueduplicatetest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/java" />
+				<munit:variables >
+					<munit:variable key="NewFile" value="#[output application/json --- readUrl('classpath://MediaDuplicateHandlingtrueduplicatetest\set-event_variable_.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to MediaDuplicateHandling" doc:id="139e0e52-c4c7-4a15-830a-4ce73476a91f" name="MediaDuplicateHandling"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="2fbe1838-4871-4256-ac65-9db0a9ddc3c7" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import MediaDuplicateHandlingtrueduplicatetest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Logger" doc:id="4dfc048f-f36c-464d-aae4-f225d5b7418d" processor="logger" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d0a45f54-9410-4056-9347-33388bd60f20" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify Set Payload" doc:id="cfa7ee03-7246-4e92-a081-710ca368631b" processor="set-payload" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="3f1df7b2-d0af-42aa-afd0-c87c2a6154ef" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="MediaDuplicateHandling-falseDuplicate-test" doc:id="2db3a7a4-ef95-491f-9ce7-42c90a4aed56" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Select" doc:id="c9008ca8-b49e-48fa-b61a-940e5a0c4b02" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="9adc5630-beac-480c-8ca4-8e8d803940d2" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://MediaDuplicateHandlingfalseDuplicatetest\mock_payload.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="NewFile" value="#[output application/json --- readUrl('classpath://MediaDuplicateHandlingfalseDuplicatetest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Send to RetryQ" doc:id="b8e85240-c021-42aa-bbc2-0629ff9ea617" processor="kafka:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="1ec65864-a458-4dd0-a900-6f55e1637d88" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java --- readUrl('classpath://MediaDuplicateHandlingfalseDuplicatetest\mock_payload1.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="NewFile" value="#[output application/json --- readUrl('classpath://MediaDuplicateHandlingfalseDuplicatetest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy Set Payload" doc:id="f485956e-e1b7-4812-9e93-a678135de64c" processor="set-payload">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d6e5ae25-e8a5-4ee5-86b8-fb0cf8612f25" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="8e540a52-9f91-4bf1-86ea-41ce80e42317" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import MediaDuplicateHandlingfalseDuplicatetest::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="83e2a2a3-4b30-44bc-b66b-9df5a51a55dd" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import MediaDuplicateHandlingfalseDuplicatetest::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="c8914bb9-d1bd-40c6-a88c-8ed3ab62314f" >
+				<munit:payload value="#[output application/java --- readUrl('classpath://MediaDuplicateHandlingfalseDuplicatetest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/java" />
+				<munit:variables >
+					<munit:variable key="NewFile" value="#[output application/json --- readUrl('classpath://MediaDuplicateHandlingfalseDuplicatetest\set-event_variable_.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to MediaDuplicateHandling" doc:id="53721490-6a3d-4a31-bc5f-6ce3db399495" name="MediaDuplicateHandling"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="7634f70d-0161-4ac3-b059-df2090c652ff" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import MediaDuplicateHandlingfalseDuplicatetest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Logger" doc:id="98eef4e3-180b-4f47-9e4d-681b15814937" processor="logger" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="e79e2c52-8001-4282-8955-465e8ae31da5" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify Set Payload" doc:id="10a645a5-e6b0-4548-878c-f568ea6d0b3e" processor="set-payload" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d6e5ae25-e8a5-4ee5-86b8-fb0cf8612f25" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
 		</munit:validation>
 	</munit:test>
 

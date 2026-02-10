@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:kafka="http://www.mulesoft.org/schema/mule/kafka" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:kafka="http://www.mulesoft.org/schema/mule/kafka"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/kafka/current/mule-kafka.xsd">
+http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/kafka/current/mule-kafka.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="dbb57ee9-692f-45ca-9dc9-284aa030a6f8" >
 		<db:generic-connection url="jdbc:postgresql://localhost:5432/chatapp" driverClassName="org.postgresql.Driver" user="postgres" password="root" />
 	</db:config>
@@ -63,6 +64,7 @@ http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/ka
 			</kafka:bootstrap-servers>
 		</kafka:producer-plaintext-connection>
 	</kafka:producer-config>
+	<configuration doc:name="Configuration" doc:id="d39ef92f-7761-45e0-8d31-1a82c477b40d" defaultErrorHandler-ref="Error_Handler" />
 	<flow name="InitializeTable" doc:id="06290756-b3e0-41ac-ac12-cc0c6c9be4ab" >
 		<scheduler doc:name="Scheduler" doc:id="dbea50e2-d331-407f-b44d-e1503d91222f">
 			<scheduling-strategy>
@@ -82,7 +84,7 @@ http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/ka
 );
 ]]></db:sql>
 		</db:execute-script>
-		<db:execute-script doc:name="Execute script" doc:id="a868b360-a46a-4de2-a55f-bb50c605e746" config-ref="Database_Config">
+		<db:execute-script doc:name="initialize table delayed_acks" doc:id="a868b360-a46a-4de2-a55f-bb50c605e746" config-ref="Database_Config">
 			<db:sql ><![CDATA[CREATE TABLE IF NOT EXISTS delayed_acks (
   id SMALLSERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL
@@ -218,49 +220,6 @@ output application/java
 				<flow-ref doc:name="Handle duplicate" doc:id="b3a73e7d-4012-4518-aa2c-2d161dec5f2c" name="MediaDuplicateHandling"/>
 			</otherwise>
 		</choice>
-		<error-handler>
-			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a647245c-850a-4a2f-871d-0eb46c8f41bf" type="DB:QUERY_EXECUTION">
-				<kafka:publish doc:name="Send to ParkQ" doc:id="87ac6950-ca55-4e5b-b56e-6d1cea3d1f02" config-ref="Apache_Kafka_Producer_configuration" topic="filesparkQ" >
-					<kafka:message ><![CDATA[#[vars.NewFile]]]></kafka:message>
-				</kafka:publish>
-				<logger level="INFO" doc:name="Logger" doc:id="98f534ca-5ca1-4a8a-ba9f-f8cc2c06f8af" message='#["sent file $(vars.NewFile.name) to ParkQ"]' />
-				<set-payload value='#["error occured. transferring file to parkQ "]' doc:name="Set Payload" doc:id="777ff25d-436c-494c-a8b8-07704e2526d6" />
-			</on-error-continue>
-			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f6f1ccc4-e85b-4966-9fa1-f7161d52d723" type="KAFKA:CONNECTIVITY, KAFKA:RETRY_EXHAUSTED, KAFKA:SECURITY, KAFKA:TIMEOUT">
-				<db:insert doc:name="Send to delayed_acks table" doc:id="ea21bc3d-f313-4dee-8799-dddb21ad2118" config-ref="Database_Config">
-					<db:sql ><![CDATA[insert into delayed_acks (name) values(:name);]]></db:sql>
-					<db:input-parameters ><![CDATA[#[name : vars.NewFile.name]]]></db:input-parameters>
-				</db:insert>
-				<logger level="INFO" doc:name="Logger" doc:id="f4f8e183-1c96-4214-be1f-e054ec2ae306" message='#["Kafka error. delay in sending file ack"]'/>
-				<set-payload value='#["ack not sent . file sent to delayed_acks table"]' doc:name="Set Payload" doc:id="670ad0a7-06a3-486a-be8b-1bbb6d1bdc69" />
-			</on-error-continue>
-		</error-handler>
-	</flow>
-	<flow name="HandleDelayedAcksPeriodically" doc:id="7be47b12-de4b-4740-8179-a81988fc4ed0" >
-		<scheduler doc:name="Scheduler" doc:id="5978b440-3000-496c-b41c-bcf71532533e" >
-			<scheduling-strategy >
-				<fixed-frequency frequency="1" timeUnit="MINUTES"/>
-			</scheduling-strategy>
-		</scheduler>
-		<db:select doc:name="Select" doc:id="115159aa-e589-4d54-8028-c5a658cb2de2" config-ref="Database_Config">
-			<db:sql ><![CDATA[select * from delayed_acks ;]]></db:sql>
-		</db:select>
-		<foreach doc:name="For Each" doc:id="ba6a15ee-4054-4098-a98c-e2d059666ba0" >
-			<set-variable value="#[{&#10;	id: payload.id,&#10;	name: payload.name&#10;}]" doc:name="Set Variable" doc:id="99e8603c-54c0-41db-b8ad-c3b44de29fad" variableName="currentFile"/>
-			<kafka:publish doc:name="send ack back to spring " doc:id="fea76f5c-9306-4123-89aa-912aebe2fac5" config-ref="Apache_Kafka_Producer_configuration" topic="fileack" >
-				<kafka:message ><![CDATA[#[vars.currentFile.name]]]></kafka:message>
-			</kafka:publish>
-			<db:delete doc:name="Delete" doc:id="3ec0450d-477c-4abc-9766-db460580bafb" config-ref="Database_Config">
-				<db:sql><![CDATA[delete from delayed_acks where id = :id ;]]></db:sql>
-				<db:input-parameters><![CDATA[#[id : vars.currentFile.id]]]></db:input-parameters>
-			</db:delete>
-			<logger level="INFO" doc:name="Logger" doc:id="517cd592-62b3-41ea-83cc-2508a7f0f2c4" message='#["Ack for file : " ++ vars.currentFile.name ++" sent successfully"]' />
-		</foreach>
-		<error-handler >
-			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3946d0ee-4957-49ce-95cf-8e835fa17223" >
-				<logger level="INFO" doc:name="Logger" doc:id="f57fd94d-3403-4480-9f71-a9b1b9fdad83" message='#["file if ID: " ++ vars.currentFile.id ++ ", Name: " ++ vars.currentFile.name ++ "unable to be sent. "]'/>
-			</on-error-continue>
-		</error-handler>
 	</flow>
 	<flow name="MediaDuplicateHandling" doc:id="b879544d-2e84-4995-908c-cd3ae26967bb" >
 		<db:select doc:name="Select" doc:id="9adc5630-beac-480c-8ca4-8e8d803940d2" config-ref="Database_Config" >
@@ -273,8 +232,8 @@ path: vars.NewFile.path
 		</db:select>
 		<choice doc:name="Choice" doc:id="c6e7c966-236b-4be0-b182-098a61f58a18" >
 			<when expression="isEmpty(payload)" >
-				<logger level="INFO" doc:name="Logger" doc:id="d0a45f54-9410-4056-9347-33388bd60f20" message='#["Found true duplicate $(vars.NewFile.name) . file ignored"]'/>
-				<set-payload value='#["True duplcate found  "]' doc:name="Set Payload" doc:id="3f1df7b2-d0af-42aa-afd0-c87c2a6154ef" />
+				<logger level="INFO" doc:name="Logger" doc:id="d0a45f54-9410-4056-9347-33388bd60f20" message='#["Found true duplicate [$(vars.NewFile.name)] . file ignored"]'/>
+				<set-payload value='#["True duplicate found  "]' doc:name="Set Payload" doc:id="3f1df7b2-d0af-42aa-afd0-c87c2a6154ef" />
 			</when>
 			<otherwise >
 				<kafka:publish doc:name="Send to RetryQ" doc:id="1ec65864-a458-4dd0-a900-6f55e1637d88" config-ref="retryQ" topic="newid" >
@@ -284,5 +243,31 @@ path: vars.NewFile.path
 				<set-payload value='#["error occured. transferring file to retryQ "]' doc:name="Set Payload" doc:id="d6e5ae25-e8a5-4ee5-86b8-fb0cf8612f25" />
 			</otherwise>
 		</choice>
+	</flow>
+	<flow name="HandleDelayedAcksPeriodically" doc:id="7be47b12-de4b-4740-8179-a81988fc4ed0">
+		<scheduler doc:name="Scheduler" doc:id="5978b440-3000-496c-b41c-bcf71532533e">
+			<scheduling-strategy>
+				<fixed-frequency frequency="1" timeUnit="MINUTES" />
+			</scheduling-strategy>
+		</scheduler>
+		<db:select doc:name="Select" doc:id="115159aa-e589-4d54-8028-c5a658cb2de2" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from delayed_acks ;]]></db:sql>
+		</db:select>
+		<foreach doc:name="For Each" doc:id="ba6a15ee-4054-4098-a98c-e2d059666ba0">
+			<set-variable value="#[{&#10;	id: payload.id ,&#10;	name: payload.name &#10;}]" doc:name="Set Variable" doc:id="99e8603c-54c0-41db-b8ad-c3b44de29fad" variableName="currentFile" />
+			<kafka:publish doc:name="send ack back to spring " doc:id="fea76f5c-9306-4123-89aa-912aebe2fac5" config-ref="Apache_Kafka_Producer_configuration" topic="fileack">
+				<kafka:message><![CDATA[#[vars.currentFile.name]]]></kafka:message>
+			</kafka:publish>
+			<db:delete doc:name="Delete" doc:id="3ec0450d-477c-4abc-9766-db460580bafb" config-ref="Database_Config">
+				<db:sql><![CDATA[delete from delayed_acks where id = :id ;]]></db:sql>
+				<db:input-parameters><![CDATA[#[id : vars.currentFile.id]]]></db:input-parameters>
+			</db:delete>
+			<logger level="INFO" doc:name="Logger" doc:id="517cd592-62b3-41ea-83cc-2508a7f0f2c4" message='#["Ack for file : " ++ vars.currentFile.name ++" sent successfully"]' />
+		</foreach>
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="Log Errors" doc:id="e5c67602-dd66-4cda-ae5b-34fea84eb063" type="ANY">
+				<logger level="ERROR" doc:name="Logger" doc:id="9705a111-470c-440f-ac98-7afa352bfe34" message='#["error in sending back the file ack"]' />
+			</on-error-continue>
+		</error-handler>
 	</flow>
 </mule>
