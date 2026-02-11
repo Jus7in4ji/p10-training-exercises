@@ -5,6 +5,7 @@ var activeSubscriptions = [];
 var username = null;
 var sendername = null;
 const gatewayurl = "http://localhost:8080"
+var availableChats = []; // Store chat list
 
 function openFilePicker() {
     document.getElementById("file-input").click();
@@ -170,13 +171,31 @@ async function storeToken() {
             }
         });
 
-    const report = await oldchats.json();
-    console.log("Status: " + report.Status + "\n Details: " + report.Details);
+        const report = await oldchats.json();
+        console.log("Status: " + report.Status + "\n Details: " + report.Details);
     }
     catch (err){
         console.error("failed to fetch temporary messages: "+err);
     }
     console.log("Token set .\nLogged in as: " + username);
+    // /msg/availablechats
+    try{
+        const availablechatList = await fetch(gatewayurl + "/msg/availablechats?username="+username, {
+            method: "GET",
+            headers: {
+                "Accept": "application/json",
+                "Authorization": "Bearer " + jwtToken
+            }
+        });
+
+        const chats = await availablechatList.json();
+        console.log("chats: ",chats);
+        // Populate the chat list UI
+        populateChatList(chats);
+    }
+    catch (err){
+        console.error("failed to fetch available chats : "+err);
+    }
 
     document.getElementById("jwt-token").value = "";
 }
@@ -197,6 +216,7 @@ function logoutUser() {
     currentRoom = null;
     document.getElementById("logged-user").innerText = "Not Logged In";
     document.getElementById("chat-box").innerHTML = "";
+    clearChatList();
     alert("Logged out.");
 }
 
@@ -455,5 +475,46 @@ async function showMessage(message, local) {
     chatBox.scrollTop = chatBox.scrollHeight; // keep scroll at bottom
 }
 
+// Function to populate chat list
+function populateChatList(chats) {
+    availableChats = chats;
+    const chatListContainer = document.getElementById("chat-list");
+    chatListContainer.innerHTML = ""; // Clear existing
+
+    chats.forEach(chat => {
+        const chatItem = document.createElement("div");
+        chatItem.classList.add("chat-item");
+        chatItem.setAttribute("chat-id", chat.id);
+
+        // Group icon: 👥, Private icon: 👤
+        const chatIcon = chat.group ? "👥" : "👤";
+        
+        // Unread indicator
+        const unreadClass = chat.unread ? "has-unread" : "";
+
+        chatItem.innerHTML = `
+            <span class="chat-type-icon">${chatIcon}</span>
+            <span class="chat-name">${chat.name}</span>
+            <span class="unread-indicator ${unreadClass}"></span>
+        `;
+
+        // Click handler to select chat
+        chatItem.addEventListener("click", () => selectChat(chat));
+
+        chatListContainer.appendChild(chatItem);
+    });
+}
+
+// Function to clear chat list (on logout)
+function clearChatList() {
+    availableChats = [];
+    document.getElementById("chat-list").innerHTML = "";
+}
+
+function selectChat(chat) {
+    document.getElementById("chat-room").value = chat.name;
+    document.querySelector('input[name="toggle"]:checked').value = chat.group
+    setRoom();
+}
 connect();
 console.log("timezone is "+Intl.DateTimeFormat().resolvedOptions().timeZone)

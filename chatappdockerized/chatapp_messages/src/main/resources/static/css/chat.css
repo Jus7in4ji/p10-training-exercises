@@ -4,21 +4,11 @@ body {
     color: #333;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-.chat-container {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 600px;
-    min-height: 80%;
-    max-width: 100%;
-}
 
 h2 {
     color: #4CAF50; /* Light green primary color */
@@ -258,4 +248,108 @@ h2 {
 
 .message-bubble.isfile:hover {
     background-color: #e3efff;
+}
+
+
+/* Main layout to hold sidebar and chat */
+.main-layout {
+    display: flex;
+    gap: 20px;
+    width: 95%;
+    max-width: 1400px;
+    height: 85vh;
+    margin: 80px auto 20px auto; /* space below user info */
+}
+
+/* Chat list sidebar */
+.chat-list-sidebar {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-list-sidebar h3 {
+    color: #4CAF50;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.chat-list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Individual chat item */
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.chat-item:hover {
+    background-color: #e8f5e9;
+}
+
+.chat-item.active {
+    background-color: #c8e6c9;
+    border-color: #4CAF50;
+}
+
+/* Chat type icon (group/private) */
+.chat-type-icon {
+    font-size: 24px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+/* Chat name */
+.chat-name {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Unread indicator */
+.unread-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #cccccc;
+    flex-shrink: 0;
+    transition: background-color 0.3s ease;
+}
+
+.unread-indicator.has-unread {
+    background-color: #ff5722;
+}
+
+/* Update chat-container to work in flex layout */
+.chat-container {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-box {
+    flex: 1;
+    height: auto;
 }
