@@ -3,6 +3,7 @@ package com.justinaji.chatapp_messages.controller;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,8 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.justinaji.chatapp_messages.RestClientAPIs.TempMsgs;
+import com.justinaji.chatapp_messages.RestClientAPIs.Userchat;
+import com.justinaji.chatapp_messages.dto.ChatsListObject;
 import com.justinaji.chatapp_messages.dto.TempMsg;
 import com.justinaji.chatapp_messages.dto.WSmessage;
+import com.justinaji.chatapp_messages.model.chats;
 import com.justinaji.chatapp_messages.service.CommonMethods;
 import com.justinaji.chatapp_messages.service.KafkaProducerServices;
 import com.justinaji.chatapp_messages.service.MessageServicesImpl;
@@ -28,16 +32,19 @@ import io.swagger.v3.oas.annotations.Hidden;
 public class Js2JavaRequestController {
     
     private final TempMsgs tempMsgMS;
+    private final Userchat userchat;
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageServicesImpl msgservice;
     private final KafkaProducerServices kafkaProducerServices;
 
     public Js2JavaRequestController(
         TempMsgs tempMsgMS,
+        Userchat userchat,
         MessageServicesImpl msgservice, 
         KafkaProducerServices kafkaProducerServices,
         SimpMessagingTemplate messagingTemplate){
             this.tempMsgMS = tempMsgMS;
+            this.userchat = userchat;
             this.msgservice = msgservice;
             this.messagingTemplate = messagingTemplate;
             this.kafkaProducerServices = kafkaProducerServices;
@@ -86,4 +93,16 @@ public class Js2JavaRequestController {
         result.put("Details",details);
         return result;
     }
+
+    @GetMapping("/msg/availablechats")
+    public List<ChatsListObject> getMethodName(@RequestParam String username){
+        List<chats> chats = userchat.getAvailableChats(username);
+        List<ChatsListObject> listchats = new ArrayList<>();  
+        chats.forEach(chat->{
+            ChatsListObject c = new ChatsListObject(chat.getChatId(),chat.getName(),chat.isIsgroup(),chat.isIsgroup());
+            listchats.add(c);
+        });
+        return listchats;
+    }
+    
 }

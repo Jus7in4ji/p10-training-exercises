@@ -1,5 +1,7 @@
 package com.justinaji.chatapp_messages.RestClientAPIs;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
@@ -16,5 +18,7 @@ public interface Userchat {
     @GetExchange("/userchat/getuser")
     users getUser(@RequestParam("username") String username);
     
-}
+    @GetExchange("/userchat/availablechats")
+    List<chats> getAvailableChats(@RequestParam("username") String username);
+ }
 

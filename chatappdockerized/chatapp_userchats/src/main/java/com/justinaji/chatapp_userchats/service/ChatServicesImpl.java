@@ -1,6 +1,7 @@
 package com.justinaji.chatapp_userchats.service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -313,5 +314,28 @@ public class ChatServicesImpl implements ChatServices {
             else result.put("Status","No User of name "+chatname+" exists.");
         }
         return result;
+    }
+
+    @Override
+    public List<chats> Availablechats(String username){
+        List<chats> avaliableChats = new ArrayList<chats>();
+        users current_user = urepo.findByName(username);
+        List<members> membershipList = memberRepo.findByMember(current_user); //find chats the user is part of         
+        membershipList.forEach(m -> {
+            chats c = m.getChat();
+            
+            if (!c.isIsgroup()) {
+                List<members> twoUsers = memberRepo.findByChat(c);
+                users other = twoUsers.stream()
+                        .map(memb -> memb.getMember())
+                        .filter(member -> !member.getUserId().equals(current_user.getUserId()))
+                        .findFirst()
+                        .orElse(null); 
+
+                if (other != null) c.setName(other.getName());
+            } 
+            avaliableChats.add(c);  
+        });
+        return avaliableChats;
     }
 }

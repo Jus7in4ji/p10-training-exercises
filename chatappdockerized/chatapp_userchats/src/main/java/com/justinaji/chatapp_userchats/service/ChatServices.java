@@ -1,9 +1,11 @@
 package com.justinaji.chatapp_userchats.service;
 
 import java.util.HashMap;
+import java.util.List;
 
 import com.justinaji.chatapp_userchats.dto.addmember;
 import com.justinaji.chatapp_userchats.dto.chatdetails;
+import com.justinaji.chatapp_userchats.model.chats;
 
 public interface  ChatServices {
 
@@ -22,4 +24,6 @@ public interface  ChatServices {
     String LeaveGroup(String chat);
 
     HashMap<String,String> ischatvalid(String chatname, String username, boolean isgroup);
+
+    List<chats> Availablechats(String username);
 }
