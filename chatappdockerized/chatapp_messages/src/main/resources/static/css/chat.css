@@ -335,7 +335,7 @@ h2 {
 }
 
 .unread-indicator.has-unread {
-    background-color: #ff5722;
+    background-color: #63cd0c;
 }
 
 /* Update chat-container to work in flex layout */

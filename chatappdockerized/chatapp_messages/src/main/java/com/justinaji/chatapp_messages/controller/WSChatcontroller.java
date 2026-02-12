@@ -9,17 +9,23 @@ import org.springframework.stereotype.Controller;
 import com.justinaji.chatapp_messages.dto.ReadRequest;
 import com.justinaji.chatapp_messages.dto.WSmessage;
 import com.justinaji.chatapp_messages.service.MessageServicesImpl;
+import com.justinaji.chatapp_messages.service.SseService;
 
 @Controller
 public class WSChatcontroller {
     
     Logger logger = LoggerFactory.getLogger(WSChatcontroller.class);
 
-    private  final SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
     private final MessageServicesImpl msgservice;
+    private final SseService sseService;
 
-    public WSChatcontroller(MessageServicesImpl msgservice, SimpMessagingTemplate messagingTemplate){
+    public WSChatcontroller(
+        MessageServicesImpl msgservice, 
+        SimpMessagingTemplate messagingTemplate,
+        SseService sseService){
         this.msgservice = msgservice;
+        this.sseService = sseService;
         this.messagingTemplate = messagingTemplate;
     }
     @MessageMapping("/chat.sendMessage")
@@ -37,7 +43,8 @@ public class WSChatcontroller {
             default ->  {
                 //save in messages table if text message
                 if (!message.isIsfile()) message.setMsgid(msgservice.Sendmessage(message.getText(), username, room,null));
-                messagingTemplate.convertAndSend("/topic/" + room, message); // send only if roomid is valid
+                messagingTemplate.convertAndSend("/topic/" + room, message); // send via websocket
+                sseService.broadcast( "unread-update", room);
             }
         }
     }

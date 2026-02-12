@@ -4,6 +4,7 @@ var currentRoom = null; // default room
 var activeSubscriptions = [];
 var username = null;
 var sendername = null;
+var eventSource = null;
 const gatewayurl = "http://localhost:8080"
 var availableChats = []; // Store chat list
 
@@ -189,9 +190,9 @@ async function storeToken() {
         });
 
         const chats = await availablechatList.json();
-        console.log("chats: ",chats);
         // Populate the chat list UI
         populateChatList(chats);
+        subscribeToEvents(username);
     }
     catch (err){
         console.error("failed to fetch available chats : "+err);
@@ -352,6 +353,7 @@ async function setRoom() {
         }
     }
 
+    setChatasRead(currentRoom,true);
     subscribeToRoom(currentRoom);
     
 }
@@ -504,7 +506,15 @@ function populateChatList(chats) {
         chatListContainer.appendChild(chatItem);
     });
 }
-
+function setChatasRead(chatId, read){
+    const chatItem = document.querySelector(`[chat-id="${chatId}"]`);
+    if (chatItem) {
+        const indicator = chatItem.querySelector(".unread-indicator");
+        if (read) indicator.classList.remove("has-unread");
+        else indicator.classList.add("has-unread");
+        
+    }
+}
 // Function to clear chat list (on logout)
 function clearChatList() {
     availableChats = [];
@@ -516,5 +526,30 @@ function selectChat(chat) {
     document.querySelector('input[name="toggle"]:checked').value = chat.group
     setRoom();
 }
+
+function subscribeToEvents(username) {
+    // Close any existing connection first
+    if (eventSource) {
+        eventSource.close();
+    }
+
+    eventSource = new EventSource(
+        `http://localhost:8081/events/subscribe`
+    );
+
+    // Listen for your specific event type
+    eventSource.addEventListener("unread-update", (event) => {
+        if (currentRoom != event.data) setChatasRead(event.data,false);
+    });
+
+    // Generic error handler
+    eventSource.onerror = (err) => {
+        console.error("SSE connection error:", err);
+        eventSource.close();
+    };
+
+    console.log("Subscribed to SSE for user:", username);
+}
+
 connect();
 console.log("timezone is "+Intl.DateTimeFormat().resolvedOptions().timeZone)

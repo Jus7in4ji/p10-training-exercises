@@ -21,6 +21,9 @@ import com.justinaji.chatapp_messages.dto.ChatsListObject;
 import com.justinaji.chatapp_messages.dto.TempMsg;
 import com.justinaji.chatapp_messages.dto.WSmessage;
 import com.justinaji.chatapp_messages.model.chats;
+import com.justinaji.chatapp_messages.model.messages;
+import com.justinaji.chatapp_messages.model.users;
+import com.justinaji.chatapp_messages.repository.MessageRepo;
 import com.justinaji.chatapp_messages.service.CommonMethods;
 import com.justinaji.chatapp_messages.service.KafkaProducerServices;
 import com.justinaji.chatapp_messages.service.MessageServicesImpl;
@@ -33,6 +36,7 @@ public class Js2JavaRequestController {
     
     private final TempMsgs tempMsgMS;
     private final Userchat userchat;
+    private final MessageRepo messageRepo;
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageServicesImpl msgservice;
     private final KafkaProducerServices kafkaProducerServices;
@@ -40,11 +44,13 @@ public class Js2JavaRequestController {
     public Js2JavaRequestController(
         TempMsgs tempMsgMS,
         Userchat userchat,
-        MessageServicesImpl msgservice, 
+        MessageServicesImpl msgservice,
+        MessageRepo messageRepo, 
         KafkaProducerServices kafkaProducerServices,
         SimpMessagingTemplate messagingTemplate){
             this.tempMsgMS = tempMsgMS;
             this.userchat = userchat;
+            this.messageRepo = messageRepo;
             this.msgservice = msgservice;
             this.messagingTemplate = messagingTemplate;
             this.kafkaProducerServices = kafkaProducerServices;
@@ -97,9 +103,15 @@ public class Js2JavaRequestController {
     @GetMapping("/msg/availablechats")
     public List<ChatsListObject> getMethodName(@RequestParam String username){
         List<chats> chats = userchat.getAvailableChats(username);
-        List<ChatsListObject> listchats = new ArrayList<>();  
+        List<ChatsListObject> listchats = new ArrayList<>();
+        users current_user  = userchat.getUser(username);  
         chats.forEach(chat->{
-            ChatsListObject c = new ChatsListObject(chat.getChatId(),chat.getName(),chat.isIsgroup(),chat.isIsgroup());
+            List<messages> messages =  messageRepo.findByChat(chat);
+            boolean unread = messages.stream().anyMatch(
+                message -> !message.isMsgread() && !message.getSender().equals(current_user));
+                // check for unread messages by other users
+
+            ChatsListObject c = new ChatsListObject(chat.getChatId(),chat.getName(),chat.isIsgroup(),unread);
             listchats.add(c);
         });
         return listchats;
