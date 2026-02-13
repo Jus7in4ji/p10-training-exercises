@@ -21,7 +21,7 @@
                 <h2>Websocket chat</h2>
 
                 <div class="token-row" style="margin-bottom: 10px;">
-                    <input type="password" id="jwt-token" placeholder="Enter JWT token" class="message-input">
+                    <input type="password" id="jwt-token" placeholder="Enter JWT token" class="message-input" onkeydown="if(event.key==='Enter') storeToken()">
                     <button onclick="storeToken()" class="send-button">Set Token</button>
                 </div>
 
@@ -35,7 +35,7 @@
                     </div>
                     
                     <div class="room-box">
-                        <input type="text" id="chat-room" placeholder="Enter chat room (default: public)" class="message-input">
+                        <input type="text" id="chat-room" placeholder="Enter chat room (default: public)" class="message-input" onkeydown="if(event.key==='Enter') setRoom()">
                         <button onclick="setRoom()" class="send-button">Set Room</button>
                     </div>
 
@@ -54,7 +54,7 @@
                         style="display: none;" 
                         onchange="handleFileSelected(this)"
                     />
-                    <input type="text" id="message" class="message-input" placeholder="Enter your message here..." />
+                    <input type="text" id="message" class="message-input" placeholder="Enter your message here..." onkeydown="if(event.key==='Enter') sendMessage()"/>
                     <button id="send-button" class="send-button" onclick="sendMessage()">Send</button>
                 </div>
             </div>

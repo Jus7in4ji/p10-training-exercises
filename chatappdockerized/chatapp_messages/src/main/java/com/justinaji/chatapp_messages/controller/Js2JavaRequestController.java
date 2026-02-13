@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,12 +17,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.justinaji.chatapp_messages.RestClientAPIs.MediaDetails;
 import com.justinaji.chatapp_messages.RestClientAPIs.TempMsgs;
 import com.justinaji.chatapp_messages.RestClientAPIs.Userchat;
 import com.justinaji.chatapp_messages.dto.ChatsListObject;
 import com.justinaji.chatapp_messages.dto.TempMsg;
 import com.justinaji.chatapp_messages.dto.WSmessage;
 import com.justinaji.chatapp_messages.model.chats;
+import com.justinaji.chatapp_messages.model.media;
 import com.justinaji.chatapp_messages.model.messages;
 import com.justinaji.chatapp_messages.model.users;
 import com.justinaji.chatapp_messages.repository.MessageRepo;
@@ -34,8 +38,11 @@ import io.swagger.v3.oas.annotations.Hidden;
 @RestController
 public class Js2JavaRequestController {
     
+    Logger logger = LoggerFactory.getLogger(Js2JavaRequestController.class);
+
     private final TempMsgs tempMsgMS;
     private final Userchat userchat;
+    private final MediaDetails mediaDetails;
     private final MessageRepo messageRepo;
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageServicesImpl msgservice;
@@ -44,12 +51,14 @@ public class Js2JavaRequestController {
     public Js2JavaRequestController(
         TempMsgs tempMsgMS,
         Userchat userchat,
+        MediaDetails mediaDetails,
         MessageServicesImpl msgservice,
         MessageRepo messageRepo, 
         KafkaProducerServices kafkaProducerServices,
         SimpMessagingTemplate messagingTemplate){
             this.tempMsgMS = tempMsgMS;
             this.userchat = userchat;
+            this.mediaDetails = mediaDetails;
             this.messageRepo = messageRepo;
             this.msgservice = msgservice;
             this.messagingTemplate = messagingTemplate;
@@ -102,18 +111,28 @@ public class Js2JavaRequestController {
 
     @GetMapping("/msg/availablechats")
     public List<ChatsListObject> getMethodName(@RequestParam String username){
-        List<chats> chats = userchat.getAvailableChats(username);
         List<ChatsListObject> listchats = new ArrayList<>();
-        users current_user  = userchat.getUser(username);  
-        chats.forEach(chat->{
-            List<messages> messages =  messageRepo.findByChat(chat);
-            boolean unread = messages.stream().anyMatch(
-                message -> !message.isMsgread() && !message.getSender().equals(current_user));
-                // check for unread messages by other users
-
-            ChatsListObject c = new ChatsListObject(chat.getChatId(),chat.getName(),chat.isIsgroup(),unread);
-            listchats.add(c);
-        });
+        try {
+            List<chats> chats = userchat.getAvailableChats(username);
+            users current_user  = userchat.getUser(username);  
+            chats.forEach(chat->{
+                List<messages> messages =  messageRepo.findByChat(chat);
+                boolean unread = messages.stream().anyMatch(
+                    message -> !message.isMsgread() && !message.getSender().equals(current_user));
+                    // check for unread messages by other users
+                if (!unread){
+                    try {
+                        List<media> chatmedia = mediaDetails.getMedia(chat.getChatId());
+                        unread = chatmedia.stream().anyMatch(
+                            media-> !media.isMsgread() && !media.getSender().equals(current_user.getName())); 
+                    } 
+                    catch (Exception e) { logger.error("Error occured while fetching media: "+e); }
+                }
+                ChatsListObject c = new ChatsListObject(chat.getChatId(),chat.getName(),chat.isIsgroup(),unread);
+                listchats.add(c);
+            });
+        } 
+        catch (Exception e) { logger.error("Error occured while fetching Available chats: "+e); }
         return listchats;
     }
     

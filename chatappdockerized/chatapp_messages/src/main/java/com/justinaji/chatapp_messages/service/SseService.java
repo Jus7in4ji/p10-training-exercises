@@ -13,24 +13,19 @@ public class SseService {
 
     public SseEmitter subscribe() {
         SseEmitter emitter = new SseEmitter(0L);
-
-        emitters.add(emitter);
+        emitters.add(emitter); //new emmitter registered every time a client subscribes to the sse server
 
         emitter.onCompletion(() -> emitters.remove(emitter));
         emitter.onTimeout(() -> emitters.remove(emitter));
         emitter.onError(e -> emitters.remove(emitter));
-
+        //remove client if disconnected / timed out
         return emitter;
     }
 
     public void broadcast(String eventType, String data) {
         emitters.forEach(emitter -> {
             try {
-                emitter.send(
-                    SseEmitter.event()
-                        .name(eventType)
-                        .data(data)
-                );
+                emitter.send(SseEmitter.event().name(eventType).data(data));
             } catch (Exception e) {
                 emitters.remove(emitter);
             }
